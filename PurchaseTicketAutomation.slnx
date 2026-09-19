@@ -1,2 +1,5 @@
 <Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PurchaseTicket.Domain/PurchaseTicket.Domain.csproj" />
+  </Folder>
 </Solution>
