@@ -77,6 +77,27 @@ public class PurchaseTicket
         Status = TicketStatus.Cancelled;
     }
 
+    public void Correct(int supplierCustomerId, int materialId, string licensePlate, string driverName, decimal grossWeight)
+    {
+        ValidatePendingStatus();
+
+        ValidateSupplierCustomer(supplierCustomerId);
+        ValidateMaterial(materialId);
+        ValidateGrossWeight(grossWeight);
+
+        string normalizedLicensePlate =
+        NormalizeLicensePlate(licensePlate);
+
+        string normalizedDriverName =
+            NormalizeDriverName(driverName);
+
+        SupplierCustomerId = supplierCustomerId;
+        MaterialId = materialId;
+        LicensePlate = normalizedLicensePlate;
+        DriverName = normalizedDriverName;
+        GrossWeight = grossWeight;
+    }
+
     private void ValidatePendingStatus()
     {
         if (Status != TicketStatus.Pending)
