@@ -20,6 +20,16 @@ public class CreatePurchaseTicketTests
 
             return Task.CompletedTask;
         }
+
+        public Task<Ticket?> GetByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpdateAsync(Ticket purchaseTicket)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private sealed class FakeTicketNumberGenerator
@@ -51,6 +61,11 @@ public class CreatePurchaseTicketTests
             PrintedTicket = purchaseTicket;
 
             return Task.CompletedTask;
+        }
+
+        public Task PrintFinalAsync(Ticket purchaseTicket)
+        {
+            throw new NotImplementedException();
         }
     }
 
