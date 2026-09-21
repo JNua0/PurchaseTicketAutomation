@@ -8,4 +8,5 @@ public interface IPurchaseTicketRepository
     Task<Ticket?> GetByIdAsync(int id);
     Task UpdateAsync(Ticket purchaseTicket);
     Task<IReadOnlyList<Ticket>> GetPendingAsync();
+    Task<IReadOnlyList<Ticket>> GetAllAsync();
 }

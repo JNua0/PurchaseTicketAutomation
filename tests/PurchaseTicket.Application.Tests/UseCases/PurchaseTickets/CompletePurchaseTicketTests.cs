@@ -36,6 +36,11 @@ public class CompletePurchaseTicketTests
             return Task.CompletedTask;
         }
 
+        public Task<IReadOnlyList<Ticket>> GetAllAsync()
+        {
+            throw new NotImplementedException();
+        }
+
     }
 
     private sealed class FakeTicketPrinter : ITicketPrinter
