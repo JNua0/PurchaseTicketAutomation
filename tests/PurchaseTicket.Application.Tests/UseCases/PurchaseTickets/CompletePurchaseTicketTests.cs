@@ -24,6 +24,11 @@ public class CompletePurchaseTicketTests
             return Task.FromResult(Ticket);
         }
 
+        public Task<IReadOnlyList<Ticket>> GetPendingAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         public Task UpdateAsync(Ticket purchaseTicket)
         {
             UpdatedTicket = purchaseTicket;

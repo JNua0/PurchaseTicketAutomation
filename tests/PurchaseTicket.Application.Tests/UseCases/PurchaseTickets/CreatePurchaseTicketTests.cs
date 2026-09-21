@@ -30,6 +30,11 @@ public class CreatePurchaseTicketTests
         {
             throw new NotImplementedException();
         }
+
+        public Task<IReadOnlyList<Ticket>> GetPendingAsync()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private sealed class FakeTicketNumberGenerator
