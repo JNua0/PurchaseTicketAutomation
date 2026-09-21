@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/PurchaseTicket.Application/PurchaseTicket.Application.csproj" />
     <Project Path="src/PurchaseTicket.Domain/PurchaseTicket.Domain.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/PurchaseTicket.Application.Tests/PurchaseTicket.Application.Tests.csproj" />
     <Project Path="tests/PurchaseTicket.Domain.Tests/PurchaseTicket.Domain.Tests.csproj" />
   </Folder>
 </Solution>
