@@ -1,7 +1,7 @@
 namespace PurchaseTicket.Application.UseCases.PurchaseTickets.Create;
 
 public record CreatePurchaseTicketCommand(
-    int SupplierCustomerId,
+    int SupplierId,
     int MaterialId,
     string LicensePlate,
     string DriverName,

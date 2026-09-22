@@ -29,7 +29,7 @@ public class CreatePurchaseTicket
 
         var ticket = new Ticket(
             ticketNumber,
-            command.SupplierCustomerId,
+            command.SupplierId,
             command.MaterialId,
             command.LicensePlate,
             command.DriverName,

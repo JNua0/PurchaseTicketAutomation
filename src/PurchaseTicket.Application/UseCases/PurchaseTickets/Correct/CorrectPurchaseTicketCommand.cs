@@ -2,7 +2,7 @@
 
 public record CorrectPurchaseTicketCommand(
     int TicketId,
-    int SupplierCustomerId,
+    int SupplierId,
     int MaterialId,
     string LicensePlate,
     string DriverName,

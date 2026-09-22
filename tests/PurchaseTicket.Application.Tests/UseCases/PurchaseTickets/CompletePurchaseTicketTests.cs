@@ -80,7 +80,7 @@ public class CompletePurchaseTicketTests
 
         var ticket = new Ticket(
             ticketNumber: "T-000001",
-            supplierCustomerId: 1,
+            supplierId: 1,
             materialId: 2,
             licensePlate: "abc-123",
             driverName: "juan perez",
@@ -176,7 +176,7 @@ public class CompletePurchaseTicketTests
 
         var ticket = new Ticket(
             ticketNumber: "T-000001",
-            supplierCustomerId: 1,
+            supplierId: 1,
             materialId: 2,
             licensePlate: "abc-123",
             driverName: "juan perez",
@@ -215,7 +215,7 @@ public class CompletePurchaseTicketTests
 
         var ticket = new Ticket(
             ticketNumber: "T-000001",
-            supplierCustomerId: 1,
+            supplierId: 1,
             materialId: 2,
             licensePlate: "abc-123",
             driverName: "juan perez",

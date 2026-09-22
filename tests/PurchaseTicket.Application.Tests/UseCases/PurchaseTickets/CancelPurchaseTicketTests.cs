@@ -13,7 +13,7 @@ public class CancelPurchaseTicketTests
         // Arrange
         var ticket = new Ticket(
             ticketNumber: "T-000001",
-            supplierCustomerId: 1,
+            supplierId: 1,
             materialId: 2,
             licensePlate: "ABC-123",
             driverName: "Juan Perez",
@@ -66,7 +66,7 @@ public class CancelPurchaseTicketTests
         // Arrange
         var ticket = new Ticket(
             ticketNumber: "T-000001",
-            supplierCustomerId: 1,
+            supplierId: 1,
             materialId: 2,
             licensePlate: "ABC-123",
             driverName: "Juan Perez",

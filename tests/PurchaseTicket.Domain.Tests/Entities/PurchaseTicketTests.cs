@@ -27,7 +27,7 @@ public class PurchaseTicketTests
     {
         // Arrange → preparar los datos necesarios
         const string ticketNumber = "T-000001";
-        const int supplierCustomerId = 1;
+        const int supplierId = 1;
         const int materialId = 2;
         const string licensePlate = "ABC123";
         const string driverName = "Juan Perez";
@@ -36,7 +36,7 @@ public class PurchaseTicketTests
         // Act → ejecutar el comportamiento
         var ticket = new Ticket(
             ticketNumber,
-            supplierCustomerId,
+            supplierId,
             materialId,
             licensePlate,
             driverName,
@@ -45,7 +45,7 @@ public class PurchaseTicketTests
 
         // Assert → comprobar el resultado
         Assert.Equal(ticketNumber, ticket.TicketNumber);
-        Assert.Equal(supplierCustomerId, ticket.SupplierCustomerId);
+        Assert.Equal(supplierId, ticket.SupplierId);
         Assert.Equal(materialId, ticket.MaterialId);
         Assert.Equal(licensePlate, ticket.LicensePlate);
         Assert.Equal(driverName, ticket.DriverName);
@@ -141,13 +141,13 @@ public class PurchaseTicketTests
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
-    public void Constructor_ShouldThrowWhenSupplierCustomerIdIsInvalid(
-    int supplierCustomerId)
+    public void Constructor_ShouldThrowWhenSupplierIdIsInvalid(
+    int supplierId)
     {
         // Act
         Action act = () => new Ticket(
             "T-000001",
-            supplierCustomerId,
+            supplierId,
             1,
             "ABC123",
             "Juan Perez",
@@ -589,7 +589,7 @@ public class PurchaseTicketTests
         );
 
         // Assert
-        Assert.Equal(2, ticket.SupplierCustomerId);
+        Assert.Equal(2, ticket.SupplierId);
         Assert.Equal(3, ticket.MaterialId);
         Assert.Equal("XYZ789", ticket.LicensePlate);
         Assert.Equal("Pedro Lopez", ticket.DriverName);
@@ -708,7 +708,7 @@ public class PurchaseTicketTests
         // Assert
         Assert.Throws<ArgumentException>(act);
 
-        Assert.Equal(1, ticket.SupplierCustomerId);
+        Assert.Equal(1, ticket.SupplierId);
         Assert.Equal(1, ticket.MaterialId);
         Assert.Equal("ABC123", ticket.LicensePlate);
         Assert.Equal("Juan Perez", ticket.DriverName);

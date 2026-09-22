@@ -21,7 +21,7 @@ public class GetPurchaseTickets
                 ticket.Id,
                 ticket.TicketNumber,
                 ticket.CreatedAt,
-                ticket.SupplierCustomerId,
+                ticket.SupplierId,
                 ticket.MaterialId,
                 ticket.LicensePlate,
                 ticket.DriverName,

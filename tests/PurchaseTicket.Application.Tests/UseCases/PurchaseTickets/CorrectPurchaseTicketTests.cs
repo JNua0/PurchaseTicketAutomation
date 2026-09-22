@@ -13,7 +13,7 @@ public class CorrectPurchaseTicketTests
         // Arrange
         var ticket = new Ticket(
             ticketNumber: "T-000001",
-            supplierCustomerId: 1,
+            supplierId: 1,
             materialId: 2,
             licensePlate: "ABC-123",
             driverName: "Juan Perez",
@@ -28,7 +28,7 @@ public class CorrectPurchaseTicketTests
 
         var command = new CorrectPurchaseTicketCommand(
             TicketId: 1,
-            SupplierCustomerId: 3,
+            SupplierId: 3,
             MaterialId: 4,
             LicensePlate: "xyz-789",
             DriverName: "pedro lopez",
@@ -42,7 +42,7 @@ public class CorrectPurchaseTicketTests
         var result = await useCase.ExecuteAsync(command);
 
         // Assert
-        Assert.Equal(3, ticket.SupplierCustomerId);
+        Assert.Equal(3, ticket.SupplierId);
         Assert.Equal(4, ticket.MaterialId);
         Assert.Equal("XYZ-789", ticket.LicensePlate);
         Assert.Equal("Pedro Lopez", ticket.DriverName);
@@ -64,7 +64,7 @@ public class CorrectPurchaseTicketTests
 
         var command = new CorrectPurchaseTicketCommand(
             TicketId: 1,
-            SupplierCustomerId: 3,
+            SupplierId: 3,
             MaterialId: 4,
             LicensePlate: "XYZ-789",
             DriverName: "Pedro Lopez",
@@ -93,7 +93,7 @@ public class CorrectPurchaseTicketTests
         // Arrange
         var ticket = new Ticket(
             ticketNumber: "T-000001",
-            supplierCustomerId: 1,
+            supplierId: 1,
             materialId: 2,
             licensePlate: "ABC-123",
             driverName: "Juan Perez",
@@ -113,7 +113,7 @@ public class CorrectPurchaseTicketTests
 
         var command = new CorrectPurchaseTicketCommand(
             TicketId: 1,
-            SupplierCustomerId: 3,
+            SupplierId: 3,
             MaterialId: 4,
             LicensePlate: "XYZ-789",
             DriverName: "Pedro Lopez",
@@ -137,7 +137,7 @@ public class CorrectPurchaseTicketTests
         // Arrange
         var ticket = new Ticket(
             ticketNumber: "T-000001",
-            supplierCustomerId: 1,
+            supplierId: 1,
             materialId: 2,
             licensePlate: "ABC-123",
             driverName: "Juan Perez",
@@ -155,7 +155,7 @@ public class CorrectPurchaseTicketTests
 
         var command = new CorrectPurchaseTicketCommand(
             TicketId: 1,
-            SupplierCustomerId: 3,
+            SupplierId: 3,
             MaterialId: 4,
             LicensePlate: "XYZ-789",
             DriverName: "Pedro Lopez",
@@ -171,7 +171,7 @@ public class CorrectPurchaseTicketTests
         // Assert
         Assert.Same(ticket, repository.UpdatedTicket);
 
-        Assert.Equal(3, ticket.SupplierCustomerId);
+        Assert.Equal(3, ticket.SupplierId);
         Assert.Equal(4, ticket.MaterialId);
         Assert.Equal("XYZ-789", ticket.LicensePlate);
         Assert.Equal("Pedro Lopez", ticket.DriverName);

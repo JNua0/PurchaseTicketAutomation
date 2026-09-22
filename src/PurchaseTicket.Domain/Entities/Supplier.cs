@@ -1,11 +1,11 @@
 ﻿namespace PurchaseTicket.Domain.Entities;
 
-public class SupplierCustomer
+public class Supplier
 {
     public int Id { get; private set; }
-    public string Name { get; private set; }
+    public string Name { get; private set; } = string.Empty;
 
-    public SupplierCustomer(string name)
+    public Supplier(string name)
     {
         Name = NormalizeName(name);
     }
@@ -13,12 +13,14 @@ public class SupplierCustomer
     private static string NormalizeName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("El nombre del proveedor o cliente es obligatorio.");
+            throw new ArgumentException(
+                "Supplier name is required.");
 
         name = name.Trim();
 
         if (name.Length > 50)
-            throw new ArgumentException("El nombre del proveedor o cliente no puede exceder los 50 caracteres.");
+            throw new ArgumentException(
+                "Supplier name cannot exceed 50 characters.");
 
         return name;
     }

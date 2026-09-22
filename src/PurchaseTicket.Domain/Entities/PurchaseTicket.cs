@@ -7,8 +7,7 @@ public class PurchaseTicket
 {
     public int Id { get; private set; }
     public string TicketNumber { get; private set; } = string.Empty;
-    public DateTime CreatedAt { get; private set; }
-    public int SupplierCustomerId { get; private set; }
+    public int SupplierId { get; private set; }
     public int MaterialId { get; private set; }
     public string LicensePlate { get; private set; } = string.Empty;
     public string DriverName { get; private set; } = string.Empty;
@@ -21,11 +20,12 @@ public class PurchaseTicket
     public decimal? PricePerKg { get; private set; }
     public decimal? Amount { get; private set; }
     public TicketStatus Status { get; private set; }
+    public DateTime CreatedAt { get; private set; }
 
-    public PurchaseTicket(string ticketNumber, int supplierCustomerId, int materialId, string licensePlate, string driverName, decimal grossWeight)
+    public PurchaseTicket(string ticketNumber, int supplierId, int materialId, string licensePlate, string driverName, decimal grossWeight)
     {
         ValidateTicketNumber(ticketNumber);
-        ValidateSupplierCustomer(supplierCustomerId);
+        ValidateSupplier(supplierId);
         ValidateMaterial(materialId);
         ValidateGrossWeight(grossWeight);
 
@@ -34,7 +34,7 @@ public class PurchaseTicket
 
         TicketNumber = ticketNumber.Trim();
         CreatedAt = DateTime.Now;
-        SupplierCustomerId = supplierCustomerId;
+        SupplierId = supplierId;
         MaterialId = materialId;
         GrossWeight = grossWeight;
         Status = TicketStatus.Pending;
@@ -77,11 +77,11 @@ public class PurchaseTicket
         Status = TicketStatus.Cancelled;
     }
 
-    public void Correct(int supplierCustomerId, int materialId, string licensePlate, string driverName, decimal grossWeight)
+    public void Correct(int supplierId, int materialId, string licensePlate, string driverName, decimal grossWeight)
     {
         ValidatePendingStatus();
 
-        ValidateSupplierCustomer(supplierCustomerId);
+        ValidateSupplier(supplierId);
         ValidateMaterial(materialId);
         ValidateGrossWeight(grossWeight);
 
@@ -91,7 +91,7 @@ public class PurchaseTicket
         string normalizedDriverName =
             NormalizeDriverName(driverName);
 
-        SupplierCustomerId = supplierCustomerId;
+        SupplierId = supplierId;
         MaterialId = materialId;
         LicensePlate = normalizedLicensePlate;
         DriverName = normalizedDriverName;
@@ -134,9 +134,9 @@ public class PurchaseTicket
             throw new ArgumentException("El folio no puede exceder los 20 caracteres.");
     }
 
-    private static void ValidateSupplierCustomer(int supplierCustomerId)
+    private static void ValidateSupplier(int supplierId)
     {
-        if (supplierCustomerId <= 0)
+        if (supplierId <= 0)
             throw new ArgumentException("El proveedor o cliente es obligatorio.");
     }
 

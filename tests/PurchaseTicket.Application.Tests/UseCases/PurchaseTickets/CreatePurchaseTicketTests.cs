@@ -93,7 +93,7 @@ public class CreatePurchaseTicketTests
             ticketPrinter);
 
         var command = new CreatePurchaseTicketCommand(
-            SupplierCustomerId: 1,
+            SupplierId: 1,
             MaterialId: 2,
             LicensePlate: "abc-123",
             DriverName: "juan perez",
@@ -111,7 +111,7 @@ public class CreatePurchaseTicketTests
 
         Assert.Equal(
             1,
-            repository.AddedTicket.SupplierCustomerId);
+            repository.AddedTicket.SupplierId);
 
         Assert.Equal(
             2,
@@ -157,7 +157,7 @@ public class CreatePurchaseTicketTests
             ticketPrinter);
 
         var command = new CreatePurchaseTicketCommand(
-            SupplierCustomerId: 1,
+            SupplierId: 1,
             MaterialId: 2,
             LicensePlate: "abc-123",
             DriverName: "juan perez",
@@ -188,7 +188,7 @@ public class CreatePurchaseTicketTests
             ticketPrinter);
 
         var command = new CreatePurchaseTicketCommand(
-            SupplierCustomerId: 1,
+            SupplierId: 1,
             MaterialId: 2,
             LicensePlate: "abc-123",
             DriverName: "juan perez",

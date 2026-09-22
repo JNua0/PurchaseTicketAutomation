@@ -2,19 +2,19 @@
 
 namespace PurchaseTicket.Domain.Tests.Entities;
 
-public class SupplierCustomerTests
+public class SupplierTests
 {
     [Fact]
-    public void Constructor_ShouldCreateSupplierCustomerWithProvidedName()
+    public void Constructor_ShouldCreateSupplierWithProvidedName()
     {
         // Arrange
         const string name = "ACEROS ABC S.A. DE C.V.";
 
         // Act
-        var supplierCustomer = new SupplierCustomer(name);
+        var supplier = new Supplier(name);
 
         // Assert
-        Assert.Equal(name, supplierCustomer.Name);
+        Assert.Equal(name, supplier.Name);
     }
 
     [Fact]
@@ -24,12 +24,12 @@ public class SupplierCustomerTests
         const string name = "  ACEROS ABC S.A. DE C.V.  ";
 
         // Act
-        var supplierCustomer = new SupplierCustomer(name);
+        var supplier = new Supplier(name);
 
         // Assert
         Assert.Equal(
             "ACEROS ABC S.A. DE C.V.",
-            supplierCustomer.Name
+            supplier.Name
         );
     }
 
@@ -41,7 +41,7 @@ public class SupplierCustomerTests
         string name)
     {
         // Act
-        Action act = () => new SupplierCustomer(name);
+        Action act = () => new Supplier(name);
 
         // Assert
         Assert.Throws<ArgumentException>(act);
@@ -54,7 +54,7 @@ public class SupplierCustomerTests
         string name = new('A', 51);
 
         // Act
-        Action act = () => new SupplierCustomer(name);
+        Action act = () => new Supplier(name);
 
         // Assert
         Assert.Throws<ArgumentException>(act);

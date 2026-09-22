@@ -4,7 +4,7 @@ public record PurchaseTicketDto(
     int Id,
     string TicketNumber,
     DateTime CreatedAt,
-    int SupplierCustomerId,
+    int SupplierId,
     int MaterialId,
     string LicensePlate,
     string DriverName,

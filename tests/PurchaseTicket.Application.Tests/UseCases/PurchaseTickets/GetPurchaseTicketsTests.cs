@@ -45,7 +45,7 @@ public class GetPurchaseTicketsTests
 
         var ticket = new Ticket(
             ticketNumber: "T-000001",
-            supplierCustomerId: 1,
+            supplierId: 1,
             materialId: 2,
             licensePlate: "abc-123",
             driverName: "juan perez",
@@ -69,7 +69,7 @@ public class GetPurchaseTicketsTests
         Assert.Equal(ticket.Id, item.Id);
         Assert.Equal("T-000001", item.TicketNumber);
         Assert.Equal(ticket.CreatedAt, item.CreatedAt);
-        Assert.Equal(1, item.SupplierCustomerId);
+        Assert.Equal(1, item.SupplierId);
         Assert.Equal(2, item.MaterialId);
         Assert.Equal("ABC-123", item.LicensePlate);
         Assert.Equal("Juan Perez", item.DriverName);

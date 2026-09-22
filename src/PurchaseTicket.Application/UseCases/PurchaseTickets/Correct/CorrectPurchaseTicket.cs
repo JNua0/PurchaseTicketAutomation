@@ -27,7 +27,7 @@ public class CorrectPurchaseTicket
                 "Purchase ticket was not found.");
 
         ticket.Correct(
-            command.SupplierCustomerId,
+            command.SupplierId,
             command.MaterialId,
             command.LicensePlate,
             command.DriverName,
