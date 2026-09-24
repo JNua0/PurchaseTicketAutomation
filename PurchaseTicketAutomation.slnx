@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/PurchaseTicket.Application/PurchaseTicket.Application.csproj" />
     <Project Path="src/PurchaseTicket.Domain/PurchaseTicket.Domain.csproj" />
+    <Project Path="src/PurchaseTicket.Infrastructure/PurchaseTicket.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PurchaseTicket.Application.Tests/PurchaseTicket.Application.Tests.csproj" />
