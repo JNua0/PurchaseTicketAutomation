@@ -24,17 +24,23 @@ public class Supplier
         PhoneNumber = NormalizePhoneNumber(phoneNumber);
     }
 
-    private static string NormalizeName(string name)
+    public static string NormalizeName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
+        {
             throw new ArgumentException(
-                "Supplier name is required.");
+                "Supplier name is required.",
+                nameof(name));
+        }
 
         name = name.Trim();
 
         if (name.Length > 50)
+        {
             throw new ArgumentException(
-                "Supplier name cannot exceed 50 characters.");
+                "Supplier name cannot exceed 50 characters.",
+                nameof(name));
+        }
 
         return name;
     }
