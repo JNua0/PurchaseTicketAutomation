@@ -27,7 +27,7 @@ public class Material
         IsActive = true;
     }
 
-    private static string NormalizeName(string name)
+    public static string NormalizeName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException(
