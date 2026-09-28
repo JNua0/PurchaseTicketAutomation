@@ -33,7 +33,7 @@ public class PurchaseTicket
         DriverName = NormalizeDriverName(driverName);
 
         TicketNumber = ticketNumber.Trim();
-        CreatedAt = DateTime.Now;
+        CreatedAt = DateTime.UtcNow;
         SupplierId = supplierId;
         MaterialId = materialId;
         GrossWeight = grossWeight;
