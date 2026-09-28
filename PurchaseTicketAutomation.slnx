@@ -7,5 +7,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/PurchaseTicket.Application.Tests/PurchaseTicket.Application.Tests.csproj" />
     <Project Path="tests/PurchaseTicket.Domain.Tests/PurchaseTicket.Domain.Tests.csproj" />
+    <Project Path="tests/PurchaseTicket.Infrastructure.Tests/PurchaseTicket.Infrastructure.Tests.csproj" />
   </Folder>
 </Solution>

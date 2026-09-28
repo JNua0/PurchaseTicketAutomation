@@ -20,5 +20,12 @@ public class MaterialConfiguration : IEntityTypeConfiguration<Material>
             .HasColumnName("name")
             .HasMaxLength(50)
             .IsRequired();
+
+        builder.HasIndex(material => material.Name)
+            .IsUnique();
+
+        builder.Property(material => material.IsActive)
+            .HasColumnName("is_active")
+            .IsRequired();
     }
 }

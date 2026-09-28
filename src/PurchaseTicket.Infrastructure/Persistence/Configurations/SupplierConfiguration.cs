@@ -20,5 +20,16 @@ public class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
             .HasColumnName("name")
             .HasMaxLength(50)
             .IsRequired();
+
+        builder.HasIndex(supplier => supplier.Name)
+            .IsUnique();
+
+        builder.Property(supplier => supplier.PhoneNumber)
+            .HasColumnName("phone_number")
+            .HasMaxLength(15);
+
+        builder.Property(supplier => supplier.IsActive)
+            .HasColumnName("is_active")
+            .IsRequired();
     }
 }
