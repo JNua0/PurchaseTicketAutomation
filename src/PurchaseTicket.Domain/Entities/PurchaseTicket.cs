@@ -21,6 +21,7 @@ public class PurchaseTicket
     public decimal? Amount { get; private set; }
     public TicketStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public DateTime? CompletedAt { get; private set; }
 
     public PurchaseTicket(string ticketNumber, int supplierId, int materialId, string licensePlate, string driverName, decimal grossWeight)
     {
@@ -66,7 +67,7 @@ public class PurchaseTicket
         NetWeightAfterDiscount = netWeightAfterDiscount;
         PricePerKg = pricePerKg;
         Amount = amount;
-
+        CompletedAt = DateTime.UtcNow;
         Status = TicketStatus.Completed;
     }
 

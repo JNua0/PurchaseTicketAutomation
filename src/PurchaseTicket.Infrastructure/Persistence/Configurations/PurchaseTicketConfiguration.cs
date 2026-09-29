@@ -96,5 +96,8 @@ public class PurchaseTicketConfiguration : IEntityTypeConfiguration<Ticket>
         builder.Property(ticket => ticket.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired();
+
+        builder.Property(ticket => ticket.CompletedAt)
+            .HasColumnName("completed_at");
     }
 }

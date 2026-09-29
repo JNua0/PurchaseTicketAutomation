@@ -95,7 +95,44 @@ public class PurchaseTicketTests
         Assert.Null(ticket.NetWeightAfterDiscount);
         Assert.Null(ticket.PricePerKg);
         Assert.Null(ticket.Amount);
+        Assert.Null(ticket.CompletedAt);
     }
+
+    [Fact]
+    public void Complete_ShouldSetCompletedAt()
+    {
+        // Arrange
+        var ticket = new Ticket(
+            "T-000001",
+            1,
+            1,
+            "ABC123",
+            "Juan Perez",
+            25000m
+        );
+
+        var beforeCompletion = DateTime.UtcNow;
+
+        // Act
+        ticket.Complete(
+            10000m,
+            5m,
+            8.50m
+        );
+
+        var afterCompletion = DateTime.UtcNow;
+
+        // Assert
+        Assert.NotNull(ticket.CompletedAt);
+
+        Assert.InRange(
+            ticket.CompletedAt.Value,
+            beforeCompletion,
+            afterCompletion
+        );
+    }
+
+    
 
     [Fact]
     public void Constructor_ShouldThrowWhenTicketNumberIsEmpty()

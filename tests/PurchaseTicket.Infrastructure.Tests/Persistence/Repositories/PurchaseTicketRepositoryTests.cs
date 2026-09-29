@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Domain.Entities;
+using PurchaseTicket.Domain.Enums;
 using PurchaseTicket.Infrastructure.Persistence.Repositories;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
@@ -175,6 +176,79 @@ public class PurchaseTicketRepositoryTests : InfrastructureTestBase
         Assert.Equal("XYZ-789", persistedTicket.LicensePlate);
         Assert.Equal("Pedro Lopez", persistedTicket.DriverName);
         Assert.Equal(12000m, persistedTicket.GrossWeight);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldPersistCompletedAt()
+    {
+        // Arrange
+        var supplier =
+            new Supplier("Proveedor Uno", null);
+
+        var material =
+            new Material("Acero");
+
+        Context.Suppliers.Add(supplier);
+        Context.Materials.Add(material);
+
+        await Context.SaveChangesAsync();
+
+        var purchaseTicket =
+            new Ticket(
+                "T-0001",
+                supplier.Id,
+                material.Id,
+                "ABC-123",
+                "Juan Perez",
+                10000m);
+
+        Context.PurchaseTickets.Add(purchaseTicket);
+        await Context.SaveChangesAsync();
+
+        Context.ChangeTracker.Clear();
+
+        var repository =
+            new PurchaseTicketRepository(Context);
+
+        var ticketToUpdate =
+            await repository.GetByIdAsync(purchaseTicket.Id);
+
+        Assert.NotNull(ticketToUpdate);
+
+        ticketToUpdate.Complete(
+            5000m,
+            5m,
+            10m);
+
+        Assert.NotNull(ticketToUpdate.CompletedAt);
+
+        var expectedCompletedAt =
+            ticketToUpdate.CompletedAt;
+
+        // Act
+        await repository.UpdateAsync(ticketToUpdate);
+
+        Context.ChangeTracker.Clear();
+
+        var persistedTicket =
+            await Context.PurchaseTickets
+                .AsNoTracking()
+                .SingleAsync(ticket =>
+                    ticket.Id == purchaseTicket.Id);
+
+        // Assert
+        Assert.Equal(
+            TicketStatus.Completed,
+            persistedTicket.Status);
+
+        Assert.NotNull(expectedCompletedAt);
+        Assert.NotNull(persistedTicket.CompletedAt);
+
+        var difference =
+            (expectedCompletedAt.Value - persistedTicket.CompletedAt.Value).Duration();
+
+        Assert.True(
+            difference < TimeSpan.FromMilliseconds(1));
     }
 
     [Fact]
