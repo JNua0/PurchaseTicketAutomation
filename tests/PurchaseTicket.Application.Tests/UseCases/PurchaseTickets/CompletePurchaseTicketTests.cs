@@ -1,6 +1,7 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.Printing;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Complete;
+using PurchaseTicket.Domain.Entities;
 using PurchaseTicket.Domain.Enums;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
@@ -15,9 +16,7 @@ public class CompletePurchaseTicketTests
         public Ticket? UpdatedTicket { get; private set; }
 
         public Task AddAsync(Ticket purchaseTicket)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         public Task<Ticket?> GetByIdAsync(int id)
         {
@@ -25,9 +24,7 @@ public class CompletePurchaseTicketTests
         }
 
         public Task<IReadOnlyList<Ticket>> GetPendingAsync()
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         public Task UpdateAsync(Ticket purchaseTicket)
         {
@@ -37,35 +34,90 @@ public class CompletePurchaseTicketTests
         }
 
         public Task<IReadOnlyList<Ticket>> GetAllAsync()
+            => throw new NotImplementedException();
+    }
+
+    private sealed class FakeSupplierRepository
+        : ISupplierRepository
+    {
+        public Supplier? Supplier { get; init; }
+
+        public Task<Supplier?> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Supplier);
         }
 
+        public Task AddAsync(Supplier supplier)
+            => throw new NotImplementedException();
+
+        public Task<bool> ExistsByNameAsync(
+            string name,
+            int? excludeSupplierId = null)
+            => throw new NotImplementedException();
+
+        public Task UpdateAsync(Supplier supplier)
+            => throw new NotImplementedException();
+
+        public Task<IReadOnlyList<Supplier>> GetAllAsync()
+            => throw new NotImplementedException();
+
+        public Task<IReadOnlyList<Supplier>> SearchByNameAsync(
+            string name)
+            => throw new NotImplementedException();
+    }
+
+    private sealed class FakeMaterialRepository
+        : IMaterialRepository
+    {
+        public Material? Material { get; init; }
+
+        public Task<Material?> GetByIdAsync(int id)
+        {
+            return Task.FromResult(Material);
+        }
+
+        public Task AddAsync(Material material)
+            => throw new NotImplementedException();
+
+        public Task<bool> ExistsByNameAsync(
+            string name,
+            int? excludeMaterialId = null)
+            => throw new NotImplementedException();
+
+        public Task UpdateAsync(Material material)
+            => throw new NotImplementedException();
+
+        public Task<IReadOnlyList<Material>> GetAllAsync()
+            => throw new NotImplementedException();
+
+        public Task<IReadOnlyList<Material>> SearchByNameAsync(
+            string name)
+            => throw new NotImplementedException();
     }
 
     private sealed class FakeTicketPrinter : ITicketPrinter
     {
         private readonly bool _shouldFail;
 
-        public Ticket? PrintedTicket { get; private set; }
+        public TicketPrintData? PrintedData { get; private set; }
 
         public FakeTicketPrinter(bool shouldFail = false)
         {
             _shouldFail = shouldFail;
         }
 
-        public Task PrintInitialAsync(Ticket purchaseTicket)
+        public Task PrintInitialAsync(TicketPrintData data)
         {
             throw new NotImplementedException();
         }
 
-        public Task PrintFinalAsync(Ticket purchaseTicket)
+        public Task PrintFinalAsync(TicketPrintData data)
         {
             if (_shouldFail)
                 throw new InvalidOperationException(
                     "Printer unavailable.");
 
-            PrintedTicket = purchaseTicket;
+            PrintedData = data;
 
             return Task.CompletedTask;
         }
@@ -76,6 +128,17 @@ public class CompletePurchaseTicketTests
     {
         // Arrange
         var repository = new FakePurchaseTicketRepository();
+
+        var supplierRepository = new FakeSupplierRepository
+        {
+            Supplier = new Supplier("Proveedor Uno")
+        };
+
+        var materialRepository = new FakeMaterialRepository
+        {
+            Material = new Material("Acero")
+        };
+
         var ticketPrinter = new FakeTicketPrinter();
 
         var ticket = new Ticket(
@@ -90,6 +153,8 @@ public class CompletePurchaseTicketTests
 
         var useCase = new CompletePurchaseTicket(
             repository,
+            supplierRepository,
+            materialRepository,
             ticketPrinter);
 
         var command = new CompletePurchaseTicketCommand(
@@ -128,11 +193,19 @@ public class CompletePurchaseTicketTests
             ticket,
             repository.UpdatedTicket);
 
-        Assert.NotNull(ticketPrinter.PrintedTicket);
+        Assert.NotNull(ticketPrinter.PrintedData);
 
         Assert.Same(
-            repository.UpdatedTicket,
-            ticketPrinter.PrintedTicket);
+            ticket,
+            ticketPrinter.PrintedData.Ticket);
+
+        Assert.Equal(
+            "Proveedor Uno",
+            ticketPrinter.PrintedData.SupplierName);
+
+        Assert.Equal(
+            "Acero",
+            ticketPrinter.PrintedData.MaterialName);
 
         Assert.Equal(
             "T-000001",
@@ -146,10 +219,23 @@ public class CompletePurchaseTicketTests
     {
         // Arrange
         var repository = new FakePurchaseTicketRepository();
+
+        var supplierRepository = new FakeSupplierRepository
+        {
+            Supplier = new Supplier("Proveedor Uno")
+        };
+
+        var materialRepository = new FakeMaterialRepository
+        {
+            Material = new Material("Acero")
+        };
+
         var ticketPrinter = new FakeTicketPrinter();
 
         var useCase = new CompletePurchaseTicket(
             repository,
+            supplierRepository,
+            materialRepository,
             ticketPrinter);
 
         var command = new CompletePurchaseTicketCommand(
@@ -159,12 +245,14 @@ public class CompletePurchaseTicketTests
             PricePerKg: 2m);
 
         // Act
-        async Task Act() => await useCase.ExecuteAsync(command);
+        async Task Act() =>
+            await useCase.ExecuteAsync(command);
 
         // Assert
         await Assert.ThrowsAsync<InvalidOperationException>(Act);
 
         Assert.Null(repository.UpdatedTicket);
+        Assert.Null(ticketPrinter.PrintedData);
     }
 
     [Fact]
@@ -172,6 +260,17 @@ public class CompletePurchaseTicketTests
     {
         // Arrange
         var repository = new FakePurchaseTicketRepository();
+
+        var supplierRepository = new FakeSupplierRepository
+        {
+            Supplier = new Supplier("Proveedor Uno")
+        };
+
+        var materialRepository = new FakeMaterialRepository
+        {
+            Material = new Material("Acero")
+        };
+
         var ticketPrinter = new FakeTicketPrinter();
 
         var ticket = new Ticket(
@@ -186,6 +285,8 @@ public class CompletePurchaseTicketTests
 
         var useCase = new CompletePurchaseTicket(
             repository,
+            supplierRepository,
+            materialRepository,
             ticketPrinter);
 
         var command = new CompletePurchaseTicketCommand(
@@ -195,7 +296,8 @@ public class CompletePurchaseTicketTests
             PricePerKg: 2m);
 
         // Act
-        async Task Act() => await useCase.ExecuteAsync(command);
+        async Task Act() =>
+            await useCase.ExecuteAsync(command);
 
         // Assert
         await Assert.ThrowsAsync<ArgumentException>(Act);
@@ -205,6 +307,7 @@ public class CompletePurchaseTicketTests
             ticket.Status);
 
         Assert.Null(repository.UpdatedTicket);
+        Assert.Null(ticketPrinter.PrintedData);
     }
 
     [Fact]
@@ -212,6 +315,16 @@ public class CompletePurchaseTicketTests
     {
         // Arrange
         var repository = new FakePurchaseTicketRepository();
+
+        var supplierRepository = new FakeSupplierRepository
+        {
+            Supplier = new Supplier("Proveedor Uno")
+        };
+
+        var materialRepository = new FakeMaterialRepository
+        {
+            Material = new Material("Acero")
+        };
 
         var ticket = new Ticket(
             ticketNumber: "T-000001",
@@ -228,6 +341,8 @@ public class CompletePurchaseTicketTests
 
         var useCase = new CompletePurchaseTicket(
             repository,
+            supplierRepository,
+            materialRepository,
             ticketPrinter);
 
         var command = new CompletePurchaseTicketCommand(
@@ -246,12 +361,12 @@ public class CompletePurchaseTicketTests
             TicketStatus.Completed,
             repository.UpdatedTicket.Status);
 
+        Assert.Null(ticketPrinter.PrintedData);
+
         Assert.Equal(
             "T-000001",
             result.TicketNumber);
 
         Assert.False(result.Printed);
     }
-
-
 }

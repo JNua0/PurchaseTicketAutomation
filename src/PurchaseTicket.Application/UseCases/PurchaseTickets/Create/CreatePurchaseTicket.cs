@@ -8,22 +8,44 @@ namespace PurchaseTicket.Application.UseCases.PurchaseTickets.Create;
 public class CreatePurchaseTicket
 {
     private readonly IPurchaseTicketRepository _repository;
+    private readonly ISupplierRepository _supplierRepository;
+    private readonly IMaterialRepository _materialRepository;
     private readonly ITicketNumberGenerator _ticketNumberGenerator;
     private readonly ITicketPrinter _ticketPrinter;
 
     public CreatePurchaseTicket(
         IPurchaseTicketRepository repository,
+        ISupplierRepository supplierRepository,
+        IMaterialRepository materialRepository,
         ITicketNumberGenerator ticketNumberGenerator,
         ITicketPrinter ticketPrinter)
     {
         _repository = repository;
+        _supplierRepository = supplierRepository;
+        _materialRepository = materialRepository;
         _ticketNumberGenerator = ticketNumberGenerator;
         _ticketPrinter = ticketPrinter;
     }
 
     public async Task<CreatePurchaseTicketResult> ExecuteAsync(
-    CreatePurchaseTicketCommand command)
+        CreatePurchaseTicketCommand command)
     {
+        var supplier =
+            await _supplierRepository.GetByIdAsync(
+                command.SupplierId);
+
+        if (supplier is null)
+            throw new InvalidOperationException(
+                "Supplier was not found.");
+
+        var material =
+            await _materialRepository.GetByIdAsync(
+                command.MaterialId);
+
+        if (material is null)
+            throw new InvalidOperationException(
+                "Material was not found.");
+
         string ticketNumber =
             await _ticketNumberGenerator.GenerateAsync();
 
@@ -37,9 +59,14 @@ public class CreatePurchaseTicket
 
         await _repository.AddAsync(ticket);
 
+        var printData = new TicketPrintData(
+            ticket,
+            supplier.Name,
+            material.Name);
+
         try
         {
-            await _ticketPrinter.PrintInitialAsync(ticket);
+            await _ticketPrinter.PrintInitialAsync(printData);
 
             return new CreatePurchaseTicketResult(
                 ticket.TicketNumber,

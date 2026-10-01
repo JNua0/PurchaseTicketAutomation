@@ -1,6 +1,7 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.Printing;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Reprint;
+using PurchaseTicket.Domain.Entities;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
 namespace PurchaseTicket.Application.Tests.UseCases.PurchaseTickets;
@@ -21,6 +22,7 @@ public class ReprintPurchaseTicketTests
         public Task UpdateAsync(Ticket purchaseTicket)
         {
             UpdatedTicket = purchaseTicket;
+
             return Task.CompletedTask;
         }
 
@@ -34,25 +36,100 @@ public class ReprintPurchaseTicketTests
             => throw new NotImplementedException();
     }
 
+    private sealed class FakeSupplierRepository
+        : ISupplierRepository
+    {
+        public Supplier? Supplier { get; init; }
+
+        public Task<Supplier?> GetByIdAsync(int id)
+        {
+            return Task.FromResult(Supplier);
+        }
+
+        public Task AddAsync(Supplier supplier)
+            => throw new NotImplementedException();
+
+        public Task<bool> ExistsByNameAsync(
+            string name,
+            int? excludeSupplierId = null)
+            => throw new NotImplementedException();
+
+        public Task UpdateAsync(Supplier supplier)
+            => throw new NotImplementedException();
+
+        public Task<IReadOnlyList<Supplier>> GetAllAsync()
+            => throw new NotImplementedException();
+
+        public Task<IReadOnlyList<Supplier>> SearchByNameAsync(
+            string name)
+            => throw new NotImplementedException();
+    }
+
+    private sealed class FakeMaterialRepository
+        : IMaterialRepository
+    {
+        public Material? Material { get; init; }
+
+        public Task<Material?> GetByIdAsync(int id)
+        {
+            return Task.FromResult(Material);
+        }
+
+        public Task AddAsync(Material material)
+            => throw new NotImplementedException();
+
+        public Task<bool> ExistsByNameAsync(
+            string name,
+            int? excludeMaterialId = null)
+            => throw new NotImplementedException();
+
+        public Task UpdateAsync(Material material)
+            => throw new NotImplementedException();
+
+        public Task<IReadOnlyList<Material>> GetAllAsync()
+            => throw new NotImplementedException();
+
+        public Task<IReadOnlyList<Material>> SearchByNameAsync(
+            string name)
+            => throw new NotImplementedException();
+    }
+
     private sealed class FakeTicketPrinter : ITicketPrinter
     {
-        public Ticket? PrintedTicket { get; private set; }
+        public TicketPrintData? PrintedData { get; private set; }
         public bool ThrowOnPrint { get; init; }
 
-        public Task PrintInitialAsync(Ticket purchaseTicket)
+        public Task PrintInitialAsync(TicketPrintData data)
         {
             throw new NotImplementedException();
         }
 
-        public Task PrintFinalAsync(Ticket purchaseTicket)
+        public Task PrintFinalAsync(TicketPrintData data)
         {
             if (ThrowOnPrint)
                 throw new InvalidOperationException(
                     "Printer error.");
 
-            PrintedTicket = purchaseTicket;
+            PrintedData = data;
+
             return Task.CompletedTask;
         }
+    }
+
+    private static FakeSupplierRepository CreateSupplierRepository()
+    {
+        return new FakeSupplierRepository
+        {
+            Supplier = new Supplier("Proveedor Uno")
+        };
+    }
+
+    private static FakeMaterialRepository CreateMaterialRepository()
+    {
+        return new FakeMaterialRepository
+        {
+            Material = new Material("Acero")
+        };
     }
 
     [Fact]
@@ -77,6 +154,12 @@ public class ReprintPurchaseTicketTests
             Ticket = ticket
         };
 
+        var supplierRepository =
+            CreateSupplierRepository();
+
+        var materialRepository =
+            CreateMaterialRepository();
+
         var printer = new FakeTicketPrinter();
 
         var command = new ReprintPurchaseTicketCommand(
@@ -84,13 +167,34 @@ public class ReprintPurchaseTicketTests
 
         var useCase = new ReprintPurchaseTicket(
             repository,
+            supplierRepository,
+            materialRepository,
             printer);
 
         // Act
-        await useCase.ExecuteAsync(command);
+        var result = await useCase.ExecuteAsync(command);
 
         // Assert
-        Assert.Same(ticket, printer.PrintedTicket);
+        Assert.NotNull(printer.PrintedData);
+
+        Assert.Same(
+            ticket,
+            printer.PrintedData.Ticket);
+
+        Assert.Equal(
+            "Proveedor Uno",
+            printer.PrintedData.SupplierName);
+
+        Assert.Equal(
+            "Acero",
+            printer.PrintedData.MaterialName);
+
+        Assert.Equal(
+            "T-000001",
+            result.TicketNumber);
+
+        Assert.True(result.Printed);
+
         Assert.Null(repository.UpdatedTicket);
     }
 
@@ -103,6 +207,12 @@ public class ReprintPurchaseTicketTests
             Ticket = null
         };
 
+        var supplierRepository =
+            CreateSupplierRepository();
+
+        var materialRepository =
+            CreateMaterialRepository();
+
         var printer = new FakeTicketPrinter();
 
         var command = new ReprintPurchaseTicketCommand(
@@ -110,18 +220,21 @@ public class ReprintPurchaseTicketTests
 
         var useCase = new ReprintPurchaseTicket(
             repository,
+            supplierRepository,
+            materialRepository,
             printer);
 
         // Act
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => useCase.ExecuteAsync(command));
+        var exception =
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => useCase.ExecuteAsync(command));
 
         // Assert
         Assert.Equal(
             "Purchase ticket was not found.",
             exception.Message);
 
-        Assert.Null(printer.PrintedTicket);
+        Assert.Null(printer.PrintedData);
         Assert.Null(repository.UpdatedTicket);
     }
 
@@ -142,6 +255,12 @@ public class ReprintPurchaseTicketTests
             Ticket = ticket
         };
 
+        var supplierRepository =
+            CreateSupplierRepository();
+
+        var materialRepository =
+            CreateMaterialRepository();
+
         var printer = new FakeTicketPrinter();
 
         var command = new ReprintPurchaseTicketCommand(
@@ -149,18 +268,21 @@ public class ReprintPurchaseTicketTests
 
         var useCase = new ReprintPurchaseTicket(
             repository,
+            supplierRepository,
+            materialRepository,
             printer);
 
         // Act
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => useCase.ExecuteAsync(command));
+        var exception =
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => useCase.ExecuteAsync(command));
 
         // Assert
         Assert.Equal(
             "Only completed purchase tickets can be reprinted.",
             exception.Message);
 
-        Assert.Null(printer.PrintedTicket);
+        Assert.Null(printer.PrintedData);
         Assert.Null(repository.UpdatedTicket);
     }
 
@@ -183,6 +305,12 @@ public class ReprintPurchaseTicketTests
             Ticket = ticket
         };
 
+        var supplierRepository =
+            CreateSupplierRepository();
+
+        var materialRepository =
+            CreateMaterialRepository();
+
         var printer = new FakeTicketPrinter();
 
         var command = new ReprintPurchaseTicketCommand(
@@ -190,18 +318,21 @@ public class ReprintPurchaseTicketTests
 
         var useCase = new ReprintPurchaseTicket(
             repository,
+            supplierRepository,
+            materialRepository,
             printer);
 
         // Act
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => useCase.ExecuteAsync(command));
+        var exception =
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => useCase.ExecuteAsync(command));
 
         // Assert
         Assert.Equal(
             "Only completed purchase tickets can be reprinted.",
             exception.Message);
 
-        Assert.Null(printer.PrintedTicket);
+        Assert.Null(printer.PrintedData);
         Assert.Null(repository.UpdatedTicket);
     }
 
@@ -227,6 +358,12 @@ public class ReprintPurchaseTicketTests
             Ticket = ticket
         };
 
+        var supplierRepository =
+            CreateSupplierRepository();
+
+        var materialRepository =
+            CreateMaterialRepository();
+
         var printer = new FakeTicketPrinter
         {
             ThrowOnPrint = true
@@ -237,14 +374,21 @@ public class ReprintPurchaseTicketTests
 
         var useCase = new ReprintPurchaseTicket(
             repository,
+            supplierRepository,
+            materialRepository,
             printer);
 
         // Act
         var result = await useCase.ExecuteAsync(command);
 
         // Assert
-        Assert.Equal("T-000001", result.TicketNumber);
+        Assert.Equal(
+            "T-000001",
+            result.TicketNumber);
+
         Assert.False(result.Printed);
+
+        Assert.Null(printer.PrintedData);
         Assert.Null(repository.UpdatedTicket);
     }
 }
