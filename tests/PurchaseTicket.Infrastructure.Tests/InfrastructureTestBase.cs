@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using PurchaseTicket.Infrastructure.Persistence;
 
 namespace PurchaseTicket.Infrastructure.Tests;
@@ -26,25 +28,66 @@ public abstract class InfrastructureTestBase : IAsyncLifetime
     private static DbContextOptions<ApplicationDbContext>
         CreateDbContextOptions()
     {
-        var port =
-            Environment.GetEnvironmentVariable("POSTGRES_PORT");
+        LoadEnvironmentVariables();
 
-        var username =
-            Environment.GetEnvironmentVariable("POSTGRES_USER");
+        var host = GetRequiredEnvironmentVariable(
+            "POSTGRES_HOST");
 
-        var password =
-            Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+        var port = GetRequiredEnvironmentVariable(
+            "POSTGRES_PORT");
+
+        var username = GetRequiredEnvironmentVariable(
+            "POSTGRES_USER");
+
+        var password = GetRequiredEnvironmentVariable(
+            "POSTGRES_PASSWORD");
 
         var connectionString =
-            $"Host=localhost;" +
-            $"Port={port};" +
-            $"Database=purchase_ticket_tests;" +
-            $"Username={username};" +
-            $"Password={password}";
+            new NpgsqlConnectionStringBuilder
+            {
+                Host = host,
+                Port = int.Parse(port),
+                Database = "purchase_ticket_tests",
+                Username = username,
+                Password = password
+            }
+            .ConnectionString;
 
         return new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseNpgsql(connectionString)
             .Options;
+    }
+
+    private static void LoadEnvironmentVariables()
+    {
+        var directory =
+            new DirectoryInfo(
+                Directory.GetCurrentDirectory());
+
+        while (directory is not null)
+        {
+            var envPath =
+                Path.Combine(directory.FullName, ".env");
+
+            if (File.Exists(envPath))
+            {
+                Env.Load(envPath);
+                return;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new FileNotFoundException(
+            "Could not find the .env file.");
+    }
+
+    private static string GetRequiredEnvironmentVariable(
+        string name)
+    {
+        return Environment.GetEnvironmentVariable(name)
+            ?? throw new InvalidOperationException(
+                $"Environment variable '{name}' is not configured.");
     }
 
     private async Task CleanDatabaseAsync()

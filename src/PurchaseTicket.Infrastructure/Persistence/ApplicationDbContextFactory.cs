@@ -8,13 +8,14 @@ public class ApplicationDbContextFactory
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {
+        var host = Environment.GetEnvironmentVariable("POSTGRES_HOST");
         var database = Environment.GetEnvironmentVariable("POSTGRES_DB");
         var username = Environment.GetEnvironmentVariable("POSTGRES_USER");
         var password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
         var port = Environment.GetEnvironmentVariable("POSTGRES_PORT");
 
         var connectionString =
-            $"Host=localhost;" +
+            $"Host={host};" +
             $"Port={port};" +
             $"Database={database};" +
             $"Username={username};" +
