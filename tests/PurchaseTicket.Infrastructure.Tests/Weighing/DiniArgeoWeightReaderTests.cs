@@ -1,5 +1,6 @@
 ﻿using PurchaseTicket.Infrastructure.Communication.Serial;
 using PurchaseTicket.Infrastructure.Weighing;
+using PurchaseTicket.Infrastructure.Weighing.Serial;
 
 namespace PurchaseTicket.Infrastructure.Tests.Weighing;
 
@@ -68,6 +69,23 @@ public class DiniArgeoWeightReaderTests
         }
     }
 
+    private sealed class FakeSerialPortFactory
+        : IWeightIndicatorSerialPortFactory
+    {
+        private readonly ISerialPort _serialPort;
+
+        public FakeSerialPortFactory(
+            ISerialPort serialPort)
+        {
+            _serialPort = serialPort;
+        }
+
+        public ISerialPort Create()
+        {
+            return _serialPort;
+        }
+    }
+
     private static WeightIndicatorOptions CreateOptions()
     {
         return new WeightIndicatorOptions
@@ -84,8 +102,11 @@ public class DiniArgeoWeightReaderTests
         var serialPort = new FakeSerialPort(
             "ST,GS,25000,kg");
 
+        var serialPortFactory =
+            new FakeSerialPortFactory(serialPort);
+
         var reader = new DiniArgeoWeightReader(
-            serialPort,
+            serialPortFactory,
             CreateOptions());
 
         // Act
@@ -105,8 +126,11 @@ public class DiniArgeoWeightReaderTests
             "US,GS,    5985,kg\r",
             "ST,GS,    5980,kg\r");
 
+        var serialPortFactory =
+            new FakeSerialPortFactory(serialPort);
+
         var reader = new DiniArgeoWeightReader(
-            serialPort,
+            serialPortFactory,
             CreateOptions());
 
         // Act
@@ -124,8 +148,11 @@ public class DiniArgeoWeightReaderTests
         var serialPort = new FakeSerialPort(
             "ST,GS,    5980,kg\r");
 
+        var serialPortFactory =
+            new FakeSerialPortFactory(serialPort);
+
         var reader = new DiniArgeoWeightReader(
-            serialPort,
+            serialPortFactory,
             CreateOptions());
 
         // Act
@@ -147,8 +174,11 @@ public class DiniArgeoWeightReaderTests
             ThrowOnRead = true
         };
 
+        var serialPortFactory =
+            new FakeSerialPortFactory(serialPort);
+
         var reader = new DiniArgeoWeightReader(
-            serialPort,
+            serialPortFactory,
             CreateOptions());
 
         // Act
@@ -161,32 +191,6 @@ public class DiniArgeoWeightReaderTests
         Assert.True(serialPort.WasOpened);
         Assert.True(serialPort.WasClosed);
         Assert.False(serialPort.IsOpen);
-    }
-
-    [Fact]
-    public async Task ReadStableWeightAsync_ShouldConfigureReadTimeout()
-    {
-        // Arrange
-        var serialPort = new FakeSerialPort(
-            "ST,GS,    5980,kg\r");
-
-        var options = new WeightIndicatorOptions
-        {
-            ReadTimeoutMilliseconds = 750,
-            StableWeightTimeoutSeconds = 5
-        };
-
-        var reader = new DiniArgeoWeightReader(
-            serialPort,
-            options);
-
-        // Act
-        await reader.ReadStableWeightAsync();
-
-        // Assert
-        Assert.Equal(
-            750,
-            serialPort.ReadTimeout);
     }
 
     [Fact]
@@ -204,8 +208,11 @@ public class DiniArgeoWeightReaderTests
             StableWeightTimeoutSeconds = 1
         };
 
+        var serialPortFactory =
+            new FakeSerialPortFactory(serialPort);
+
         var reader = new DiniArgeoWeightReader(
-            serialPort,
+            serialPortFactory,
             options);
 
         // Act
@@ -235,8 +242,11 @@ public class DiniArgeoWeightReaderTests
             StableWeightTimeoutSeconds = 1
         };
 
+        var serialPortFactory =
+            new FakeSerialPortFactory(serialPort);
+
         var reader = new DiniArgeoWeightReader(
-            serialPort,
+            serialPortFactory,
             options);
 
         // Act

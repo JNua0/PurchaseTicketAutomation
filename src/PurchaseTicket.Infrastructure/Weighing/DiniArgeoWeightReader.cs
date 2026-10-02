@@ -1,32 +1,34 @@
 ﻿using System.Diagnostics;
 using PurchaseTicket.Application.Abstractions.Weighing;
-using PurchaseTicket.Infrastructure.Communication.Serial;
+using PurchaseTicket.Infrastructure.Weighing.Serial;
 
 namespace PurchaseTicket.Infrastructure.Weighing;
 
 internal sealed class DiniArgeoWeightReader : IWeightReader
 {
-    private readonly ISerialPort _serialPort;
+    private readonly IWeightIndicatorSerialPortFactory
+        _serialPortFactory;
+
     private readonly WeightIndicatorOptions _options;
 
     public DiniArgeoWeightReader(
-        ISerialPort serialPort,
+        IWeightIndicatorSerialPortFactory serialPortFactory,
         WeightIndicatorOptions options)
     {
-        _serialPort = serialPort;
+        _serialPortFactory = serialPortFactory;
         _options = options;
     }
 
     public Task<decimal> ReadStableWeightAsync()
     {
-        _serialPort.ReadTimeout =
-            _options.ReadTimeoutMilliseconds;
+        using var serialPort =
+            _serialPortFactory.Create();
 
-        _serialPort.Open();
+        serialPort.Open();
 
         try
         {
-            _serialPort.DiscardInBuffer();
+            serialPort.DiscardInBuffer();
 
             var stopwatch = Stopwatch.StartNew();
 
@@ -36,9 +38,10 @@ internal sealed class DiniArgeoWeightReader : IWeightReader
             {
                 try
                 {
-                    var data = _serialPort.ReadLine();
+                    var data = serialPort.ReadLine();
 
-                    if (DiniArgeoWeightParser.TryParseStableWeight(
+                    if (DiniArgeoWeightParser
+                        .TryParseStableWeight(
                             data,
                             out var weight))
                     {
@@ -47,10 +50,8 @@ internal sealed class DiniArgeoWeightReader : IWeightReader
                 }
                 catch (TimeoutException)
                 {
-                    // No se recibió una trama completa durante
-                    // ReadTimeoutMilliseconds.
-                    // Continuamos mientras no se alcance
-                    // StableWeightTimeoutSeconds.
+                    // Continue trying until the global
+                    // stable-weight timeout expires.
                 }
             }
 
@@ -60,8 +61,8 @@ internal sealed class DiniArgeoWeightReader : IWeightReader
         }
         finally
         {
-            if (_serialPort.IsOpen)
-                _serialPort.Close();
+            if (serialPort.IsOpen)
+                serialPort.Close();
         }
     }
 }
