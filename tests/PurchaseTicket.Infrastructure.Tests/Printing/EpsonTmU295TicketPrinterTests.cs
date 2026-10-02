@@ -2,6 +2,7 @@
 using PurchaseTicket.Infrastructure.Printing;
 using PurchaseTicket.Infrastructure.Printing.Serial;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
+using PurchaseTicket.Infrastructure.Communication.Serial;
 
 namespace PurchaseTicket.Infrastructure.Tests.Printing;
 
@@ -24,18 +25,15 @@ public class EpsonTmU295TicketPrinterTests
         }
     }
 
-    private sealed class FakeSerialPort
-        : ISerialPort
+    private sealed class FakeSerialPort : ISerialPort
     {
         public bool IsOpen { get; private set; }
-
         public bool WasOpened { get; private set; }
         public bool WasWritten { get; private set; }
         public bool WasClosed { get; private set; }
-
         public string? WrittenText { get; private set; }
-
         public bool ThrowOnWrite { get; set; }
+        public int ReadTimeout { get; set; }
 
         public void Open()
         {
@@ -61,6 +59,16 @@ public class EpsonTmU295TicketPrinterTests
 
         public void Dispose()
         {
+        }
+
+        public string ReadLine()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DiscardInBuffer()
+        {
+            throw new NotImplementedException();
         }
     }
 
