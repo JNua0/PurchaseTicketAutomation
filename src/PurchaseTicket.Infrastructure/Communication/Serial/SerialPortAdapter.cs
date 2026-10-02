@@ -1,22 +1,14 @@
 ﻿using System.IO.Ports;
 
-namespace PurchaseTicket.Infrastructure.Printing.Serial;
+namespace PurchaseTicket.Infrastructure.Communication.Serial;
 
 public sealed class SerialPortAdapter : ISerialPort
 {
     private readonly SerialPort _serialPort;
 
-    public SerialPortAdapter(SerialPrinterOptions options)
+    public SerialPortAdapter(SerialPort serialPort)
     {
-        _serialPort = new SerialPort
-        {
-            PortName = options.PortName,
-            BaudRate = options.BaudRate,
-            DataBits = options.DataBits,
-            Parity = options.Parity,
-            StopBits = options.StopBits,
-            Handshake = options.Handshake
-        };
+        _serialPort = serialPort;
     }
 
     public bool IsOpen => _serialPort.IsOpen;
@@ -31,6 +23,16 @@ public sealed class SerialPortAdapter : ISerialPort
         _serialPort.Write(text);
     }
 
+    public string ReadLine()
+    {
+        return _serialPort.ReadLine();
+    }
+
+    public void DiscardInBuffer()
+    {
+        _serialPort.DiscardInBuffer();
+    }
+
     public void Close()
     {
         _serialPort.Close();
@@ -39,5 +41,11 @@ public sealed class SerialPortAdapter : ISerialPort
     public void Dispose()
     {
         _serialPort.Dispose();
+    }
+
+    public int ReadTimeout
+    {
+        get => _serialPort.ReadTimeout;
+        set => _serialPort.ReadTimeout = value;
     }
 }
