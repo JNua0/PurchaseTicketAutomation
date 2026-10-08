@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Domain.Entities;
-using PurchaseTicket.Domain.Enums;
 using PurchaseTicket.Infrastructure.Persistence.Repositories;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
@@ -12,8 +10,11 @@ public class PurchaseTicketRepositoryTests : InfrastructureTestBase
     [Fact]
     public async Task AddAsync_ShouldPersistPurchaseTicket()
     {
+        // Arrange
         var supplier =
-            new Supplier("Proveedor Uno", null);
+            new Supplier(
+                "Proveedor Uno",
+                null);
 
         var material =
             new Material("Acero");
@@ -24,56 +25,61 @@ public class PurchaseTicketRepositoryTests : InfrastructureTestBase
         await Context.SaveChangesAsync();
 
         var purchaseTicket =
-            new Ticket(
-                "T-0001",
-                supplier.Id,
-                material.Id,
-                "abc-123",
-                "juan perez",
-                10000m);
+            Ticket.CreateConventional(
+                ticketNumber: "T-0001",
+                supplierId: supplier.Id,
+                materialId: material.Id,
+                licensePlate: "ABC123",
+                transporter: "Juan Perez",
+                grossWeight: 10000m);
 
         var repository =
             new PurchaseTicketRepository(Context);
 
+        // Act
         await repository.AddAsync(purchaseTicket);
 
         Context.ChangeTracker.Clear();
 
+        // Assert
         var persistedTicket =
             await Context.PurchaseTickets
                 .AsNoTracking()
                 .SingleAsync();
 
-        Assert.Equal("T-0001", persistedTicket.TicketNumber);
-        Assert.Equal(supplier.Id, persistedTicket.SupplierId);
-        Assert.Equal(material.Id, persistedTicket.MaterialId);
-        Assert.Equal("ABC-123", persistedTicket.LicensePlate);
-        Assert.Equal("Juan Perez", persistedTicket.DriverName);
-        Assert.Equal(10000m, persistedTicket.GrossWeight);
-    }
-
-    [Fact]
-    public void Constructor_ShouldSetCreatedAtInUtc()
-    {
-        var ticket =
-            new Ticket(
-                "T-0001",
-                1,
-                1,
-                "ABC-123",
-                "Juan Perez",
-                10000m);
+        Assert.Equal(
+            "T-0001",
+            persistedTicket.TicketNumber);
 
         Assert.Equal(
-            DateTimeKind.Utc,
-            ticket.CreatedAt.Kind);
+            supplier.Id,
+            persistedTicket.SupplierId);
+
+        Assert.Equal(
+            material.Id,
+            persistedTicket.MaterialId);
+
+        Assert.Equal(
+            "ABC123",
+            persistedTicket.LicensePlate);
+
+        Assert.Equal(
+            "Juan Perez",
+            persistedTicket.Transporter);
+
+        Assert.Equal(
+            10000m,
+            persistedTicket.GrossWeight);
     }
 
     [Fact]
     public async Task GetByIdAsync_ShouldReturnPurchaseTicket_WhenTicketExists()
     {
+        // Arrange
         var supplier =
-            new Supplier("Proveedor Uno", null);
+            new Supplier(
+                "Proveedor Uno",
+                null);
 
         var material =
             new Material("Acero");
@@ -84,13 +90,13 @@ public class PurchaseTicketRepositoryTests : InfrastructureTestBase
         await Context.SaveChangesAsync();
 
         var purchaseTicket =
-            new Ticket(
-                "T-0001",
-                supplier.Id,
-                material.Id,
-                "ABC-123",
-                "Juan Perez",
-                10000m);
+            Ticket.CreateConventional(
+                ticketNumber: "T-0001",
+                supplierId: supplier.Id,
+                materialId: material.Id,
+                licensePlate: "ABC123",
+                transporter: "Juan Perez",
+                grossWeight: 10000m);
 
         Context.PurchaseTickets.Add(purchaseTicket);
         await Context.SaveChangesAsync();
@@ -100,31 +106,50 @@ public class PurchaseTicketRepositoryTests : InfrastructureTestBase
         var repository =
             new PurchaseTicketRepository(Context);
 
+        // Act
         var result =
-            await repository.GetByIdAsync(purchaseTicket.Id);
+            await repository.GetByIdAsync(
+                purchaseTicket.Id);
 
+        // Assert
         Assert.NotNull(result);
-        Assert.Equal(purchaseTicket.Id, result.Id);
-        Assert.Equal("T-0001", result.TicketNumber);
+
+        Assert.Equal(
+            purchaseTicket.Id,
+            result.Id);
+
+        Assert.Equal(
+            "T-0001",
+            result.TicketNumber);
+
+        Assert.Equal(
+            "Juan Perez",
+            result.Transporter);
     }
 
     [Fact]
     public async Task GetByIdAsync_ShouldReturnNull_WhenTicketDoesNotExist()
     {
+        // Arrange
         var repository =
             new PurchaseTicketRepository(Context);
 
+        // Act
         var result =
             await repository.GetByIdAsync(999);
 
+        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public async Task UpdateAsync_ShouldPersistPurchaseTicketChanges()
     {
+        // Arrange
         var supplier =
-            new Supplier("Proveedor Uno", null);
+            new Supplier(
+                "Proveedor Uno",
+                null);
 
         var material =
             new Material("Acero");
@@ -135,13 +160,13 @@ public class PurchaseTicketRepositoryTests : InfrastructureTestBase
         await Context.SaveChangesAsync();
 
         var purchaseTicket =
-            new Ticket(
-                "T-0001",
-                supplier.Id,
-                material.Id,
-                "ABC-123",
-                "Juan Perez",
-                10000m);
+            Ticket.CreateConventional(
+                ticketNumber: "T-0001",
+                supplierId: supplier.Id,
+                materialId: material.Id,
+                licensePlate: "ABC123",
+                transporter: "Juan Perez",
+                grossWeight: 10000m);
 
         Context.PurchaseTickets.Add(purchaseTicket);
         await Context.SaveChangesAsync();
@@ -152,38 +177,47 @@ public class PurchaseTicketRepositoryTests : InfrastructureTestBase
             new PurchaseTicketRepository(Context);
 
         var ticketToUpdate =
-            await repository.GetByIdAsync(purchaseTicket.Id);
+            await repository.GetByIdAsync(
+                purchaseTicket.Id);
 
         Assert.NotNull(ticketToUpdate);
 
-        ticketToUpdate.Correct(
-            supplier.Id,
-            material.Id,
-            "XYZ-789",
-            "Pedro Lopez",
-            12000m);
+        ticketToUpdate.RegisterTare(
+            tareWeight: 4000m);
 
-        await repository.UpdateAsync(ticketToUpdate);
+        // Act
+        await repository.UpdateAsync(
+            ticketToUpdate);
 
         Context.ChangeTracker.Clear();
 
+        // Assert
         var persistedTicket =
             await Context.PurchaseTickets
                 .AsNoTracking()
                 .SingleAsync(ticket =>
                     ticket.Id == purchaseTicket.Id);
 
-        Assert.Equal("XYZ-789", persistedTicket.LicensePlate);
-        Assert.Equal("Pedro Lopez", persistedTicket.DriverName);
-        Assert.Equal(12000m, persistedTicket.GrossWeight);
+        Assert.Equal(
+            4000m,
+            persistedTicket.TareWeight);
+
+        Assert.Equal(
+            6000m,
+            persistedTicket.NetWeight);
+
+        Assert.NotNull(
+            persistedTicket.DepartureAt);
     }
 
     [Fact]
-    public async Task UpdateAsync_ShouldPersistCompletedAt()
+    public async Task GetPendingWeighingAsync_ShouldReturnOnlyWeighingPendingTickets()
     {
         // Arrange
         var supplier =
-            new Supplier("Proveedor Uno", null);
+            new Supplier(
+                "Proveedor Uno",
+                null);
 
         var material =
             new Material("Acero");
@@ -193,187 +227,48 @@ public class PurchaseTicketRepositoryTests : InfrastructureTestBase
 
         await Context.SaveChangesAsync();
 
-        var purchaseTicket =
-            new Ticket(
-                "T-0001",
-                supplier.Id,
-                material.Id,
-                "ABC-123",
-                "Juan Perez",
-                10000m);
+        var weighingPendingTicket =
+            Ticket.CreateConventional(
+                ticketNumber: "T-0001",
+                supplierId: supplier.Id,
+                materialId: material.Id,
+                licensePlate: "ABC123",
+                transporter: "Juan Perez",
+                grossWeight: 10000m);
 
-        Context.PurchaseTickets.Add(purchaseTicket);
+        var amountPendingTicket =
+            Ticket.CreateSingle(
+                ticketNumber: "T-0002",
+                supplierId: supplier.Id,
+                materialId: material.Id,
+                licensePlate: null,
+                transporter: "Pedro Lopez",
+                netWeight: 12000m);
+
+        Context.PurchaseTickets.AddRange(
+            weighingPendingTicket,
+            amountPendingTicket);
+
         await Context.SaveChangesAsync();
 
         Context.ChangeTracker.Clear();
 
         var repository =
             new PurchaseTicketRepository(Context);
-
-        var ticketToUpdate =
-            await repository.GetByIdAsync(purchaseTicket.Id);
-
-        Assert.NotNull(ticketToUpdate);
-
-        ticketToUpdate.Complete(
-            5000m,
-            5m,
-            10m);
-
-        Assert.NotNull(ticketToUpdate.CompletedAt);
-
-        var expectedCompletedAt =
-            ticketToUpdate.CompletedAt;
 
         // Act
-        await repository.UpdateAsync(ticketToUpdate);
-
-        Context.ChangeTracker.Clear();
-
-        var persistedTicket =
-            await Context.PurchaseTickets
-                .AsNoTracking()
-                .SingleAsync(ticket =>
-                    ticket.Id == purchaseTicket.Id);
+        var result =
+            await repository.GetPendingWeighingAsync();
 
         // Assert
-        Assert.Equal(
-            TicketStatus.Completed,
-            persistedTicket.Status);
-
-        Assert.NotNull(expectedCompletedAt);
-        Assert.NotNull(persistedTicket.CompletedAt);
-
-        var difference =
-            (expectedCompletedAt.Value - persistedTicket.CompletedAt.Value).Duration();
-
-        Assert.True(
-            difference < TimeSpan.FromMilliseconds(1));
-    }
-
-    [Fact]
-    public async Task GetPendingAsync_ShouldReturnOnlyPendingTickets()
-    {
-        var supplier =
-            new Supplier("Proveedor Uno", null);
-
-        var material =
-            new Material("Acero");
-
-        Context.Suppliers.Add(supplier);
-        Context.Materials.Add(material);
-
-        await Context.SaveChangesAsync();
-
-        var pendingTicket =
-            new Ticket(
-                "T-0001",
-                supplier.Id,
-                material.Id,
-                "ABC-123",
-                "Juan Perez",
-                10000m);
-
-        var completedTicket =
-            new Ticket(
-                "T-0002",
-                supplier.Id,
-                material.Id,
-                "XYZ-789",
-                "Pedro Lopez",
-                12000m);
-
-        completedTicket.Complete(
-            5000m,
-            0m,
-            10m);
-
-        Context.PurchaseTickets.AddRange(
-            pendingTicket,
-            completedTicket);
-
-        await Context.SaveChangesAsync();
-
-        Context.ChangeTracker.Clear();
-
-        var repository =
-            new PurchaseTicketRepository(Context);
-
-        var result =
-            await repository.GetPendingAsync();
-
         Assert.Single(result);
-        Assert.Equal(pendingTicket.Id, result[0].Id);
-        Assert.Equal("T-0001", result[0].TicketNumber);
-    }
 
-    [Fact]
-    public async Task GetPendingAsync_ShouldReturnEmptyList_WhenNoPendingTicketsExist()
-    {
-        var repository =
-            new PurchaseTicketRepository(Context);
+        Assert.Equal(
+            weighingPendingTicket.Id,
+            result[0].Id);
 
-        var result =
-            await repository.GetPendingAsync();
-
-        Assert.Empty(result);
-    }
-
-    [Fact]
-    public async Task GetAllAsync_ShouldReturnAllPurchaseTickets()
-    {
-        var supplier = new Supplier("Proveedor Uno", null);
-        var material = new Material("Material Uno");
-
-        Context.Suppliers.Add(supplier);
-        Context.Materials.Add(material);
-        await Context.SaveChangesAsync();
-
-        var pendingTicket = new Ticket(
-            "TICKET-001",
-            supplier.Id,
-            material.Id,
-            "ABC123",
-            "Juan Perez",
-            1000m);
-
-        var completedTicket = new Ticket(
-            "TICKET-002",
-            supplier.Id,
-            material.Id,
-            "DEF456",
-            "Pedro Lopez",
-            1200m);
-
-        completedTicket.Complete(
-            500m,
-            0m,
-            10m);
-
-        Context.PurchaseTickets.AddRange(
-            pendingTicket,
-            completedTicket);
-
-        await Context.SaveChangesAsync();
-
-        var repository =
-            new PurchaseTicketRepository(Context);
-
-        var result =
-            await repository.GetAllAsync();
-
-        Assert.Equal(2, result.Count);
-    }
-
-    [Fact]
-    public async Task GetAllAsync_ShouldReturnEmptyList_WhenNoPurchaseTicketsExist()
-    {
-        var repository =
-            new PurchaseTicketRepository(Context);
-
-        var result =
-            await repository.GetAllAsync();
-
-        Assert.Empty(result);
+        Assert.Equal(
+            "T-0001",
+            result[0].TicketNumber);
     }
 }
