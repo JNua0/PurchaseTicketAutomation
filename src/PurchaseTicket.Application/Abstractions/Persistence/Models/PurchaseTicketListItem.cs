@@ -1,6 +1,8 @@
 ﻿using PurchaseTicket.Domain.Enums;
 
-public record PurchaseTicketDto(
+namespace PurchaseTicket.Application.Abstractions.Persistence.Models;
+
+public record PurchaseTicketListItem(
     string TicketNumber,
     DateTime CheckInAt,
     string SupplierName,
