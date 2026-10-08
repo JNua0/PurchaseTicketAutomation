@@ -8,15 +8,15 @@ namespace PurchaseTicket.Application.Tests.UseCases.PurchaseTickets;
 public class CancelPurchaseTicketTests
 {
     [Fact]
-    public async Task ExecuteAsync_ShouldCancelPendingPurchaseTicket()
+    public async Task ExecuteAsync_ShouldCancelWeighingPendingPurchaseTicket()
     {
         // Arrange
-        var ticket = new Ticket(
+        var ticket = Ticket.CreateConventional(
             ticketNumber: "T-000001",
             supplierId: 1,
             materialId: 2,
-            licensePlate: "ABC-123",
-            driverName: "Juan Perez",
+            licensePlate: "ABC123",
+            transporter: "Juan Perez",
             grossWeight: 25000m);
 
         var repository = new FakePurchaseTicketRepository
@@ -27,30 +27,75 @@ public class CancelPurchaseTicketTests
         var command = new CancelPurchaseTicketCommand(
             TicketId: 1);
 
-        var useCase = new CancelPurchaseTicket(repository);
+        var useCase =
+            new CancelPurchaseTicket(repository);
 
         // Act
         await useCase.ExecuteAsync(command);
 
         // Assert
-        Assert.Equal(TicketStatus.Cancelled, ticket.Status);
-        Assert.Same(ticket, repository.UpdatedTicket);
+        Assert.Equal(
+            TicketStatus.Cancelled,
+            ticket.Status);
+
+        Assert.Same(
+            ticket,
+            repository.UpdatedTicket);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldCancelAmountPendingPurchaseTicket()
+    {
+        // Arrange
+        var ticket = Ticket.CreateSingle(
+            ticketNumber: "T-000001",
+            supplierId: 1,
+            materialId: 2,
+            licensePlate: null,
+            transporter: "Juan Perez",
+            netWeight: 15000m);
+
+        var repository = new FakePurchaseTicketRepository
+        {
+            Ticket = ticket
+        };
+
+        var command = new CancelPurchaseTicketCommand(
+            TicketId: 1);
+
+        var useCase =
+            new CancelPurchaseTicket(repository);
+
+        // Act
+        await useCase.ExecuteAsync(command);
+
+        // Assert
+        Assert.Equal(
+            TicketStatus.Cancelled,
+            ticket.Status);
+
+        Assert.Same(
+            ticket,
+            repository.UpdatedTicket);
     }
 
     [Fact]
     public async Task ExecuteAsync_ShouldThrowWhenPurchaseTicketDoesNotExist()
     {
         // Arrange
-        var repository = new FakePurchaseTicketRepository();
+        var repository =
+            new FakePurchaseTicketRepository();
 
         var command = new CancelPurchaseTicketCommand(
             TicketId: 1);
 
-        var useCase = new CancelPurchaseTicket(repository);
+        var useCase =
+            new CancelPurchaseTicket(repository);
 
         // Act
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => useCase.ExecuteAsync(command));
+        var exception =
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => useCase.ExecuteAsync(command));
 
         // Assert
         Assert.Equal(
@@ -61,19 +106,18 @@ public class CancelPurchaseTicketTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldNotUpdateTicketWhenTicketCannotBeCancelled()
+    public async Task ExecuteAsync_ShouldNotUpdateCompletedPurchaseTicket()
     {
         // Arrange
-        var ticket = new Ticket(
+        var ticket = Ticket.CreateSingle(
             ticketNumber: "T-000001",
             supplierId: 1,
             materialId: 2,
-            licensePlate: "ABC-123",
-            driverName: "Juan Perez",
-            grossWeight: 25000m);
+            licensePlate: null,
+            transporter: "Juan Perez",
+            netWeight: 15000m);
 
-        ticket.Complete(
-            tareWeight: 10000m,
+        ticket.RegisterAmount(
             discount: 5m,
             pricePerKg: 2m);
 
@@ -85,14 +129,18 @@ public class CancelPurchaseTicketTests
         var command = new CancelPurchaseTicketCommand(
             TicketId: 1);
 
-        var useCase = new CancelPurchaseTicket(repository);
+        var useCase =
+            new CancelPurchaseTicket(repository);
 
         // Act
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => useCase.ExecuteAsync(command));
 
         // Assert
-        Assert.Equal(TicketStatus.Completed, ticket.Status);
+        Assert.Equal(
+            TicketStatus.Completed,
+            ticket.Status);
+
         Assert.Null(repository.UpdatedTicket);
     }
 
@@ -100,6 +148,7 @@ public class CancelPurchaseTicketTests
         : IPurchaseTicketRepository
     {
         public Ticket? Ticket { get; init; }
+
         public Ticket? UpdatedTicket { get; private set; }
 
         public Task<Ticket?> GetByIdAsync(int id)
@@ -110,16 +159,15 @@ public class CancelPurchaseTicketTests
         public Task UpdateAsync(Ticket purchaseTicket)
         {
             UpdatedTicket = purchaseTicket;
+
             return Task.CompletedTask;
         }
 
         public Task AddAsync(Ticket purchaseTicket)
             => throw new NotImplementedException();
 
-        public Task<IReadOnlyList<Ticket>> GetPendingAsync()
+        public Task<IReadOnlyList<Ticket>> GetPendingWeighingAsync()
             => throw new NotImplementedException();
 
-        public Task<IReadOnlyList<Ticket>> GetAllAsync()
-            => throw new NotImplementedException();
     }
 }
