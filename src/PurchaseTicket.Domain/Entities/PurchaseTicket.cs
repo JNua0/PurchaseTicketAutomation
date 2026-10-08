@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using PurchaseTicket.Domain.Enums;
+using PurchaseTicket.Domain.ValueObjects;
 
 namespace PurchaseTicket.Domain.Entities;
 
@@ -528,5 +529,203 @@ public class PurchaseTicket
     private static decimal CalculateAmount(decimal netWeightAfterDiscount, decimal pricePerKg)
     {
         return netWeightAfterDiscount * pricePerKg;
+    }
+
+    public void Correct(PurchaseTicketCorrection correction)
+    {
+        bool hasGeneralDataChanges =
+            correction.SupplierId.HasValue ||
+            correction.MaterialId.HasValue ||
+            correction.Transporter is not null ||
+            correction.ChangeLicensePlate;
+
+        bool hasGrossWeightChange = correction.GrossWeight.HasValue;
+
+        bool hasTareWeightChange = correction.TareWeight.HasValue;
+
+        bool hasConventionalWeightChanges = hasGrossWeightChange || hasTareWeightChange;
+
+        bool hasNetWeightChange = correction.NetWeight.HasValue;
+
+        bool hasDiscountChange = correction.Discount.HasValue;
+
+        bool hasPricePerKgChange = correction.PricePerKg.HasValue;
+
+        if (!hasGeneralDataChanges &&
+            !hasConventionalWeightChanges &&
+            !hasNetWeightChange &&
+            !hasDiscountChange &&
+            !hasPricePerKgChange)
+        {
+            return;
+        }
+
+        // 1. Validate general data changes
+
+        if (hasGeneralDataChanges)
+        {
+            ValidateCanModifyGeneralData();
+        }
+
+        if (correction.SupplierId.HasValue)
+            ValidateSupplierId(correction.SupplierId.Value);
+
+        if (correction.MaterialId.HasValue)
+            ValidateMaterialId(correction.MaterialId.Value);
+
+        string? normalizedTransporter = null;
+
+        if (correction.Transporter is not null)
+            normalizedTransporter = NormalizeTransporter(correction.Transporter);
+
+        string? normalizedLicensePlate = null;
+
+        if (correction.ChangeLicensePlate)
+        {
+            normalizedLicensePlate =
+                WeighingType == WeighingType.Conventional
+                    ? NormalizeLicensePlate(
+                        correction.LicensePlate!)
+                    : NormalizeOptionalLicensePlate(
+                        correction.LicensePlate);
+        }
+
+        // 2. Validate conventional weight changes
+
+        if (hasConventionalWeightChanges)
+        {
+            ValidateConventionalWeighing();
+
+            if (hasGrossWeightChange)
+            {
+                ValidateCanModifyGrossWeight();
+
+                ValidateGrossWeight(correction.GrossWeight!.Value);
+            }
+
+            if (hasTareWeightChange)
+                ValidateCanModifyTareWeight();
+        }
+
+        // 3. Validate single net weight change
+
+        if (hasNetWeightChange)
+        {
+            ValidateSingleWeighing();
+            ValidateCanModifyNetWeight();
+
+            ValidateNetWeight(correction.NetWeight!.Value);
+        }
+
+        // 4. Validate discount change
+
+        if (hasDiscountChange)
+        {
+            ValidateCompletedStatus();
+
+            ValidateDiscount(correction.Discount!.Value);
+        }
+
+        // 5. Validate price per kg change
+
+        if (hasPricePerKgChange)
+        {
+            ValidateCompletedStatus();
+
+            ValidatePricePerKg(correction.PricePerKg!.Value);
+        }
+
+        // 6. Calculate resulting conventional weights
+        // without modifying the entity
+
+        decimal? resultingGrossWeight =
+            correction.GrossWeight ??
+            GrossWeight;
+
+        decimal? resultingTareWeight =
+            correction.TareWeight ??
+            TareWeight;
+
+        if (hasTareWeightChange || (hasGrossWeightChange && Status == TicketStatus.Completed))
+        {
+            decimal grossWeight =
+                resultingGrossWeight
+                ?? throw new InvalidOperationException("El pesaje convencional debe tener un peso bruto.");
+
+            decimal tareWeight =
+                resultingTareWeight
+                ?? throw new InvalidOperationException("El pesaje convencional debe tener una tara.");
+
+            ValidateTareWeight(tareWeight,grossWeight);
+        }
+
+        // 7. Apply conventional weight changes
+
+        if (hasGrossWeightChange)
+            GrossWeight = correction.GrossWeight!.Value;
+
+        if (hasTareWeightChange)
+            TareWeight = correction.TareWeight!.Value;
+
+        // 8. Recalculate conventional net weight
+
+        if (hasConventionalWeightChanges &&
+            (Status == TicketStatus.AmountPending ||
+             Status == TicketStatus.Completed))
+        {
+            decimal grossWeight =
+                resultingGrossWeight
+                ?? throw new InvalidOperationException("El pesaje convencional debe tener un peso bruto.");
+
+            decimal tareWeight =
+                resultingTareWeight
+                ?? throw new InvalidOperationException("El pesaje convencional debe tener una tara.");
+
+            NetWeight = CalculateNetWeight(grossWeight,tareWeight);
+        }
+
+        // 9. Apply single net weight change
+
+        if (hasNetWeightChange)
+            NetWeight = correction.NetWeight!.Value;
+
+        // 10. Apply discount change
+
+        if (hasDiscountChange)
+            Discount = correction.Discount!.Value;
+
+        // 11. Apply price per kg change
+
+        if (hasPricePerKgChange)
+            PricePerKg = correction.PricePerKg!.Value;
+
+        // 12. Recalculate amount once
+
+        bool mustRecalculateAmount = Status == TicketStatus.Completed &&
+            (
+                hasConventionalWeightChanges ||
+                hasNetWeightChange ||
+                hasDiscountChange ||
+                hasPricePerKgChange
+            );
+
+        if (mustRecalculateAmount)
+            RecalculateAmount();
+
+        // 13. Apply general data changes
+
+        if (correction.SupplierId.HasValue)
+            SupplierId = correction.SupplierId.Value;
+
+        if (correction.MaterialId.HasValue)
+            MaterialId = correction.MaterialId.Value;
+
+        if (normalizedTransporter is not null)
+            Transporter = normalizedTransporter;
+
+        if (correction.ChangeLicensePlate)
+            LicensePlate = normalizedLicensePlate;
+
+        UpdatedAt = DateTime.UtcNow;
     }
 }

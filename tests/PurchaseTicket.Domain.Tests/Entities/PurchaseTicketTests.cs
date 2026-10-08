@@ -962,27 +962,36 @@ public class PurchaseTicketTests
     }
 
     [Fact]
-    public void Cancel_ShouldCancelWhenTicketIsCompleted()
+    public void Cancel_ShouldThrowWhenTicketIsCompleted()
     {
         // Arrange
-        var ticket = Ticket.CreateSingle(
-            "T-000002",
-            1,
-            1,
-            null,
-            "Juan Perez",
-            500m);
+        var ticket =
+            Ticket.CreateConventional(
+                ticketNumber: "T-000001",
+                supplierId: 1,
+                materialId: 1,
+                licensePlate: "ABC123",
+                transporter: "Juan Perez",
+                grossWeight: 25000m);
+
+        ticket.RegisterTare(8000m);
 
         ticket.RegisterAmount(
-            2m,
-            5m);
+            discount: 10m,
+            pricePerKg: 2m);
 
         // Act
-        ticket.Cancel();
+        var exception =
+            Assert.Throws<InvalidOperationException>(
+                () => ticket.Cancel());
 
         // Assert
         Assert.Equal(
-            TicketStatus.Cancelled,
+            "Un ticket completado no puede cancelarse.",
+            exception.Message);
+
+        Assert.Equal(
+            TicketStatus.Completed,
             ticket.Status);
     }
 
@@ -1699,6 +1708,8 @@ public class PurchaseTicketTests
 
         ticket.Cancel();
 
+        var updatedAtAfterCancellation = ticket.UpdatedAt;
+
         // Act
         Action act = () =>
             ticket.ChangeGrossWeight(26000m);
@@ -1707,7 +1718,9 @@ public class PurchaseTicketTests
         Assert.Throws<InvalidOperationException>(act);
 
         Assert.Equal(25000m, ticket.GrossWeight);
-        Assert.Null(ticket.UpdatedAt);
+        Assert.NotNull(updatedAtAfterCancellation);
+
+        Assert.Equal(updatedAtAfterCancellation, ticket.UpdatedAt);
     }
 
     [Fact]
@@ -1940,30 +1953,34 @@ public class PurchaseTicketTests
     public void ChangeDiscount_ShouldThrowWhenTicketIsCancelled()
     {
         // Arrange
-        var ticket = Ticket.CreateConventional(
-            "T-000001",
-            1,
-            1,
-            "ABC1234",
-            "Juan Perez",
-            25000m);
+        var ticket =
+            Ticket.CreateConventional(
+                ticketNumber: "T-000001",
+                supplierId: 1,
+                materialId: 1,
+                licensePlate: "ABC123",
+                transporter: "Juan Perez",
+                grossWeight: 25000m);
 
-        ticket.RegisterTare(10000m);
-        ticket.RegisterAmount(2m, 5m);
         ticket.Cancel();
 
+        var updatedAtAfterCancellation = ticket.UpdatedAt;
+
         // Act
-        Action act = () =>
-            ticket.ChangeDiscount(5m);
+        var exception =
+            Assert.Throws<InvalidOperationException>(
+                () => ticket.ChangeDiscount(5m));
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Equal("El ticket debe estar completado.", exception.Message);
 
-        Assert.Equal(2m, ticket.Discount);
-        Assert.Equal(300m, ticket.DiscountWeight);
-        Assert.Equal(14700m, ticket.NetWeightAfterDiscount);
-        Assert.Equal(73500m, ticket.Amount);
-        Assert.Null(ticket.UpdatedAt);
+        Assert.Null(ticket.Discount);
+
+        Assert.Equal(TicketStatus.Cancelled, ticket.Status);
+
+        Assert.NotNull(updatedAtAfterCancellation);
+
+        Assert.Equal(updatedAtAfterCancellation, ticket.UpdatedAt);
     }
 
     [Fact]
@@ -2082,31 +2099,33 @@ public class PurchaseTicketTests
     public void ChangePricePerKg_ShouldThrowWhenTicketIsCancelled()
     {
         // Arrange
-        var ticket = Ticket.CreateConventional(
-            "T-000001",
-            1,
-            1,
-            "ABC1234",
-            "Juan Perez",
-            25000m);
+        var ticket =
+            Ticket.CreateConventional(
+                ticketNumber: "T-000001",
+                supplierId: 1,
+                materialId: 1,
+                licensePlate: "ABC123",
+                transporter: "Juan Perez",
+                grossWeight: 25000m);
 
-        ticket.RegisterTare(10000m);
-        ticket.RegisterAmount(2m, 5m);
         ticket.Cancel();
 
+        var updatedAtAfterCancellation =
+            ticket.UpdatedAt;
+
         // Act
-        Action act = () =>
-            ticket.ChangePricePerKg(6m);
+        var exception = Assert.Throws<InvalidOperationException>(() => ticket.ChangePricePerKg(3m));
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Equal("El ticket debe estar completado.", exception.Message);
 
-        Assert.Equal(5m, ticket.PricePerKg);
-        Assert.Equal(300m, ticket.DiscountWeight);
-        Assert.Equal(14700m, ticket.NetWeightAfterDiscount);
-        Assert.Equal(73500m, ticket.Amount);
+        Assert.Null(ticket.PricePerKg);
 
-        Assert.Null(ticket.UpdatedAt);
+        Assert.Equal(TicketStatus.Cancelled, ticket.Status);
+
+        Assert.NotNull(updatedAtAfterCancellation);
+
+        Assert.Equal(updatedAtAfterCancellation, ticket.UpdatedAt);
     }
 
     [Fact]
@@ -2215,6 +2234,8 @@ public class PurchaseTicketTests
 
         ticket.Cancel();
 
+        var updatedAtAfterCancellation = ticket.UpdatedAt;
+
         // Act
         Action act = () =>
             ticket.ChangeNetWeight(14000m);
@@ -2224,7 +2245,9 @@ public class PurchaseTicketTests
 
         Assert.Equal(15000m, ticket.NetWeight);
         Assert.Equal(TicketStatus.Cancelled, ticket.Status);
-        Assert.Null(ticket.UpdatedAt);
+        Assert.NotNull(updatedAtAfterCancellation);
+
+        Assert.Equal(updatedAtAfterCancellation, ticket.UpdatedAt);
     }
 
     [Fact]
