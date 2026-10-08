@@ -32,18 +32,11 @@ public class PurchaseTicketRepository : IPurchaseTicketRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IReadOnlyList<Ticket>> GetPendingAsync()
+    public async Task<IReadOnlyList<Ticket>> GetPendingWeighingAsync()
     {
         return await _context.PurchaseTickets
             .AsNoTracking()
-            .Where(ticket => ticket.Status == TicketStatus.Pending)
-            .ToListAsync();
-    }
-
-    public async Task<IReadOnlyList<Ticket>> GetAllAsync()
-    {
-        return await _context.PurchaseTickets
-            .AsNoTracking()
+            .Where(ticket => ticket.Status == TicketStatus.WeighingPending)
             .ToListAsync();
     }
 }

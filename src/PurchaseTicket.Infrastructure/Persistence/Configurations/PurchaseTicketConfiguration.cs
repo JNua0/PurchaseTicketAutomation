@@ -1,14 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PurchaseTicket.Domain.Enums;
-using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 using PurchaseTicket.Domain.Entities;
+using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
 namespace PurchaseTicket.Infrastructure.Persistence.Configurations;
 
-public class PurchaseTicketConfiguration : IEntityTypeConfiguration<Ticket>
+public class PurchaseTicketConfiguration
+    : IEntityTypeConfiguration<Ticket>
 {
-    public void Configure(EntityTypeBuilder<Ticket> builder)
+    public void Configure(
+        EntityTypeBuilder<Ticket> builder)
     {
         builder.ToTable("purchase_tickets");
 
@@ -46,18 +47,23 @@ public class PurchaseTicketConfiguration : IEntityTypeConfiguration<Ticket>
 
         builder.Property(ticket => ticket.LicensePlate)
             .HasColumnName("license_plate")
-            .HasMaxLength(10)
+            .HasMaxLength(10);
+
+        builder.Property(ticket => ticket.Transporter)
+            .HasColumnName("transporter")
+            .HasMaxLength(50)
             .IsRequired();
 
-        builder.Property(ticket => ticket.DriverName)
-            .HasColumnName("driver_name")
-            .HasMaxLength(40)
+        builder.Property(ticket => ticket.CheckInAt)
+            .HasColumnName("check_in_at")
             .IsRequired();
+
+        builder.Property(ticket => ticket.DepartureAt)
+            .HasColumnName("departure_at");
 
         builder.Property(ticket => ticket.GrossWeight)
             .HasColumnName("gross_weight")
-            .HasPrecision(10, 2)
-            .IsRequired();
+            .HasPrecision(10, 2);
 
         builder.Property(ticket => ticket.TareWeight)
             .HasColumnName("tare_weight")
@@ -87,17 +93,23 @@ public class PurchaseTicketConfiguration : IEntityTypeConfiguration<Ticket>
             .HasColumnName("amount")
             .HasPrecision(10, 2);
 
+        builder.Property(ticket => ticket.WeighingType)
+            .HasColumnName("weighing_type")
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            .IsRequired();
+
         builder.Property(ticket => ticket.Status)
             .HasColumnName("status")
             .HasConversion<string>()
-            .HasMaxLength(10)
+            .HasMaxLength(20)
             .IsRequired();
 
         builder.Property(ticket => ticket.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired();
 
-        builder.Property(ticket => ticket.CompletedAt)
-            .HasColumnName("completed_at");
+        builder.Property(ticket => ticket.UpdatedAt)
+            .HasColumnName("updated_at");
     }
 }

@@ -42,21 +42,12 @@ public class SupplierRepository : ISupplierRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IReadOnlyList<Supplier>> GetAllAsync()
+    public async Task<IReadOnlyList<Supplier>> GetActiveAsync()
     {
         return await _context.Suppliers
             .AsNoTracking()
-            .ToListAsync();
-    }
-
-    public async Task<IReadOnlyList<Supplier>> SearchByNameAsync(string name)
-    {
-        return await _context.Suppliers
-            .AsNoTracking()
-            .Where(supplier =>
-                EF.Functions.ILike(
-                    supplier.Name,
-                    $"%{name}%"))
+            .Where(supplier => supplier.IsActive)
+            .OrderBy(supplier => supplier.Name)
             .ToListAsync();
     }
 }

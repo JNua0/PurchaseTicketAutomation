@@ -1,19 +1,13 @@
-﻿namespace PurchaseTicket.Application.UseCases.PurchaseTickets.Get;
+﻿using PurchaseTicket.Domain.Enums;
 
 public record PurchaseTicketDto(
-    int Id,
     string TicketNumber,
-    DateTime CreatedAt,
-    int SupplierId,
-    int MaterialId,
-    string LicensePlate,
-    string DriverName,
-    decimal GrossWeight,
-    decimal? TareWeight,
-    decimal? NetWeight,
-    decimal? Discount,
-    decimal? DiscountWeight,
-    decimal? NetWeightAfterDiscount,
-    decimal? PricePerKg,
+    DateTime CheckInAt,
+    string SupplierName,
+    string MaterialName,
+    string? LicensePlate,
+    string Transporter,
+    decimal? FinalWeight,
     decimal? Amount,
-    string Status);
+    WeighingType WeighingType,
+    TicketStatus Status);

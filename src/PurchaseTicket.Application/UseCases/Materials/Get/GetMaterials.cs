@@ -1,26 +1,47 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
-using PurchaseTicket.Domain.Entities;
+using PurchaseTicket.Application.Common;
 
 namespace PurchaseTicket.Application.UseCases.Materials.Get;
 
 public class GetMaterials
 {
-    private readonly IMaterialRepository _repository;
+    private readonly IMaterialQueryRepository _repository;
 
-    public GetMaterials(IMaterialRepository repository)
+    public GetMaterials(
+        IMaterialQueryRepository repository)
     {
         _repository = repository;
     }
 
-    public async Task<IReadOnlyList<Material>> ExecuteAsync(
-        string? searchTerm = null)
+    public async Task<PagedResult<MaterialDto>> ExecuteAsync(GetMaterialsQuery query)
     {
-        if (string.IsNullOrWhiteSpace(searchTerm))
-        {
-            return await _repository.GetAllAsync();
-        }
+        if (query.Page < 1)
+            throw new ArgumentOutOfRangeException(nameof(query.Page));
 
-        return await _repository.SearchByNameAsync(
-            searchTerm.Trim());
+        if (query.PageSize < 1 || query.PageSize > 100)
+            throw new ArgumentOutOfRangeException(nameof(query.PageSize));
+
+        var search = string.IsNullOrWhiteSpace(query.Search)
+            ? null
+            : query.Search.Trim();
+
+        var result = await _repository.GetPagedAsync(
+            query.Page,
+            query.PageSize,
+            search,
+            query.IsActive);
+
+        var items = result.Items
+            .Select(material => new MaterialDto(
+                material.Id,
+                material.Name,
+                material.IsActive))
+            .ToList();
+
+        return new PagedResult<MaterialDto>(
+            items,
+            result.Page,
+            result.PageSize,
+            result.TotalCount);
     }
 }

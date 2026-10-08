@@ -1,191 +1,196 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Abstractions.Persistence.Models;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Suppliers.Get;
-using PurchaseTicket.Domain.Entities;
 
 namespace PurchaseTicket.Application.Tests.UseCases.Suppliers;
 
 public class GetSuppliersTests
 {
-    private sealed class FakeSupplierRepository
-        : ISupplierRepository
+    private sealed class FakeSupplierQueryRepository : ISupplierQueryRepository
     {
-        public IReadOnlyList<Supplier> SuppliersToReturn { get; set; }
-            = [];
+        public PagedResult<SupplierListItem> ResultToReturn { get; set; }
+            = new([], 1, 20, 0);
 
-        public Task AddAsync(Supplier supplier)
+        public int? ReceivedPage { get; private set; }
+        public int? ReceivedPageSize { get; private set; }
+        public string? ReceivedSearch { get; private set; }
+        public bool? ReceivedIsActive { get; private set; }
+
+        public Task<PagedResult<SupplierListItem>> GetPagedAsync(
+            int page,
+            int pageSize,
+            string? search = null,
+            bool? isActive = null)
         {
-            throw new NotImplementedException();
-        }
+            ReceivedPage = page;
+            ReceivedPageSize = pageSize;
+            ReceivedSearch = search;
+            ReceivedIsActive = isActive;
 
-        public string? SearchName { get; private set; }
-
-        public Task<bool> ExistsByNameAsync(
-            string name,
-            int? excludeSupplierId = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Supplier?> GetByIdAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateAsync(Supplier supplier)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<Supplier>> GetAllAsync()
-        {
-            return Task.FromResult(SuppliersToReturn);
-        }
-
-        public Task<IReadOnlyList<Supplier>> SearchByNameAsync(string name)
-        {
-            SearchName = name;
-
-            IReadOnlyList<Supplier> result = SuppliersToReturn
-                .Where(supplier =>
-                    supplier.Name.Contains(
-                        name,
-                        StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            return Task.FromResult(result);
+            return Task.FromResult(ResultToReturn);
         }
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnRegisteredSuppliers()
+    public async Task ExecuteAsync_ShouldReturnPagedSuppliers()
     {
         // Arrange
-        var supplier1 = new Supplier(
+        var repository = new FakeSupplierQueryRepository
+        {
+            ResultToReturn = new PagedResult<SupplierListItem>(
+                [
+                    new SupplierListItem(
+                        1,
+                        "Proveedor uno",
+                        "5512345678",
+                        true),
+
+                    new SupplierListItem(
+                        2,
+                        "Proveedor dos",
+                        null,
+                        false)
+                ],
+                1,
+                20,
+                2)
+        };
+
+        var useCase = new GetSuppliers(repository);
+
+        // Act
+        var result = await useCase.ExecuteAsync(
+            new GetSuppliersQuery());
+
+        // Assert
+        Assert.Equal(2, result.Items.Count);
+        Assert.Equal(1, result.Page);
+        Assert.Equal(20, result.PageSize);
+        Assert.Equal(2, result.TotalCount);
+
+        Assert.Equal(
             "Proveedor uno",
-            "5512345678");
+            result.Items[0].Name);
 
-        var supplier2 = new Supplier(
-            "Proveedor dos");
+        Assert.Equal(
+            "5512345678",
+            result.Items[0].PhoneNumber);
 
-        supplier2.Deactivate();
+        Assert.True(result.Items[0].IsActive);
 
-        var repository = new FakeSupplierRepository
-        {
-            SuppliersToReturn =
-            [
-                supplier1,
-                supplier2
-            ]
-        };
+        Assert.Equal(
+            "Proveedor dos",
+            result.Items[1].Name);
 
-        var useCase = new GetSuppliers(repository);
-
-        // Act
-        var result = await useCase.ExecuteAsync();
-
-        // Assert
-        Assert.Equal(2, result.Count);
-
-        Assert.Contains(supplier1, result);
-        Assert.Contains(supplier2, result);
+        Assert.Null(result.Items[1].PhoneNumber);
+        Assert.False(result.Items[1].IsActive);
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnEmptyListWhenNoSuppliersExist()
+    public async Task ExecuteAsync_ShouldPassPaginationAndFiltersToRepository()
     {
         // Arrange
-        var repository = new FakeSupplierRepository
-        {
-            SuppliersToReturn = []
-        };
+        var repository = new FakeSupplierQueryRepository();
 
         var useCase = new GetSuppliers(repository);
 
+        var query = new GetSuppliersQuery(
+            Page: 2,
+            PageSize: 10,
+            Search: "acero",
+            IsActive: true);
+
         // Act
-        var result = await useCase.ExecuteAsync();
+        await useCase.ExecuteAsync(query);
 
         // Assert
-        Assert.Empty(result);
+        Assert.Equal(2, repository.ReceivedPage);
+        Assert.Equal(10, repository.ReceivedPageSize);
+        Assert.Equal("acero", repository.ReceivedSearch);
+        Assert.True(repository.ReceivedIsActive);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task ExecuteAsync_ShouldThrowWhenPageIsInvalid(
+    int page)
+    {
+        // Arrange
+        var repository = new FakeSupplierQueryRepository();
+
+        var useCase = new GetSuppliers(repository);
+
+        var query = new GetSuppliersQuery(
+            Page: page);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => useCase.ExecuteAsync(query));
+
+        // Assert
+        Assert.Equal("Page", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(101)]
+    public async Task ExecuteAsync_ShouldThrowWhenPageSizeIsInvalid(
+    int pageSize)
+    {
+        // Arrange
+        var repository = new FakeSupplierQueryRepository();
+
+        var useCase = new GetSuppliers(repository);
+
+        var query = new GetSuppliersQuery(
+            PageSize: pageSize);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => useCase.ExecuteAsync(query));
+
+        // Assert
+        Assert.Equal("PageSize", exception.ParamName);
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnSuppliersMatchingName()
+    public async Task ExecuteAsync_ShouldTrimSearch()
     {
         // Arrange
-        var supplier1 = new Supplier(
-            "Aceros del norte");
-
-        var supplier2 = new Supplier(
-            "Proveedor de acero");
-
-        var supplier3 = new Supplier(
-            "Transportes del norte");
-
-        var repository = new FakeSupplierRepository
-        {
-            SuppliersToReturn =
-            [
-                supplier1,
-            supplier2,
-            supplier3
-            ]
-        };
+        var repository = new FakeSupplierQueryRepository();
 
         var useCase = new GetSuppliers(repository);
 
-        // Act
-        var result = await useCase.ExecuteAsync("acero");
-
-        // Assert
-        Assert.Equal(2, result.Count);
-
-        Assert.Contains(supplier1, result);
-        Assert.Contains(supplier2, result);
-        Assert.DoesNotContain(supplier3, result);
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_ShouldReturnEmptyListWhenNoSuppliersMatchName()
-    {
-        // Arrange
-        var supplier1 = new Supplier(
-            "Aceros del norte");
-
-        var supplier2 = new Supplier(
-            "Proveedor de acero");
-
-        var repository = new FakeSupplierRepository
-        {
-            SuppliersToReturn =
-            [
-                supplier1,
-            supplier2
-            ]
-        };
-
-        var useCase = new GetSuppliers(repository);
+        var query = new GetSuppliersQuery(
+            Search: "   acero   ");
 
         // Act
-        var result = await useCase.ExecuteAsync("cemento");
-
-        // Assert
-        Assert.Empty(result);
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_ShouldTrimSearchTerm()
-    {
-        // Arrange
-        var repository = new FakeSupplierRepository();
-
-        var useCase = new GetSuppliers(repository);
-
-        // Act
-        await useCase.ExecuteAsync("   acero   ");
+        await useCase.ExecuteAsync(query);
 
         // Assert
         Assert.Equal(
             "acero",
-            repository.SearchName);
+            repository.ReceivedSearch);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldConvertWhitespaceSearchToNull()
+    {
+        // Arrange
+        var repository = new FakeSupplierQueryRepository();
+
+        var useCase = new GetSuppliers(repository);
+
+        var query = new GetSuppliersQuery(
+            Search: "     ");
+
+        // Act
+        await useCase.ExecuteAsync(query);
+
+        // Assert
+        Assert.Null(repository.ReceivedSearch);
     }
 }

@@ -2,7 +2,8 @@
 
 public enum TicketStatus
 {
-    Pending,
+    WeighingPending,
+    AmountPending,
     Completed,
     Cancelled
 }

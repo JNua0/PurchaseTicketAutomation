@@ -1,180 +1,179 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Abstractions.Persistence.Models;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Materials.Get;
-using PurchaseTicket.Domain.Entities;
 
 namespace PurchaseTicket.Application.Tests.UseCases.Materials;
 
 public class GetMaterialsTests
 {
-    private sealed class FakeMaterialRepository
-        : IMaterialRepository
+    private sealed class FakeMaterialQueryRepository : IMaterialQueryRepository
     {
-        public string? SearchName { get; private set; }
-        public IReadOnlyList<Material> MaterialsToReturn { get; set; }
-            = [];
+        public int? ReceivedPage { get; private set; }
+        public int? ReceivedPageSize { get; private set; }
+        public string? ReceivedSearch { get; private set; }
+        public bool? ReceivedIsActive { get; private set; }
 
-        public Task AddAsync(Material material)
+        public PagedResult<MaterialListItem> ResultToReturn { get; set; }
+            = new([], 1, 20, 0);
+
+        public Task<PagedResult<MaterialListItem>> GetPagedAsync(
+            int page,
+            int pageSize,
+            string? search = null,
+            bool? isActive = null)
         {
-            throw new NotImplementedException();
-        }
+            ReceivedPage = page;
+            ReceivedPageSize = pageSize;
+            ReceivedSearch = search;
+            ReceivedIsActive = isActive;
 
-        public Task<bool> ExistsByNameAsync(
-            string name,
-            int? excludeMaterialId = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Material?> GetByIdAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateAsync(Material material)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<Material>> GetAllAsync()
-        {
-            return Task.FromResult(MaterialsToReturn);
-        }
-
-        public Task<IReadOnlyList<Material>> SearchByNameAsync(
-            string name)
-        {
-            SearchName = name;
-
-            IReadOnlyList<Material> result = MaterialsToReturn
-                .Where(material =>
-                    material.Name.Contains(
-                        name,
-                        StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            return Task.FromResult(result);
+            return Task.FromResult(ResultToReturn);
         }
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnAllRegisteredMaterials()
+    public async Task ExecuteAsync_ShouldReturnPagedMaterials()
     {
         // Arrange
-        var activeMaterial = new Material("Acero");
-
-        var inactiveMaterial = new Material("Cobre");
-        inactiveMaterial.Deactivate();
-
-        var repository = new FakeMaterialRepository
+        var repository = new FakeMaterialQueryRepository
         {
-            MaterialsToReturn =
-            [
-                activeMaterial,
-                inactiveMaterial
-            ]
+            ResultToReturn = new PagedResult<MaterialListItem>(
+                [
+                    new MaterialListItem(
+                        1,
+                        "Acero",
+                        true),
+
+                    new MaterialListItem(
+                        2,
+                        "Cobre",
+                        false)
+                ],
+                1,
+                20,
+                2)
         };
 
         var useCase = new GetMaterials(repository);
 
         // Act
-        var result = await useCase.ExecuteAsync();
+        var result = await useCase.ExecuteAsync(
+            new GetMaterialsQuery());
 
         // Assert
-        Assert.Equal(2, result.Count);
+        Assert.Equal(2, result.Items.Count);
+        Assert.Equal(2, result.TotalCount);
 
-        Assert.Contains(activeMaterial, result);
-        Assert.Contains(inactiveMaterial, result);
+        Assert.Equal("Acero", result.Items[0].Name);
+        Assert.True(result.Items[0].IsActive);
+
+        Assert.Equal("Cobre", result.Items[1].Name);
+        Assert.False(result.Items[1].IsActive);
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnEmptyListWhenNoMaterialsExist()
+    public async Task ExecuteAsync_ShouldPassPaginationAndFiltersToRepository()
     {
         // Arrange
-        var repository = new FakeMaterialRepository
-        {
-            MaterialsToReturn = []
-        };
+        var repository = new FakeMaterialQueryRepository();
 
         var useCase = new GetMaterials(repository);
 
+        var query = new GetMaterialsQuery(
+            Page: 2,
+            PageSize: 10,
+            Search: "acero",
+            IsActive: true);
+
         // Act
-        var result = await useCase.ExecuteAsync();
+        await useCase.ExecuteAsync(query);
 
         // Assert
-        Assert.Empty(result);
+        Assert.Equal(2, repository.ReceivedPage);
+        Assert.Equal(10, repository.ReceivedPageSize);
+        Assert.Equal("acero", repository.ReceivedSearch);
+        Assert.True(repository.ReceivedIsActive);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task ExecuteAsync_ShouldThrowWhenPageIsInvalid(
+    int page)
+    {
+        // Arrange
+        var repository = new FakeMaterialQueryRepository();
+
+        var useCase = new GetMaterials(repository);
+
+        var query = new GetMaterialsQuery(
+            Page: page);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => useCase.ExecuteAsync(query));
+
+        // Assert
+        Assert.Equal("Page", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(101)]
+    public async Task ExecuteAsync_ShouldThrowWhenPageSizeIsInvalid(
+    int pageSize)
+    {
+        // Arrange
+        var repository = new FakeMaterialQueryRepository();
+
+        var useCase = new GetMaterials(repository);
+
+        var query = new GetMaterialsQuery(
+            PageSize: pageSize);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => useCase.ExecuteAsync(query));
+
+        // Assert
+        Assert.Equal("PageSize", exception.ParamName);
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnMaterialsMatchingName()
+    public async Task ExecuteAsync_ShouldTrimSearch()
     {
         // Arrange
-        var steel = new Material("Acero inoxidable");
-        var carbonSteel = new Material("Acero al carbono");
-        var copper = new Material("Cobre");
-
-        var repository = new FakeMaterialRepository
-        {
-            MaterialsToReturn =
-            [
-                steel,
-            carbonSteel,
-            copper
-            ]
-        };
+        var repository = new FakeMaterialQueryRepository();
 
         var useCase = new GetMaterials(repository);
 
+        var query = new GetMaterialsQuery(
+            Search: "   Acero   ");
+
         // Act
-        var result = await useCase.ExecuteAsync("ACERO");
+        await useCase.ExecuteAsync(query);
 
         // Assert
-        Assert.Equal(2, result.Count);
-
-        Assert.Contains(steel, result);
-        Assert.Contains(carbonSteel, result);
-        Assert.DoesNotContain(copper, result);
+        Assert.Equal("Acero", repository.ReceivedSearch);
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnEmptyListWhenNoMaterialsMatch()
+    public async Task ExecuteAsync_ShouldConvertWhitespaceSearchToNull()
     {
         // Arrange
-        var repository = new FakeMaterialRepository
-        {
-            MaterialsToReturn =
-            [
-                new Material("Acero"),
-            new Material("Cobre")
-            ]
-        };
+        var repository = new FakeMaterialQueryRepository();
 
         var useCase = new GetMaterials(repository);
 
-        // Act
-        var result = await useCase.ExecuteAsync("Aluminio");
-
-        // Assert
-        Assert.Empty(result);
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_ShouldTrimSearchTermBeforeSearching()
-    {
-        // Arrange
-        var repository = new FakeMaterialRepository
-        {
-            MaterialsToReturn =
-            [
-                new Material("Acero")
-            ]
-        };
-
-        var useCase = new GetMaterials(repository);
+        var query = new GetMaterialsQuery(
+            Search: "     ");
 
         // Act
-        await useCase.ExecuteAsync("   Acero   ");
+        await useCase.ExecuteAsync(query);
 
         // Assert
-        Assert.Equal("Acero", repository.SearchName);
+        Assert.Null(repository.ReceivedSearch);
     }
 }
