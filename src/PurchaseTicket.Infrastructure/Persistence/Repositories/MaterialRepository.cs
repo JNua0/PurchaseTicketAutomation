@@ -42,21 +42,12 @@ public class MaterialRepository : IMaterialRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IReadOnlyList<Material>> GetAllAsync()
+    public async Task<IReadOnlyList<Material>> GetActiveAsync()
     {
         return await _context.Materials
             .AsNoTracking()
-            .ToListAsync();
-    }
-
-    public async Task<IReadOnlyList<Material>> SearchByNameAsync(string name)
-    {
-        return await _context.Materials
-            .AsNoTracking()
-            .Where(material =>
-                EF.Functions.ILike(
-                    material.Name,
-                    $"%{name}%"))
+            .Where(material => material.IsActive)
+            .OrderBy(material => material.Name)
             .ToListAsync();
     }
 }

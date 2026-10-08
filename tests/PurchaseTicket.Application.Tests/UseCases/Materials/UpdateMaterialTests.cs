@@ -30,6 +30,9 @@ public class UpdateMaterialTests
             return Task.FromResult(NameExists);
         }
 
+        public Task<IReadOnlyList<Material>> GetActiveAsync()
+            => throw new NotImplementedException();
+
         public Task<Material?> GetByIdAsync(int id)
         {
             return Task.FromResult(MaterialToReturn);
@@ -39,17 +42,6 @@ public class UpdateMaterialTests
         {
             UpdatedMaterial = material;
             return Task.CompletedTask;
-        }
-
-        public Task<IReadOnlyList<Material>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<Material>> SearchByNameAsync(
-            string name)
-        {
-            throw new NotImplementedException();
         }
     }
 

@@ -19,6 +19,9 @@ public class ActivateMaterialTests
             throw new NotImplementedException();
         }
 
+        public Task<IReadOnlyList<Material>> GetActiveAsync()
+            => throw new NotImplementedException();
+
         public Task<bool> ExistsByNameAsync(
             string name,
             int? excludeMaterialId = null)
@@ -35,17 +38,6 @@ public class ActivateMaterialTests
         {
             UpdatedMaterial = material;
             return Task.CompletedTask;
-        }
-
-        public Task<IReadOnlyList<Material>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<Material>> SearchByNameAsync(
-    string name)
-        {
-            throw new NotImplementedException();
         }
     }
 

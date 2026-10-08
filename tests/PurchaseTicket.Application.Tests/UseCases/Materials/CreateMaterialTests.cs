@@ -33,18 +33,10 @@ public class CreateMaterialTests
             throw new NotImplementedException();
         }
 
+        public Task<IReadOnlyList<Material>> GetActiveAsync()
+            => throw new NotImplementedException();
+
         public Task UpdateAsync(Material material)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<Material>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<Material>> SearchByNameAsync(
-    string name)
         {
             throw new NotImplementedException();
         }

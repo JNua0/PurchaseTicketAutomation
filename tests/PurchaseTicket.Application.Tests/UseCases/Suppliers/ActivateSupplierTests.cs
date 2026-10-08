@@ -37,15 +37,8 @@ public class ActivateSupplierTests
             return Task.CompletedTask;
         }
 
-        public Task<IReadOnlyList<Supplier>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<Supplier>> SearchByNameAsync(string name)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<IReadOnlyList<Supplier>> GetActiveAsync()
+            => throw new NotImplementedException();
     }
 
     [Fact]

@@ -10,6 +10,5 @@ public interface IMaterialRepository
     int? excludeMaterialId = null);
     Task<Material?> GetByIdAsync(int id);
     Task UpdateAsync(Material material);
-    Task<IReadOnlyList<Material>> GetAllAsync();
-    Task<IReadOnlyList<Material>> SearchByNameAsync(string name);
+    Task<IReadOnlyList<Material>> GetActiveAsync();
 }
