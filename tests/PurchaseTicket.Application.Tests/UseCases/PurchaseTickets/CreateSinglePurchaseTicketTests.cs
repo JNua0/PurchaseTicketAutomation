@@ -1,23 +1,21 @@
-using PurchaseTicket.Application.Abstractions.Persistence;
+﻿using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.TicketNumbers;
-using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateConventional;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateSingle;
 using PurchaseTicket.Domain.Entities;
 using PurchaseTicket.Domain.Enums;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
 namespace PurchaseTicket.Application.Tests.UseCases.PurchaseTickets;
 
-public class CreateConventionalPurchaseTicketTests
+public class CreateSinglePurchaseTicketTests
 {
-    private sealed class FakePurchaseTicketRepository
-        : IPurchaseTicketRepository
+    private sealed class FakePurchaseTicketRepository : IPurchaseTicketRepository
     {
         public Ticket? AddedTicket { get; private set; }
 
         public Task AddAsync(Ticket purchaseTicket)
         {
             AddedTicket = purchaseTicket;
-
             return Task.CompletedTask;
         }
 
@@ -37,8 +35,7 @@ public class CreateConventionalPurchaseTicketTests
         }
     }
 
-    private sealed class FakeSupplierRepository
-        : ISupplierRepository
+    private sealed class FakeSupplierRepository : ISupplierRepository
     {
         private readonly Supplier? _supplier;
 
@@ -52,9 +49,6 @@ public class CreateConventionalPurchaseTicketTests
             return Task.FromResult(_supplier);
         }
 
-        public Task<IReadOnlyList<Supplier>> GetActiveAsync()
-            => throw new NotImplementedException();
-
         public Task AddAsync(Supplier supplier)
         {
             throw new NotImplementedException();
@@ -66,6 +60,9 @@ public class CreateConventionalPurchaseTicketTests
         {
             throw new NotImplementedException();
         }
+
+        public Task<IReadOnlyList<Supplier>> GetActiveAsync()
+            => throw new NotImplementedException();
 
         public Task UpdateAsync(Supplier supplier)
         {
@@ -108,8 +105,7 @@ public class CreateConventionalPurchaseTicketTests
         }
     }
 
-    private sealed class FakeTicketNumberGenerator
-        : ITicketNumberGenerator
+    private sealed class FakeTicketNumberGenerator : ITicketNumberGenerator
     {
         public Task<string> GenerateAsync()
         {
@@ -118,33 +114,35 @@ public class CreateConventionalPurchaseTicketTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldCreateAndStoreConventionalPurchaseTicket()
+    public async Task ExecuteAsync_ShouldCreateAndStoreSinglePurchaseTicket()
     {
         // Arrange
-        var repository = new FakePurchaseTicketRepository();
-        var ticketNumberGenerator = new FakeTicketNumberGenerator();
+        var repository =
+            new FakePurchaseTicketRepository();
 
-        var supplier = new Supplier("Proveedor Uno");
-        var material = new Material("Acero");
+        var ticketNumberGenerator =
+            new FakeTicketNumberGenerator();
 
         var supplierRepository =
-            new FakeSupplierRepository(supplier);
+            new FakeSupplierRepository(
+                new Supplier("Proveedor Uno"));
 
         var materialRepository =
-            new FakeMaterialRepository(material);
+            new FakeMaterialRepository(
+                new Material("Acero"));
 
-        var useCase = new CreateConventionalPurchaseTicket(
+        var useCase = new CreateSinglePurchaseTicket(
             repository,
             supplierRepository,
             materialRepository,
             ticketNumberGenerator);
 
-        var command = new CreateConventionalPurchaseTicketCommand(
+        var command = new CreateSinglePurchaseTicketCommand(
             SupplierId: 1,
             MaterialId: 2,
             LicensePlate: "abc123",
             Transporter: "juan perez",
-            GrossWeight: 25000m);
+            NetWeight: 15000m);
 
         // Act
         var result =
@@ -157,25 +155,47 @@ public class CreateConventionalPurchaseTicketTests
             "T-000001",
             repository.AddedTicket.TicketNumber);
 
-        Assert.Equal(1, repository.AddedTicket.SupplierId);
+        Assert.Equal(
+            1,
+            repository.AddedTicket.SupplierId);
 
-        Assert.Equal(2, repository.AddedTicket.MaterialId);
+        Assert.Equal(
+            2,
+            repository.AddedTicket.MaterialId);
 
-        Assert.Equal(25000m, repository.AddedTicket.GrossWeight);
+        Assert.Equal(
+            15000m,
+            repository.AddedTicket.NetWeight);
 
-        Assert.Equal(TicketStatus.WeighingPending, repository.AddedTicket.Status);
+        Assert.Equal(
+            TicketStatus.AmountPending,
+            repository.AddedTicket.Status);
 
-        Assert.Equal(WeighingType.Conventional, repository.AddedTicket.WeighingType);
+        Assert.Equal(
+            WeighingType.Single,
+            repository.AddedTicket.WeighingType);
 
-        Assert.Equal("ABC123", repository.AddedTicket.LicensePlate);
+        Assert.Null(
+            repository.AddedTicket.GrossWeight);
 
-        Assert.Equal("Juan Perez", repository.AddedTicket.Transporter);
+        Assert.Null(
+            repository.AddedTicket.TareWeight);
 
-        Assert.Equal("T-000001", result.TicketNumber);
+        Assert.Equal(
+            "ABC123",
+            repository.AddedTicket.LicensePlate);
+
+        Assert.Equal(
+            "Juan Perez",
+            repository.AddedTicket.Transporter);
+
+        Assert.Equal(
+            "T-000001",
+            result.TicketNumber);
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldNotStoreTicketWhenGrossWeightIsInvalid()
+    public async Task ExecuteAsync_ShouldNotStoreTicketWhenNetWeightIsInvalid()
     {
         // Arrange
         var repository =
@@ -192,18 +212,18 @@ public class CreateConventionalPurchaseTicketTests
             new FakeMaterialRepository(
                 new Material("Acero"));
 
-        var useCase = new CreateConventionalPurchaseTicket(
+        var useCase = new CreateSinglePurchaseTicket(
             repository,
             supplierRepository,
             materialRepository,
             ticketNumberGenerator);
 
-        var command = new CreateConventionalPurchaseTicketCommand(
+        var command = new CreateSinglePurchaseTicketCommand(
             SupplierId: 1,
             MaterialId: 2,
             LicensePlate: "abc123",
             Transporter: "juan perez",
-            GrossWeight: 0m);
+            NetWeight: 0m);
 
         // Act
         async Task Act() =>
@@ -216,92 +236,53 @@ public class CreateConventionalPurchaseTicketTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldThrowWhenSupplierDoesNotExist()
+    public async Task ExecuteAsync_ShouldAllowNullLicensePlateForSinglePurchaseTicket()
     {
         // Arrange
         var repository =
             new FakePurchaseTicketRepository();
-
-        var supplierRepository =
-            new FakeSupplierRepository(null);
-
-        var materialRepository =
-            new FakeMaterialRepository(
-                new Material("Acero"));
 
         var ticketNumberGenerator =
             new FakeTicketNumberGenerator();
-
-        var useCase = new CreateConventionalPurchaseTicket(
-            repository,
-            supplierRepository,
-            materialRepository,
-            ticketNumberGenerator);
-
-        var command = new CreateConventionalPurchaseTicketCommand(
-            SupplierId: 1,
-            MaterialId: 2,
-            LicensePlate: "abc123",
-            Transporter: "juan perez",
-            GrossWeight: 25000m);
-
-        // Act
-        async Task Act() =>
-            await useCase.ExecuteAsync(command);
-
-        // Assert
-        var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(Act);
-
-        Assert.Equal(
-            "Supplier was not found.",
-            exception.Message);
-
-        Assert.Null(repository.AddedTicket);
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_ShouldThrowWhenMaterialDoesNotExist()
-    {
-        // Arrange
-        var repository =
-            new FakePurchaseTicketRepository();
 
         var supplierRepository =
             new FakeSupplierRepository(
                 new Supplier("Proveedor Uno"));
 
         var materialRepository =
-            new FakeMaterialRepository(null);
+            new FakeMaterialRepository(
+                new Material("Acero"));
 
-        var ticketNumberGenerator =
-            new FakeTicketNumberGenerator();
-
-        var useCase = new CreateConventionalPurchaseTicket(
+        var useCase = new CreateSinglePurchaseTicket(
             repository,
             supplierRepository,
             materialRepository,
             ticketNumberGenerator);
 
-        var command = new CreateConventionalPurchaseTicketCommand(
+        var command = new CreateSinglePurchaseTicketCommand(
             SupplierId: 1,
             MaterialId: 2,
-            LicensePlate: "abc123",
+            LicensePlate: null,
             Transporter: "juan perez",
-            GrossWeight: 25000m);
+            NetWeight: 15000m);
 
         // Act
-        async Task Act() =>
-            await useCase.ExecuteAsync(command);
+        await useCase.ExecuteAsync(command);
 
         // Assert
-        var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(Act);
+        Assert.NotNull(repository.AddedTicket);
+
+        Assert.Null(
+            repository.AddedTicket.LicensePlate);
 
         Assert.Equal(
-            "Material was not found.",
-            exception.Message);
+            WeighingType.Single,
+            repository.AddedTicket.WeighingType);
 
-        Assert.Null(repository.AddedTicket);
+        Assert.Equal(
+            TicketStatus.AmountPending,
+            repository.AddedTicket.Status);
     }
+
+
 }

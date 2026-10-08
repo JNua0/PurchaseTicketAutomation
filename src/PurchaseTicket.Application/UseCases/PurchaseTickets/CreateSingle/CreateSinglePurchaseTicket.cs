@@ -1,34 +1,31 @@
-using PurchaseTicket.Application.Abstractions.Persistence;
-using PurchaseTicket.Application.Abstractions.Printing;
+﻿using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.TicketNumbers;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.Results;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
-namespace PurchaseTicket.Application.UseCases.PurchaseTickets.Create;
+namespace PurchaseTicket.Application.UseCases.PurchaseTickets.CreateSingle;
 
-public class CreatePurchaseTicket
+public class CreateSinglePurchaseTicket
 {
     private readonly IPurchaseTicketRepository _repository;
     private readonly ISupplierRepository _supplierRepository;
     private readonly IMaterialRepository _materialRepository;
     private readonly ITicketNumberGenerator _ticketNumberGenerator;
-    private readonly ITicketPrinter _ticketPrinter;
 
-    public CreatePurchaseTicket(
+    public CreateSinglePurchaseTicket(
         IPurchaseTicketRepository repository,
         ISupplierRepository supplierRepository,
         IMaterialRepository materialRepository,
-        ITicketNumberGenerator ticketNumberGenerator,
-        ITicketPrinter ticketPrinter)
+        ITicketNumberGenerator ticketNumberGenerator)
     {
         _repository = repository;
         _supplierRepository = supplierRepository;
         _materialRepository = materialRepository;
         _ticketNumberGenerator = ticketNumberGenerator;
-        _ticketPrinter = ticketPrinter;
     }
 
     public async Task<CreatePurchaseTicketResult> ExecuteAsync(
-        CreatePurchaseTicketCommand command)
+        CreateSinglePurchaseTicketCommand command)
     {
         var supplier =
             await _supplierRepository.GetByIdAsync(
@@ -49,34 +46,17 @@ public class CreatePurchaseTicket
         string ticketNumber =
             await _ticketNumberGenerator.GenerateAsync();
 
-        var ticket = new Ticket(
+        var ticket = Ticket.CreateSingle(
             ticketNumber,
             command.SupplierId,
             command.MaterialId,
             command.LicensePlate,
-            command.DriverName,
-            command.GrossWeight);
+            command.Transporter,
+            command.NetWeight);
 
         await _repository.AddAsync(ticket);
 
-        var printData = new TicketPrintData(
-            ticket,
-            supplier.Name,
-            material.Name);
-
-        try
-        {
-            await _ticketPrinter.PrintInitialAsync(printData);
-
-            return new CreatePurchaseTicketResult(
-                ticket.TicketNumber,
-                Printed: true);
-        }
-        catch
-        {
-            return new CreatePurchaseTicketResult(
-                ticket.TicketNumber,
-                Printed: false);
-        }
+        return new CreatePurchaseTicketResult(
+            ticket.TicketNumber);
     }
 }
