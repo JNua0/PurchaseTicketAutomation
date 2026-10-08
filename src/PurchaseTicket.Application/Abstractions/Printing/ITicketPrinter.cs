@@ -1,7 +1,9 @@
-namespace PurchaseTicket.Application.Abstractions.Printing;
+using PurchaseTicket.Application.Abstractions.Printing;
 
 public interface ITicketPrinter
 {
-    Task PrintInitialAsync(TicketPrintData data);
-    Task PrintFinalAsync(TicketPrintData data);
+    Task PrintConventionalInitialAsync(TicketPrintData data);
+    Task PrintConventionalFinalAsync(TicketPrintData data);
+    Task PrintConventionalCompletedAsync(TicketPrintData data);
+    Task PrintSingleAsync(TicketPrintData data);
 }

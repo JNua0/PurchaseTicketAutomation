@@ -13,8 +13,7 @@ public class EpsonTmU295TicketPrinterTests
     {
         private readonly ISerialPort _serialPort;
 
-        public FakeSerialPortFactory(
-            ISerialPort serialPort)
+        public FakeSerialPortFactory(ISerialPort serialPort)
         {
             _serialPort = serialPort;
         }
@@ -44,8 +43,7 @@ public class EpsonTmU295TicketPrinterTests
         public void Write(string text)
         {
             if (ThrowOnWrite)
-                throw new IOException(
-                    "Serial write failed.");
+                throw new IOException("Serial write failed.");
 
             WasWritten = true;
             WrittenText = text;
@@ -84,71 +82,110 @@ public class EpsonTmU295TicketPrinterTests
         };
     }
 
-    [Fact]
-    public async Task PrintInitialAsync_ShouldOpenWriteAndCloseSerialPort()
+    private static Ticket CreateInitialTicket(
+        string ticketNumber = "T-000001",
+        string licensePlate = "ABC123",
+        string transporter = "Juan Ortega",
+        decimal grossWeight = 25000m)
     {
-        // Arrange
-        var serialPort = new FakeSerialPort();
-
-        var serialPortFactory =
-            new FakeSerialPortFactory(serialPort);
-
-        var printer =new EpsonTmU295TicketPrinter(
-            serialPortFactory,
-            CreateOptions());
-
-        var ticket = new Ticket(
-            "1",
+        return Ticket.CreateConventional(
+            ticketNumber,
             1,
             1,
-            "ABC123",
-            "Juan Perez",
-            25000m);
+            licensePlate,
+            transporter,
+            grossWeight);
+    }
 
-        var printData = new TicketPrintData(
-            ticket,
-            "Proveedor Uno",
-            "Acero");
+    private static Ticket CreateTicketWithTare()
+    {
+        var ticket = CreateInitialTicket();
 
-        // Act
-        await printer.PrintInitialAsync(printData);
+        ticket.RegisterTare(10000m);
 
-        // Assert
-        Assert.True(serialPort.WasOpened);
-        Assert.True(serialPort.WasWritten);
-        Assert.True(serialPort.WasClosed);
+        return ticket;
+    }
+
+    private static Ticket CreateCompletedConventionalTicket()
+    {
+        var ticket = CreateTicketWithTare();
+
+        ticket.RegisterAmount(
+            discount: 5m,
+            pricePerKg: 3m);
+
+        return ticket;
+    }
+
+    private static Ticket CreateSingleTicket()
+    {
+        return Ticket.CreateSingle(
+            ticketNumber: "T-000002",
+            supplierId: 1,
+            materialId: 1,
+            licensePlate: "XYZ789",
+            transporter: "Pedro Lopez",
+            netWeight: 12500m);
     }
 
     [Fact]
-    public async Task PrintInitialAsync_ShouldWriteInitialTicketFormat()
+    public async Task PrintConventionalInitialAsync_ShouldOpenWriteAndCloseSerialPort()
     {
-        // Arrange
-        var serialPort = new FakeSerialPort();
+        var serialPort =
+            new FakeSerialPort();
 
         var serialPortFactory =
             new FakeSerialPortFactory(serialPort);
 
-        var printer = new EpsonTmU295TicketPrinter(
-            serialPortFactory,
-            CreateOptions());
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                serialPortFactory,
+                CreateOptions());
 
-        var ticket = new Ticket(
-            "T-000001",
-            1,
-            1,
-            "ABC-123",
-            "Juan Ortega",
-            25000m);
+        var ticket =
+            CreateInitialTicket();
 
-        var printData = new TicketPrintData(
-            ticket,
-            "Proveedor Ejemplo",
-            "Aluminio");
+        var printData =
+            new TicketPrintData(
+                ticket,
+                "Proveedor Uno",
+                "Acero");
 
-        // Act
-        await printer.PrintInitialAsync(printData);
+        await printer.PrintConventionalInitialAsync(
+            printData);
 
-        // Assert
+        Assert.True(serialPort.WasOpened);
+        Assert.True(serialPort.WasWritten);
+        Assert.True(serialPort.WasClosed);
+        Assert.False(serialPort.IsOpen);
+    }
+
+    [Fact]
+    public async Task PrintConventionalInitialAsync_ShouldWriteInitialTicketFormat()
+    {
+        var serialPort =
+            new FakeSerialPort();
+
+        var serialPortFactory =
+            new FakeSerialPortFactory(serialPort);
+
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                serialPortFactory,
+                CreateOptions());
+
+        var ticket =
+            CreateInitialTicket();
+
+        var printData =
+            new TicketPrintData(
+                ticket,
+                "Proveedor Ejemplo",
+                "Aluminio");
+
+        await printer.PrintConventionalInitialAsync(
+            printData);
+
         var expected =
             "NOMBRE EMPRESA\r\n" +
             "DIRECCION CALLE\r\n" +
@@ -157,13 +194,13 @@ public class EpsonTmU295TicketPrinterTests
             "correo@empresa.com\r\n" +
             "===================================\r\n" +
             "FOLIO    : T-000001\r\n" +
-            "PLACAS   : ABC-123\r\n" +
+            "PLACAS   : ABC123\r\n" +
             "PROVEEDOR: Proveedor Ejemplo\r\n" +
             "CHOFER   : Juan Ortega\r\n" +
             "PRODUCTO : Aluminio\r\n" +
             "-----------------------------------\r\n" +
             "ENTRADA\r\n" +
-            $"FECHA    : {ticket.CreatedAt:dd/MM/yyyy HH:mm}\r\n" +
+            $"FECHA    : {ticket.CheckInAt:dd/MM/yyyy HH:mm}\r\n" +
             "PESO     : 25,000 kg\r\n";
 
         Assert.Equal(
@@ -172,80 +209,75 @@ public class EpsonTmU295TicketPrinterTests
     }
 
     [Fact]
-    public async Task PrintInitialAsync_ShouldCloseSerialPort_WhenWriteFails()
+    public async Task PrintConventionalInitialAsync_ShouldCloseSerialPort_WhenWriteFails()
     {
-        // Arrange
-        var serialPort = new FakeSerialPort
-        {
-            ThrowOnWrite = true
-        };
+        var serialPort =
+            new FakeSerialPort
+            {
+                ThrowOnWrite = true
+            };
 
         var serialPortFactory =
             new FakeSerialPortFactory(serialPort);
 
-        var printer = new EpsonTmU295TicketPrinter(
-            serialPortFactory,
-            CreateOptions());
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                serialPortFactory,
+                CreateOptions());
 
-        var ticket = new Ticket(
-            "123",
-            1,
-            1,
-            "ABC123",
-            "Juan Perez",
-            25000m);
+        var ticket =
+            CreateInitialTicket();
 
-        var printData = new TicketPrintData(
-            ticket,
-            "Proveedor Uno",
-            "Acero");
+        var printData =
+            new TicketPrintData(
+                ticket,
+                "Proveedor Uno",
+                "Acero");
 
-        // Act
         Task act() =>
-            printer.PrintInitialAsync(printData);
+            printer.PrintConventionalInitialAsync(
+                printData);
 
-        // Assert
         await Assert.ThrowsAsync<IOException>(act);
 
+        Assert.True(serialPort.WasOpened);
+        Assert.False(serialPort.WasWritten);
         Assert.True(serialPort.WasClosed);
         Assert.False(serialPort.IsOpen);
     }
 
     [Fact]
-    public async Task PrintInitialAsync_ShouldNotExceed35CharactersPerLine()
+    public async Task PrintConventionalInitialAsync_ShouldNotExceed35CharactersPerLine()
     {
-        // Arrange
-        var serialPort = new FakeSerialPort();
+        var serialPort =
+            new FakeSerialPort();
 
         var serialPortFactory =
             new FakeSerialPortFactory(serialPort);
 
-        var printer = new EpsonTmU295TicketPrinter(
-            serialPortFactory,
-            CreateOptions());
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                serialPortFactory,
+                CreateOptions());
 
-        var ticket = new Ticket(
-            "T-000001",
-            1,
-            1,
-            "ABC-123",
-            "Juan Ortega",
-            25000m);
+        var ticket =
+            CreateInitialTicket();
 
-        var printData = new TicketPrintData(
-            ticket,
-            "Comercializadora de Metales del Centro",
-            "Aluminio");
+        var printData =
+            new TicketPrintData(
+                ticket,
+                "Comercializadora de Metales del Centro",
+                "Aluminio");
 
-        // Act
-        await printer.PrintInitialAsync(printData);
+        await printer.PrintConventionalInitialAsync(
+            printData);
 
-        // Assert
         Assert.NotNull(serialPort.WrittenText);
 
-        var lines = serialPort.WrittenText.Split(
-            "\r\n",
-            StringSplitOptions.RemoveEmptyEntries);
+        var lines =
+            serialPort.WrittenText.Split(
+                "\r\n",
+                StringSplitOptions.RemoveEmptyEntries);
 
         Assert.All(
             lines,
@@ -255,82 +287,75 @@ public class EpsonTmU295TicketPrinterTests
     }
 
     [Fact]
-    public async Task PrintInitialAsync_ShouldWrapLongSupplierName()
+    public async Task PrintConventionalInitialAsync_ShouldWrapLongSupplierName()
     {
-        // Arrange
-        var serialPort = new FakeSerialPort();
+        var serialPort =
+            new FakeSerialPort();
 
         var serialPortFactory =
             new FakeSerialPortFactory(serialPort);
 
-        var printer = new EpsonTmU295TicketPrinter(
-            serialPortFactory,
-            CreateOptions());
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                serialPortFactory,
+                CreateOptions());
 
-        var ticket = new Ticket(
-            "T-000001",
-            1,
-            1,
-            "ABC-123",
-            "Juan Ortega",
-            25000m);
+        var ticket =
+            CreateInitialTicket();
 
-        var printData = new TicketPrintData(
-            ticket,
-            "Comercializadora de Metales del Centro",
-            "Aluminio");
+        const string supplierName =
+            "Comercializadora de Metales del Centro";
 
-        // Act
-        await printer.PrintInitialAsync(printData);
+        var printData =
+            new TicketPrintData(
+                ticket,
+                supplierName,
+                "Aluminio");
 
-        // Assert
+        await printer.PrintConventionalInitialAsync(
+            printData);
+
         Assert.NotNull(serialPort.WrittenText);
 
         Assert.Contains(
-            "PROVEEDOR: Comercializadora de\r\n" +
-            "           Metales del Centro\r\n",
+            "PROVEEDOR: Comercializadora de",
+            serialPort.WrittenText);
+
+        Assert.Contains(
+            "           Metales del Centro",
             serialPort.WrittenText);
     }
 
     [Fact]
-    public async Task PrintFinalAsync_ShouldWriteFinalTicketFormat()
+    public async Task PrintConventionalFinalAsync_ShouldWriteFinalTicketFormat()
     {
-        // Arrange
-        var serialPort = new FakeSerialPort();
+        var serialPort =
+            new FakeSerialPort();
 
         var serialPortFactory =
             new FakeSerialPortFactory(serialPort);
 
-        var printer = new EpsonTmU295TicketPrinter(
-            serialPortFactory,
-            CreateOptions());
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                serialPortFactory,
+                CreateOptions());
 
-        var ticket = new Ticket(
-            "T-000001",
-            1,
-            1,
-            "ABC-123",
-            "Juan Ortega",
-            25000m);
+        var ticket =
+            CreateTicketWithTare();
 
-        ticket.Complete(
-            tareWeight: 10000m,
-            discount: 0m,
-            pricePerKg: 1m);
+        var printData =
+            new TicketPrintData(
+                ticket,
+                "Proveedor Uno",
+                "Acero");
 
-        var printData = new TicketPrintData(
-            ticket,
-            "Proveedor Ejemplo",
-            "Aluminio");
+        await printer.PrintConventionalFinalAsync(
+            printData);
 
-        // Act
-        await printer.PrintFinalAsync(printData);
-
-        // Assert
         var expected =
             "-----------------------------------\r\n" +
             "SALIDA\r\n" +
-            $"FECHA    : {ticket.CompletedAt:dd/MM/yyyy HH:mm}\r\n" +
+            $"FECHA    : {ticket.DepartureAt:dd/MM/yyyy HH:mm}\r\n" +
             "PESO     : 10,000 kg\r\n" +
             "-----------------------------------\r\n" +
             "PESO NETO: 15,000 kg\r\n" +
@@ -342,95 +367,210 @@ public class EpsonTmU295TicketPrinterTests
     }
 
     [Fact]
-    public async Task PrintFinalAsync_ShouldCloseSerialPort_WhenWriteFails()
+    public async Task PrintConventionalFinalAsync_ShouldCloseSerialPort_WhenWriteFails()
     {
-        // Arrange
-        var serialPort = new FakeSerialPort
-        {
-            ThrowOnWrite = true
-        };
+        var serialPort =
+            new FakeSerialPort
+            {
+                ThrowOnWrite = true
+            };
 
         var serialPortFactory =
             new FakeSerialPortFactory(serialPort);
 
-        var printer = new EpsonTmU295TicketPrinter(
-            serialPortFactory,
-            CreateOptions());
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                serialPortFactory,
+                CreateOptions());
 
-        var ticket = new Ticket(
-            "T-000001",
-            1,
-            1,
-            "ABC-123",
-            "Juan Ortega",
-            25000m);
+        var ticket =
+            CreateTicketWithTare();
 
-        ticket.Complete(
-            tareWeight: 10000m,
-            discount: 0m,
-            pricePerKg: 1m);
+        var printData =
+            new TicketPrintData(
+                ticket,
+                "Proveedor Uno",
+                "Acero");
 
-        var printData = new TicketPrintData(
-            ticket,
-            "Proveedor Ejemplo",
-            "Aluminio");
-
-        // Act
         Task act() =>
-            printer.PrintFinalAsync(printData);
+            printer.PrintConventionalFinalAsync(
+                printData);
 
-        // Assert
         await Assert.ThrowsAsync<IOException>(act);
 
+        Assert.True(serialPort.WasOpened);
+        Assert.False(serialPort.WasWritten);
         Assert.True(serialPort.WasClosed);
         Assert.False(serialPort.IsOpen);
     }
 
     [Fact]
-    public async Task PrintFinalAsync_ShouldNotExceed35CharactersPerLine()
+    public async Task PrintConventionalCompletedAsync_ShouldOpenWriteAndCloseSerialPort()
     {
-        // Arrange
-        var serialPort = new FakeSerialPort();
+        var serialPort =
+            new FakeSerialPort();
 
         var serialPortFactory =
             new FakeSerialPortFactory(serialPort);
 
-        var printer = new EpsonTmU295TicketPrinter(
-            serialPortFactory,
-            CreateOptions());
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                serialPortFactory,
+                CreateOptions());
 
-        var ticket = new Ticket(
-            "T-000001",
-            1,
-            1,
-            "ABC-123",
-            "Juan Ortega",
-            25000m);
+        var ticket =
+            CreateCompletedConventionalTicket();
 
-        ticket.Complete(
-            tareWeight: 10000m,
-            discount: 0m,
-            pricePerKg: 1m);
+        var printData =
+            new TicketPrintData(
+                ticket,
+                "Proveedor Uno",
+                "Acero");
 
-        var printData = new TicketPrintData(
-            ticket,
-            "Proveedor Ejemplo",
-            "Aluminio");
+        await printer.PrintConventionalCompletedAsync(
+            printData);
 
-        // Act
-        await printer.PrintFinalAsync(printData);
-
-        // Assert
-        Assert.NotNull(serialPort.WrittenText);
-
-        var lines = serialPort.WrittenText.Split(
-            "\r\n",
-            StringSplitOptions.RemoveEmptyEntries);
-
-        Assert.All(
-            lines,
-            line => Assert.True(
-                line.Length <= 35,
-                $"Line exceeds 35 characters: '{line}'"));
+        Assert.True(serialPort.WasOpened);
+        Assert.True(serialPort.WasWritten);
+        Assert.True(serialPort.WasClosed);
+        Assert.False(serialPort.IsOpen);
     }
+
+    [Fact]
+    public async Task PrintConventionalCompletedAsync_ShouldWriteCompletedTicketFormat()
+    {
+        var serialPort =
+            new FakeSerialPort();
+
+        var serialPortFactory =
+            new FakeSerialPortFactory(serialPort);
+
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                serialPortFactory,
+                CreateOptions());
+
+        var ticket =
+            CreateCompletedConventionalTicket();
+
+        var printData =
+            new TicketPrintData(
+                ticket,
+                "Proveedor Ejemplo",
+                "Aluminio");
+
+        await printer.PrintConventionalCompletedAsync(
+            printData);
+
+        var expected =
+            "NOMBRE EMPRESA\r\n" +
+            "DIRECCION CALLE\r\n" +
+            "COLONIA\r\n" +
+            "TEL. 55 0000 0000\r\n" +
+            "correo@empresa.com\r\n" +
+            "===================================\r\n" +
+            "FOLIO    : T-000001\r\n" +
+            "PLACAS   : ABC123\r\n" +
+            "PROVEEDOR: Proveedor Ejemplo\r\n" +
+            "CHOFER   : Juan Ortega\r\n" +
+            "PRODUCTO : Aluminio\r\n" +
+            "-----------------------------------\r\n" +
+            "ENTRADA\r\n" +
+            $"FECHA    : {ticket.CheckInAt:dd/MM/yyyy HH:mm}\r\n" +
+            "PESO     : 25,000 kg\r\n" +
+            "-----------------------------------\r\n" +
+            "SALIDA\r\n" +
+            $"FECHA    : {ticket.DepartureAt:dd/MM/yyyy HH:mm}\r\n" +
+            "PESO     : 10,000 kg\r\n" +
+            "-----------------------------------\r\n" +
+            "PESO NETO: 15,000 kg\r\n" +
+            "===================================\r\n";
+
+        Assert.Equal(
+            expected,
+            serialPort.WrittenText);
+    }
+
+    [Fact]
+    public async Task PrintSingleAsync_ShouldOpenWriteAndCloseSerialPort()
+    {
+        var serialPort =
+            new FakeSerialPort();
+
+        var serialPortFactory =
+            new FakeSerialPortFactory(serialPort);
+
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                serialPortFactory,
+                CreateOptions());
+
+        var ticket =
+            CreateSingleTicket();
+
+        var printData =
+            new TicketPrintData(
+                ticket,
+                "Proveedor Uno",
+                "Acero");
+
+        await printer.PrintSingleAsync(
+            printData);
+
+        Assert.True(serialPort.WasOpened);
+        Assert.True(serialPort.WasWritten);
+        Assert.True(serialPort.WasClosed);
+        Assert.False(serialPort.IsOpen);
+    }
+
+    [Fact]
+    public async Task PrintSingleAsync_ShouldWriteSingleTicketFormat()
+    {
+        var serialPort =
+            new FakeSerialPort();
+
+        var serialPortFactory =
+            new FakeSerialPortFactory(serialPort);
+
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                serialPortFactory,
+                CreateOptions());
+
+        var ticket =
+            CreateSingleTicket();
+
+        var printData =
+            new TicketPrintData(
+                ticket,
+                "Proveedor Uno",
+                "Acero");
+
+        await printer.PrintSingleAsync(
+            printData);
+
+        var expected =
+            "NOMBRE EMPRESA\r\n" +
+            "DIRECCION CALLE\r\n" +
+            "COLONIA\r\n" +
+            "TEL. 55 0000 0000\r\n" +
+            "correo@empresa.com\r\n" +
+            "===================================\r\n" +
+            "FOLIO    : T-000002\r\n" +
+            "PLACAS   : XYZ789\r\n" +
+            "PROVEEDOR: Proveedor Uno\r\n" +
+            "TRANSPORTISTA: Pedro Lopez\r\n" +
+            "PRODUCTO : Acero\r\n" +
+            "-----------------------------------\r\n" +
+            "PESAJE UNICO\r\n" +
+            $"FECHA    : {ticket.CheckInAt:dd/MM/yyyy HH:mm}\r\n" +
+            "PESO NETO: 12,500 kg\r\n" +
+            "===================================\r\n";
+
+        Assert.Equal(
+            expected,
+            serialPort.WrittenText);
+    }
+
+
 }

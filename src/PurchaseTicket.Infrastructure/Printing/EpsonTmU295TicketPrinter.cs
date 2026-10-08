@@ -8,7 +8,6 @@ namespace PurchaseTicket.Infrastructure.Printing;
 public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
 {
     private const int LineWidth = 35;
-
     private readonly ISerialPortFactory _serialPortFactory;
     private readonly TicketPrinterOptions _options;
 
@@ -20,7 +19,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         _options = options;
     }
 
-    public Task PrintInitialAsync(TicketPrintData data)
+    public Task PrintConventionalInitialAsync(TicketPrintData data)
     {
         using var serialPort = _serialPortFactory.Create();
 
@@ -41,16 +40,37 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         }
     }
 
-    public Task PrintFinalAsync(TicketPrintData data)
+    public Task PrintConventionalFinalAsync(TicketPrintData data)
     {
-        using var serialPort =
-            _serialPortFactory.Create();
+        using var serialPort = _serialPortFactory.Create();
+
+        try
+        {
+            serialPort.Open();
+
+            string content = BuildFinalTicket(data);
+
+            serialPort.Write(content);
+
+            return Task.CompletedTask;
+        }
+        finally
+        {
+            if (serialPort.IsOpen)
+                serialPort.Close();
+        }
+    }
+
+    public Task PrintConventionalCompletedAsync(TicketPrintData data)
+    {
+        using var serialPort = _serialPortFactory.Create();
 
         try
         {
             serialPort.Open();
 
             string content =
+                BuildInitialTicket(data) +
                 BuildFinalTicket(data);
 
             serialPort.Write(content);
@@ -64,10 +84,34 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         }
     }
 
-    private string BuildInitialTicket(
-        TicketPrintData data)
+    public Task PrintSingleAsync(TicketPrintData data)
+    {
+        using var serialPort = _serialPortFactory.Create();
+
+        try
+        {
+            serialPort.Open();
+
+            string content =
+                BuildSingleTicket(data);
+
+            serialPort.Write(content);
+
+            return Task.CompletedTask;
+        }
+        finally
+        {
+            if (serialPort.IsOpen)
+                serialPort.Close();
+        }
+    }
+
+    private string BuildInitialTicket(TicketPrintData data)
     {
         var ticket = data.Ticket;
+
+        if (ticket.GrossWeight is null)
+            throw new InvalidOperationException("Purchase ticket does not have a gross weight.");
 
         var builder = new StringBuilder();
 
@@ -89,7 +133,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         AppendField(
             builder,
             "PLACAS",
-            ticket.LicensePlate);
+            ticket.LicensePlate ?? string.Empty);
 
         AppendField(
             builder,
@@ -99,7 +143,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         AppendField(
             builder,
             "CHOFER",
-            ticket.DriverName);
+            ticket.Transporter);
 
         AppendField(
             builder,
@@ -114,13 +158,13 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         AppendField(
             builder,
             "FECHA",
-            ticket.CreatedAt.ToString(
+            ticket.CheckInAt.ToString(
                 "dd/MM/yyyy HH:mm"));
 
         AppendField(
             builder,
             "PESO",
-            $"{FormatWeight(ticket.GrossWeight)} kg");
+            $"{FormatWeight(ticket.GrossWeight.Value)} kg");
 
         return builder.ToString()
             .Replace(
@@ -128,22 +172,18 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
                 "\r\n");
     }
 
-    private static string BuildFinalTicket(
-        TicketPrintData data)
+    private static string BuildFinalTicket(TicketPrintData data)
     {
         var ticket = data.Ticket;
 
-        if (ticket.CompletedAt is null)
-            throw new InvalidOperationException(
-                "Purchase ticket has not been completed.");
+        if (ticket.DepartureAt is null)
+            throw new InvalidOperationException("Purchase ticket does not have a departure date.");
 
         if (ticket.TareWeight is null)
-            throw new InvalidOperationException(
-                "Purchase ticket does not have a tare weight.");
+            throw new InvalidOperationException("Purchase ticket does not have a tare weight.");
 
         if (ticket.NetWeight is null)
-            throw new InvalidOperationException(
-                "Purchase ticket does not have a net weight.");
+            throw new InvalidOperationException("Purchase ticket does not have a net weight.");
 
         var builder = new StringBuilder();
 
@@ -155,7 +195,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         AppendField(
             builder,
             "FECHA",
-            ticket.CompletedAt.Value.ToString(
+            ticket.DepartureAt.Value.ToString(
                 "dd/MM/yyyy HH:mm"));
 
         AppendField(
@@ -173,6 +213,71 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
 
         builder.AppendLine(
             new string('=', LineWidth));
+
+        return builder.ToString()
+            .Replace(
+                Environment.NewLine,
+                "\r\n");
+    }
+
+    private string BuildSingleTicket(TicketPrintData data)
+    {
+        var ticket = data.Ticket;
+
+        if (ticket.NetWeight is null)
+            throw new InvalidOperationException("Purchase ticket does not have a net weight.");
+
+        var builder = new StringBuilder();
+
+        builder.AppendLine(_options.CompanyName);
+        builder.AppendLine(_options.Address);
+        builder.AppendLine(_options.Neighborhood);
+        builder.AppendLine($"TEL. {_options.PhoneNumber}");
+        builder.AppendLine(_options.Email);
+
+        builder.AppendLine(new string('=', LineWidth));
+
+        AppendField(
+            builder,
+            "FOLIO",
+            ticket.TicketNumber);
+
+        AppendField(
+            builder,
+            "PLACAS",
+            ticket.LicensePlate ?? string.Empty);
+
+        AppendField(
+            builder,
+            "PROVEEDOR",
+            data.SupplierName);
+
+        AppendField(
+            builder,
+            "TRANSPORTISTA",
+            ticket.Transporter);
+
+        AppendField(
+            builder,
+            "PRODUCTO",
+            data.MaterialName);
+
+        builder.AppendLine(new string('-', LineWidth));
+
+        builder.AppendLine("PESAJE UNICO");
+
+        AppendField(
+            builder,
+            "FECHA",
+            ticket.CheckInAt.ToString(
+                "dd/MM/yyyy HH:mm"));
+
+        AppendField(
+            builder,
+            "PESO NETO",
+            $"{FormatWeight(ticket.NetWeight.Value)} kg");
+
+        builder.AppendLine(new string('=', LineWidth));
 
         return builder.ToString()
             .Replace(
@@ -231,6 +336,4 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         builder.AppendLine(
             currentLine.ToString());
     }
-
-
 }
