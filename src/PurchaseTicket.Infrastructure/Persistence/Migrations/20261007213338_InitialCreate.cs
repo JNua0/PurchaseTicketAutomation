@@ -12,6 +12,9 @@ namespace PurchaseTicket.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateSequence(
+                name: "purchase_ticket_number_seq");
+
             migrationBuilder.CreateTable(
                 name: "materials",
                 columns: table => new
@@ -50,9 +53,11 @@ namespace PurchaseTicket.Infrastructure.Persistence.Migrations
                     ticket_number = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     supplier_id = table.Column<int>(type: "integer", nullable: false),
                     material_id = table.Column<int>(type: "integer", nullable: false),
-                    license_plate = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
-                    driver_name = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
-                    gross_weight = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false),
+                    license_plate = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    transporter = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    check_in_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    departure_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    gross_weight = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     tare_weight = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     net_weight = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     discount = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
@@ -60,8 +65,10 @@ namespace PurchaseTicket.Infrastructure.Persistence.Migrations
                     net_weight_after_discount = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     price_per_kg = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     amount = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
-                    status = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    weighing_type = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -120,6 +127,9 @@ namespace PurchaseTicket.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "suppliers");
+
+            migrationBuilder.DropSequence(
+                name: "purchase_ticket_number_seq");
         }
     }
 }

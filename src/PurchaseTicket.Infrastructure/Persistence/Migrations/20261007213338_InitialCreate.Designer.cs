@@ -12,8 +12,8 @@ using PurchaseTicket.Infrastructure.Persistence;
 namespace PurchaseTicket.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260928232412_AddPurchaseTicketNumberSequence")]
-    partial class AddPurchaseTicketNumberSequence
+    [Migration("20261007213338_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -68,9 +68,17 @@ namespace PurchaseTicket.Infrastructure.Persistence.Migrations
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("amount");
 
+                    b.Property<DateTime>("CheckInAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("check_in_at");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("DepartureAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("departure_at");
 
                     b.Property<decimal?>("Discount")
                         .HasPrecision(10, 2)
@@ -82,19 +90,12 @@ namespace PurchaseTicket.Infrastructure.Persistence.Migrations
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("discount_weight");
 
-                    b.Property<string>("DriverName")
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)")
-                        .HasColumnName("driver_name");
-
-                    b.Property<decimal>("GrossWeight")
+                    b.Property<decimal?>("GrossWeight")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("gross_weight");
 
                     b.Property<string>("LicensePlate")
-                        .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)")
                         .HasColumnName("license_plate");
@@ -120,8 +121,8 @@ namespace PurchaseTicket.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("status");
 
                     b.Property<int>("SupplierId")
@@ -138,6 +139,22 @@ namespace PurchaseTicket.Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("ticket_number");
+
+                    b.Property<string>("Transporter")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("transporter");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("WeighingType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("weighing_type");
 
                     b.HasKey("Id");
 
