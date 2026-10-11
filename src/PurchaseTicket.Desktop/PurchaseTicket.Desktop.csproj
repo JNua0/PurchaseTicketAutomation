@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\PurchaseTicket.Infrastructure\PurchaseTicket.Infrastructure.csproj" />
+    <ProjectReference Include="..\PurchaseTicket.Application\PurchaseTicket.Application.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="DotNetEnv" Version="3.2.0" />
+	  <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.1" />
+	  <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="ViewModels\Suppliers\" />
+	  <Folder Include="Views\Suppliers\" />
+	</ItemGroup>
+
+</Project>

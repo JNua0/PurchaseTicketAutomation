@@ -1,0 +1,181 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Views.Suppliers.SuppliersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Encabezado -->
+        <Grid Grid.Row="0"
+              Margin="0,0,0,20">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="Proveedores"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"/>
+
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal">
+            
+                <Button Content="{Binding ChangeSupplierStatusButtonText}"
+                        Command="{Binding ChangeSupplierStatusCommand}"
+                        Height="35"
+                        Padding="15,0"
+                        Margin="0,0,10,0"/>
+            
+                <Button Content="Editar proveedor"
+                        Command="{Binding EditSupplierCommand}"
+                        Height="35"
+                        Padding="15,0"
+                        Margin="0,0,10,0"/>
+
+                <Button Content="+ Nuevo proveedor"
+                        Command="{Binding NewSupplierCommand}"
+                        Height="35"
+                        Padding="15,0"/>
+            </StackPanel>
+
+        </Grid>
+
+        <!-- Búsqueda y filtros -->
+        <StackPanel Grid.Row="1"
+                    Margin="0,0,0,20">
+
+            <TextBlock Text="Buscar proveedor"
+                       FontWeight="SemiBold"/>
+
+            <TextBox Text="{Binding SearchText,
+                            Mode=TwoWay,
+                            UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,5,0,10"/>
+
+            <TextBlock Text="Estado del proveedor"
+                       Margin="0,0,0,5"/>
+
+            <ComboBox SelectedValue="{Binding IsActiveFilter,
+                                      Mode=TwoWay}"
+                      SelectedValuePath="Tag"
+                      Width="180"
+                      HorizontalAlignment="Left"
+                      Margin="0,0,0,10">
+
+                <ComboBoxItem Content="Todos"
+                              Tag="{x:Null}"/>
+
+                <ComboBoxItem Content="Activos">
+                    <ComboBoxItem.Tag>
+                        <sys:Boolean>True</sys:Boolean>
+                    </ComboBoxItem.Tag>
+                </ComboBoxItem>
+
+                <ComboBoxItem Content="Inactivos">
+                    <ComboBoxItem.Tag>
+                        <sys:Boolean>False</sys:Boolean>
+                    </ComboBoxItem.Tag>
+                </ComboBoxItem>
+
+            </ComboBox>
+
+            <Button Content="Buscar"
+                    Command="{Binding SearchSuppliersCommand}"
+                    Width="120"
+                    Height="35"
+                    HorizontalAlignment="Left"/>
+
+            <!-- Indicador de carga -->
+            <TextBlock Text="Cargando proveedores..."
+                       Foreground="Gray"
+                       FontStyle="Italic"
+                       Margin="0,10,0,0">
+
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility"
+                                Value="Collapsed"/>
+
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLoading}"
+                                         Value="True">
+                                <Setter Property="Visibility"
+                                        Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <!-- Errores de consulta -->
+            <TextBlock Text="{Binding QueryErrorMessage}"
+                       Foreground="Red"
+                       TextWrapping="Wrap"
+                       Margin="0,10,0,0"/>
+
+        </StackPanel>
+
+        <!-- Tabla de proveedores -->
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding Suppliers}"
+                  SelectedItem="{Binding SelectedSupplier, Mode=TwoWay}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single">
+
+            <DataGrid.Columns>
+
+                <DataGridTextColumn Header="ID"
+                                    Binding="{Binding Id}"/>
+
+                <DataGridTextColumn Header="Nombre"
+                                    Binding="{Binding Name}"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="Teléfono"
+                                    Binding="{Binding PhoneNumber}"
+                                    Width="*"/>
+
+                <DataGridCheckBoxColumn Header="Activo"
+                                        Binding="{Binding IsActive}"/>
+
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Paginación -->
+        <StackPanel Grid.Row="3"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,15,0,0">
+
+            <Button Content="Anterior"
+                    Command="{Binding PreviousPageCommand}"
+                    Width="100"
+                    Height="30"/>
+
+            <TextBlock Margin="15,0"
+                       VerticalAlignment="Center">
+                <Run Text="Página"/>
+                <Run Text="{Binding CurrentPage, Mode=OneWay}"/>
+                <Run Text="de"/>
+                <Run Text="{Binding TotalPages, Mode=OneWay}"/>
+            </TextBlock>
+
+            <Button Content="Siguiente"
+                    Command="{Binding NextPageCommand}"
+                    Width="100"
+                    Height="30"/>
+
+        </StackPanel>
+
+    </Grid>
+</UserControl>
