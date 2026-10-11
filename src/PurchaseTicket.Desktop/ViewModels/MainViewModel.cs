@@ -33,9 +33,14 @@ public class MainViewModel : INotifyPropertyChanged
                 return;
 
             _currentViewModel = value;
+
             OnPropertyChanged(nameof(CurrentViewModel));
+            OnPropertyChanged(nameof(IsHomeSelected));
+            OnPropertyChanged(nameof(IsSuppliersSelected));
         }
     }
+    public bool IsHomeSelected => ReferenceEquals(CurrentViewModel, _homeViewModel);
+    public bool IsSuppliersSelected => ReferenceEquals(CurrentViewModel, _suppliersViewModel);
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

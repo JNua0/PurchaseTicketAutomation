@@ -1,0 +1,58 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Identidad EcoPapel -->
+    <SolidColorBrush x:Key="EcoBlueBrush"
+                     Color="#0E88F2"/>
+
+    <SolidColorBrush x:Key="EcoBlueDarkBrush"
+                     Color="#0A63C9"/>
+
+    <SolidColorBrush x:Key="EcoGreenBrush"
+                     Color="#78C51C"/>
+
+    <SolidColorBrush x:Key="EcoGreenDarkBrush"
+                     Color="#4FA312"/>
+
+    <!-- Menú lateral -->
+    <SolidColorBrush x:Key="SidebarBrush"
+                     Color="#123B4A"/>
+
+    <SolidColorBrush x:Key="SidebarHoverBrush"
+                     Color="#1B5568"/>
+
+    <SolidColorBrush x:Key="SidebarTextBrush"
+                     Color="#EAF4F7"/>
+
+    <SolidColorBrush x:Key="SidebarSecondaryTextBrush"
+                     Color="#B8D0D8"/>
+
+    <!-- Fondos y superficies -->
+    <SolidColorBrush x:Key="ContentBrush"
+                     Color="#F7FBFC"/>
+
+    <SolidColorBrush x:Key="SurfaceBrush"
+                     Color="#FFFFFF"/>
+
+    <SolidColorBrush x:Key="BorderBrushLight"
+                     Color="#D9E5EA"/>
+
+    <!-- Textos -->
+    <SolidColorBrush x:Key="PrimaryTextBrush"
+                     Color="#2F3A40"/>
+
+    <SolidColorBrush x:Key="SecondaryTextBrush"
+                     Color="#6B7280"/>
+
+    <!-- Estados -->
+    <SolidColorBrush x:Key="SuccessBrush"
+                     Color="#4FA312"/>
+
+    <SolidColorBrush x:Key="WarningBrush"
+                     Color="#F59E0B"/>
+
+    <SolidColorBrush x:Key="ErrorBrush"
+                     Color="#DC2626"/>
+
+</ResourceDictionary>

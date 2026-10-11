@@ -24,8 +24,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="ViewModels\Suppliers\" />
-	  <Folder Include="Views\Suppliers\" />
+	  <Resource Include="Assets\Images\logo.png">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </Resource>
 	</ItemGroup>
-
+	
 </Project>
