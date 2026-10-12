@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Proveedor"
         Width="450"
-        Height="340"
+        Height="400"
         MinWidth="400"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"

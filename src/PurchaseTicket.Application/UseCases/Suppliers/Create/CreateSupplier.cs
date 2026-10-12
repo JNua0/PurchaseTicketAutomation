@@ -22,7 +22,7 @@ public class CreateSupplier
         if (await _repository.ExistsByNameAsync(supplier.Name))
         {
             throw new InvalidOperationException(
-                "A supplier with the same name already exists.");
+                "Ya existe un proveedor registrado con ese nombre.");
         }
 
         await _repository.AddAsync(supplier);
