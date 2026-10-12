@@ -26,7 +26,44 @@
             <views:SuppliersView/>
         </DataTemplate>
 
-        <!-- Estilo para las secciones con navegación -->
+        <!-- Texto de las opciones -->
+        <Style x:Key="SidebarTextStyle"
+               TargetType="{x:Type TextBlock}">
+
+            <Setter Property="VerticalAlignment"
+                    Value="Center"/>
+
+            <Setter Property="Visibility"
+                    Value="Visible"/>
+
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSidebarExpanded}"
+                             Value="False">
+                    <Setter Property="Visibility"
+                            Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+
+        </Style>
+
+        <!-- Iconos de las opciones -->
+        <Style x:Key="SidebarIconStyle"
+               TargetType="{x:Type Path}">
+
+            <Setter Property="Margin"
+                    Value="0,0,12,0"/>
+
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSidebarExpanded}"
+                             Value="False">
+                    <Setter Property="Margin"
+                            Value="0"/>
+                </DataTrigger>
+            </Style.Triggers>
+
+        </Style>
+
+        <!-- Botones con navegacion -->
         <Style x:Key="SidebarToggleButtonStyle"
                TargetType="{x:Type primitives:ToggleButton}">
 
@@ -65,14 +102,13 @@
 
                             <Grid>
 
-                                <!-- Contenido del botón -->
                                 <ContentPresenter
                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                     VerticalAlignment="Center"
                                     Margin="{TemplateBinding Padding}"
                                     RecognizesAccessKey="True"/>
 
-                                <!-- Indicador verde de selección -->
+                                <!-- Indicador verde -->
                                 <Border x:Name="SelectionIndicator"
                                         Width="4"
                                         Height="25"
@@ -89,17 +125,13 @@
 
                         <ControlTemplate.Triggers>
 
-                            <!-- Cursor sobre el botón -->
                             <Trigger Property="IsMouseOver"
                                      Value="True">
-
                                 <Setter TargetName="ButtonBorder"
                                         Property="Background"
                                         Value="{StaticResource SidebarHoverBrush}"/>
-
                             </Trigger>
 
-                            <!-- Sección seleccionada -->
                             <Trigger Property="IsChecked"
                                      Value="True">
 
@@ -116,13 +148,17 @@
 
                             </Trigger>
 
-                            <!-- Deshabilitado -->
+                            <DataTrigger Binding="{Binding IsSidebarExpanded}"
+                                         Value="False">
+                                <Setter TargetName="SelectionIndicator"
+                                        Property="Margin"
+                                        Value="0,0,3,0"/>
+                            </DataTrigger>
+
                             <Trigger Property="IsEnabled"
                                      Value="False">
-
                                 <Setter Property="Opacity"
                                         Value="0.5"/>
-
                             </Trigger>
 
                         </ControlTemplate.Triggers>
@@ -132,11 +168,24 @@
                 </Setter.Value>
             </Setter>
 
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSidebarExpanded}"
+                             Value="False">
+
+                    <Setter Property="HorizontalContentAlignment"
+                            Value="Center"/>
+
+                    <Setter Property="Padding"
+                            Value="0"/>
+
+                </DataTrigger>
+            </Style.Triggers>
+
         </Style>
 
-        <!-- Estilo para secciones aún no implementadas -->
+        <!-- Botones de modulos pendientes -->
         <Style x:Key="SidebarButtonStyle"
-               TargetType="Button">
+               TargetType="{x:Type Button}">
 
             <Setter Property="Background"
                     Value="Transparent"/>
@@ -165,10 +214,9 @@
             <Setter Property="Template">
                 <Setter.Value>
 
-                    <ControlTemplate TargetType="Button">
+                    <ControlTemplate TargetType="{x:Type Button}">
 
-                        <Border x:Name="ButtonBorder"
-                                Background="Transparent"
+                        <Border Background="Transparent"
                                 CornerRadius="8">
 
                             <ContentPresenter
@@ -194,6 +242,146 @@
                 </Setter.Value>
             </Setter>
 
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSidebarExpanded}"
+                             Value="False">
+
+                    <Setter Property="HorizontalContentAlignment"
+                            Value="Center"/>
+
+                    <Setter Property="Padding"
+                            Value="0"/>
+
+                </DataTrigger>
+            </Style.Triggers>
+
+        </Style>
+
+        <!-- Boton flotante del menu -->
+        <Style x:Key="SidebarCollapseButtonStyle"
+               TargetType="{x:Type Button}">
+
+            <Setter Property="Background"
+                    Value="{StaticResource SurfaceBrush}"/>
+
+            <Setter Property="Foreground"
+                    Value="{StaticResource PrimaryTextBrush}"/>
+
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource BorderBrushLight}"/>
+
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+
+            <Setter Property="ToolTip"
+                    Value="Contraer menú"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="{x:Type Button}">
+
+                        <Border x:Name="TabBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="0,9,9,0">
+
+                            <Border.Effect>
+                                <DropShadowEffect
+                                    Color="#000000"
+                                    BlurRadius="7"
+                                    ShadowDepth="1"
+                                    Opacity="0.12"/>
+                            </Border.Effect>
+
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="TabBorder"
+                                        Property="Background"
+                                        Value="{StaticResource ContentBrush}"/>
+                            </Trigger>
+
+                            <Trigger Property="IsPressed"
+                                     Value="True">
+                                <Setter TargetName="TabBorder"
+                                        Property="Background"
+                                        Value="{StaticResource BorderBrushLight}"/>
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+            </Setter>
+
+            <Style.Triggers>
+
+                <DataTrigger Binding="{Binding IsSidebarExpanded}"
+                             Value="False">
+                    <Setter Property="ToolTip"
+                            Value="Expandir menú"/>
+                </DataTrigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+        <!-- Flecha del boton flotante -->
+        <Style x:Key="SidebarCollapseArrowStyle"
+               TargetType="{x:Type Path}">
+
+            <!-- Flecha izquierda: contraer -->
+            <Setter Property="Data"
+                    Value="M 11,4 L 6,9 L 11,14"/>
+
+            <Setter Property="Stroke"
+                    Value="{StaticResource PrimaryTextBrush}"/>
+
+            <Setter Property="StrokeThickness"
+                    Value="2"/>
+
+            <Setter Property="StrokeStartLineCap"
+                    Value="Round"/>
+
+            <Setter Property="StrokeEndLineCap"
+                    Value="Round"/>
+
+            <Setter Property="StrokeLineJoin"
+                    Value="Round"/>
+
+            <Setter Property="Width"
+                    Value="18"/>
+
+            <Setter Property="Height"
+                    Value="18"/>
+
+            <Setter Property="Stretch"
+                    Value="Uniform"/>
+
+            <Style.Triggers>
+
+                <!-- Flecha derecha: expandir -->
+                <DataTrigger Binding="{Binding IsSidebarExpanded}"
+                             Value="False">
+                    <Setter Property="Data"
+                            Value="M 6,4 L 11,9 L 6,14"/>
+                </DataTrigger>
+
+            </Style.Triggers>
+
         </Style>
 
     </Window.Resources>
@@ -202,47 +390,175 @@
     <Grid>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="310"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Menú lateral -->
+        <!-- Menu lateral con animacion de ancho -->
         <Border Grid.Column="0"
-                Background="{StaticResource SidebarBrush}">
+                Background="{StaticResource SidebarBrush}"
+                ClipToBounds="True">
+
+            <Border.Style>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="Width" Value="310"/>
+
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsSidebarExpanded}"
+                                     Value="False">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetProperty="Width"
+                                            To="75"
+                                            Duration="0:0:0.25"
+                                            AccelerationRatio="0.2"
+                                            DecelerationRatio="0.8"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetProperty="Width"
+                                            To="310"
+                                            Duration="0:0:0.25"
+                                            AccelerationRatio="0.2"
+                                            DecelerationRatio="0.8"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
 
             <DockPanel LastChildFill="True">
 
                 <!-- Encabezado EcoPapel -->
-                <StackPanel DockPanel.Dock="Top"
-                            Margin="20,25,20,25">
+                <Grid DockPanel.Dock="Top"
+                      Margin="10,25,10,20">
 
-                    <!-- Logo -->
-                    <Border Background="{StaticResource SurfaceBrush}"
-                            CornerRadius="14"
-                            Padding="12"
-                            Margin="0,0,0,16">
+                    <!-- Encabezado expandido -->
+                    <StackPanel>
 
-                        <Image Source="pack://application:,,,/PurchaseTicket.Desktop;component/Assets/Images/logo.png"
-                               Height="155"
-                               Stretch="Uniform"/>
+                        <StackPanel.Style>
+                            <Style TargetType="{x:Type StackPanel}">
+
+                                <Setter Property="Visibility"
+                                        Value="Visible"/>
+
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSidebarExpanded}"
+                                                 Value="False">
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+
+                            </Style>
+                        </StackPanel.Style>
+
+                        <!-- Imagotipo -->
+                        <Border Background="{StaticResource SurfaceBrush}"
+                                CornerRadius="14"
+                                Padding="12"
+                                Margin="10,0,10,16">
+
+                            <Image Source="pack://application:,,,/PurchaseTicket.Desktop;component/Assets/Images/ecopapel_imagotipo.png"
+                                   Height="155"
+                                   Stretch="Uniform"/>
+
+                        </Border>
+
+                        <TextBlock Text="Tickets de Compra"
+                                   Foreground="White"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   TextAlignment="Center"/>
+
+                        <TextBlock Text="Sistema de tickets de compra"
+                                   Foreground="{StaticResource SidebarSecondaryTextBrush}"
+                                   FontSize="12"
+                                   TextAlignment="Center"
+                                   Margin="0,6,0,0"/>
+
+                    </StackPanel>
+
+                    <!-- Encabezado contraido -->
+                    <Border Width="48"
+                            Height="48"
+                            Padding="4"
+                            CornerRadius="10"
+                            Background="{StaticResource SurfaceBrush}"
+                            HorizontalAlignment="Center">
+
+                        <Border.Style>
+                            <Style TargetType="{x:Type Border}">
+
+                                <Setter Property="Visibility"
+                                        Value="Collapsed"/>
+
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSidebarExpanded}"
+                                                 Value="False">
+                                        <Setter Property="Visibility"
+                                                Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+
+                            </Style>
+                        </Border.Style>
+
+                        <!-- Isotipo -->
+                        <Image Source="pack://application:,,,/PurchaseTicket.Desktop;component/Assets/Images/ecopapel_isotipo.png"
+                               Stretch="Uniform"
+                               ToolTip="EcoPapel Recycling"/>
 
                     </Border>
 
-                    <TextBlock Text="Tickets de Compra"
-                               Foreground="White"
-                               FontSize="20"
-                               FontWeight="SemiBold"
-                               TextAlignment="Center"/>
+                </Grid>
 
-                    <TextBlock Text="Sistema de tickets de compra"
-                               Foreground="{StaticResource SidebarSecondaryTextBrush}"
-                               FontSize="12"
-                               TextAlignment="Center"
-                               Margin="0,6,0,0"/>
+                <!-- Configuracion anclada al fondo -->
+                <StackPanel DockPanel.Dock="Bottom"
+                            Margin="12,0,12,20">
 
+                    <!-- Separador inferior -->
+                    <Border Height="1"
+                            Background="#34606D"
+                            Margin="8,0,8,12"/>
+
+                    <!-- Configuracion -->
+                    <Button Style="{StaticResource SidebarButtonStyle}"
+                            IsEnabled="False"
+                            ToolTip="Configuración"
+                            Height="50">
+
+                        <StackPanel Orientation="Horizontal">
+
+                            <Path Data="{StaticResource SettingsIcon}"
+                                  Style="{StaticResource SidebarIconStyle}"
+                                  Fill="Transparent"
+                                  Stroke="{Binding Foreground,
+                                      RelativeSource={RelativeSource AncestorType=Button}}"
+                                  StrokeThickness="1.7"
+                                  StrokeLineJoin="Round"
+                                  Width="22"
+                                  Height="22"
+                                  Stretch="Uniform"/>
+
+                            <TextBlock Text="Configuración"
+                                       Style="{StaticResource SidebarTextStyle}"/>
+
+                        </StackPanel>
+
+                    </Button>
                 </StackPanel>
 
-                <!-- Opciones del menú -->
+                <!-- Opciones del menu -->
                 <StackPanel Margin="12,0,12,0">
 
                     <!-- Separador -->
@@ -255,12 +571,14 @@
                         Command="{Binding ShowHomeCommand}"
                         IsChecked="{Binding IsHomeSelected, Mode=OneWay}"
                         Style="{StaticResource SidebarToggleButtonStyle}"
+                        ToolTip="Inicio"
                         Height="50"
                         Margin="0,0,0,6">
 
                         <StackPanel Orientation="Horizontal">
 
                             <Path Data="{StaticResource HomeIcon}"
+                                  Style="{StaticResource SidebarIconStyle}"
                                   Fill="Transparent"
                                   Stroke="{Binding Foreground,
                                       RelativeSource={RelativeSource AncestorType=primitives:ToggleButton}}"
@@ -268,25 +586,26 @@
                                   StrokeLineJoin="Round"
                                   Width="22"
                                   Height="22"
-                                  Stretch="Uniform"
-                                  Margin="0,0,12,0"/>
+                                  Stretch="Uniform"/>
 
                             <TextBlock Text="Inicio"
-                                       VerticalAlignment="Center"/>
+                                       Style="{StaticResource SidebarTextStyle}"/>
 
                         </StackPanel>
 
                     </primitives:ToggleButton>
 
-                    <!-- Tickets de compra: pendiente -->
+                    <!-- Tickets de compra -->
                     <Button Style="{StaticResource SidebarButtonStyle}"
                             IsEnabled="False"
+                            ToolTip="Tickets de compra"
                             Height="50"
                             Margin="0,0,0,6">
 
                         <StackPanel Orientation="Horizontal">
 
                             <Path Data="{StaticResource TicketIcon}"
+                                  Style="{StaticResource SidebarIconStyle}"
                                   Fill="Transparent"
                                   Stroke="{Binding Foreground,
                                       RelativeSource={RelativeSource AncestorType=Button}}"
@@ -294,11 +613,10 @@
                                   StrokeLineJoin="Round"
                                   Width="22"
                                   Height="22"
-                                  Stretch="Uniform"
-                                  Margin="0,0,12,0"/>
+                                  Stretch="Uniform"/>
 
                             <TextBlock Text="Tickets de compra"
-                                       VerticalAlignment="Center"/>
+                                       Style="{StaticResource SidebarTextStyle}"/>
 
                         </StackPanel>
 
@@ -309,12 +627,14 @@
                         Command="{Binding ShowSuppliersCommand}"
                         IsChecked="{Binding IsSuppliersSelected, Mode=OneWay}"
                         Style="{StaticResource SidebarToggleButtonStyle}"
+                        ToolTip="Proveedores"
                         Height="50"
                         Margin="0,0,0,6">
 
                         <StackPanel Orientation="Horizontal">
 
                             <Path Data="{StaticResource SuppliersIcon}"
+                                  Style="{StaticResource SidebarIconStyle}"
                                   Fill="Transparent"
                                   Stroke="{Binding Foreground,
                                       RelativeSource={RelativeSource AncestorType=primitives:ToggleButton}}"
@@ -322,25 +642,26 @@
                                   StrokeLineJoin="Round"
                                   Width="22"
                                   Height="22"
-                                  Stretch="Uniform"
-                                  Margin="0,0,12,0"/>
+                                  Stretch="Uniform"/>
 
                             <TextBlock Text="Proveedores"
-                                       VerticalAlignment="Center"/>
+                                       Style="{StaticResource SidebarTextStyle}"/>
 
                         </StackPanel>
 
                     </primitives:ToggleButton>
 
-                    <!-- Materiales: pendiente -->
+                    <!-- Materiales -->
                     <Button Style="{StaticResource SidebarButtonStyle}"
                             IsEnabled="False"
+                            ToolTip="Materiales"
                             Height="50"
                             Margin="0,0,0,6">
 
                         <StackPanel Orientation="Horizontal">
 
                             <Path Data="{StaticResource MaterialsIcon}"
+                                  Style="{StaticResource SidebarIconStyle}"
                                   Fill="Transparent"
                                   Stroke="{Binding Foreground,
                                       RelativeSource={RelativeSource AncestorType=Button}}"
@@ -348,41 +669,15 @@
                                   StrokeLineJoin="Round"
                                   Width="22"
                                   Height="22"
-                                  Stretch="Uniform"
-                                  Margin="0,0,12,0"/>
+                                  Stretch="Uniform"/>
 
                             <TextBlock Text="Materiales"
-                                       VerticalAlignment="Center"/>
+                                       Style="{StaticResource SidebarTextStyle}"/>
 
                         </StackPanel>
 
                     </Button>
 
-                    <!-- Configuración: pendiente -->
-                    <Button Style="{StaticResource SidebarButtonStyle}"
-                            IsEnabled="False"
-                            Height="50"
-                            Margin="0,0,0,6">
-
-                        <StackPanel Orientation="Horizontal">
-
-                            <Path Data="{StaticResource SettingsIcon}"
-                                  Fill="Transparent"
-                                  Stroke="{Binding Foreground,
-                                      RelativeSource={RelativeSource AncestorType=Button}}"
-                                  StrokeThickness="1.7"
-                                  StrokeLineJoin="Round"
-                                  Width="22"
-                                  Height="22"
-                                  Stretch="Uniform"
-                                  Margin="0,0,12,0"/>
-
-                            <TextBlock Text="Configuración"
-                                       VerticalAlignment="Center"/>
-
-                        </StackPanel>
-
-                    </Button>
 
                 </StackPanel>
 
@@ -390,7 +685,7 @@
 
         </Border>
 
-        <!-- Área de contenido -->
+        <!-- Area principal -->
         <Grid Grid.Column="1"
               Background="{StaticResource ContentBrush}">
 
@@ -398,6 +693,27 @@
                 Content="{Binding CurrentViewModel}"/>
 
         </Grid>
+
+        <!-- Boton flotante superpuesto al contenido -->
+        <Button Grid.Column="0"
+                Panel.ZIndex="10"
+                Style="{StaticResource SidebarCollapseButtonStyle}"
+                Command="{Binding ToggleSidebarCommand}"
+                Width="30"
+                Height="42"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="0,12,0,0">
+
+            <!-- Lo coloca justo fuera del borde derecho
+                 del menu, independientemente de su ancho -->
+            <Button.RenderTransform>
+                <TranslateTransform X="30"/>
+            </Button.RenderTransform>
+
+            <Path Style="{StaticResource SidebarCollapseArrowStyle}"/>
+
+        </Button>
 
     </Grid>
 

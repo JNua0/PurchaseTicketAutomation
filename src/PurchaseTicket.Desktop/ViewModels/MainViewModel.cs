@@ -12,6 +12,7 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly HomeViewModel _homeViewModel;
     private readonly SuppliersViewModel _suppliersViewModel;
     private object? _currentViewModel;
+    private bool _isSidebarExpanded = true;
 
     public MainViewModel(HomeViewModel homeViewModel, SuppliersViewModel suppliersViewModel)
     {
@@ -20,6 +21,7 @@ public class MainViewModel : INotifyPropertyChanged
 
         ShowHomeCommand = new RelayCommand(ShowHome);
         ShowSuppliersCommand = new AsyncRelayCommand(ShowSuppliersAsync);
+        ToggleSidebarCommand = new RelayCommand(ToggleSidebar);
 
         CurrentViewModel = _homeViewModel;
     }
@@ -41,11 +43,25 @@ public class MainViewModel : INotifyPropertyChanged
     }
     public bool IsHomeSelected => ReferenceEquals(CurrentViewModel, _homeViewModel);
     public bool IsSuppliersSelected => ReferenceEquals(CurrentViewModel, _suppliersViewModel);
+    public bool IsSidebarExpanded
+    {
+        get => _isSidebarExpanded;
+        private set
+        {
+            if (_isSidebarExpanded == value)
+                return;
+
+            _isSidebarExpanded = value;
+
+            OnPropertyChanged(nameof(IsSidebarExpanded));
+        }
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand ShowHomeCommand { get; }
     public ICommand ShowSuppliersCommand { get; }
+    public ICommand ToggleSidebarCommand { get; }
 
     private void ShowHome()
     {
@@ -68,5 +84,10 @@ public class MainViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(
             this,
             new PropertyChangedEventArgs(propertyName));
+    }
+
+    private void ToggleSidebar()
+    {
+        IsSidebarExpanded = !IsSidebarExpanded;
     }
 }
