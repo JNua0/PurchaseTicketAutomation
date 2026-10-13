@@ -66,11 +66,17 @@ public class MainViewModel : INotifyPropertyChanged
     private void ShowHome()
     {
         CurrentViewModel = _homeViewModel;
+
+        OnPropertyChanged(nameof(IsHomeSelected));
+        OnPropertyChanged(nameof(IsSuppliersSelected));
     }
 
     private async Task ShowSuppliersAsync()
     {
         CurrentViewModel = _suppliersViewModel;
+
+        OnPropertyChanged(nameof(IsHomeSelected));
+        OnPropertyChanged(nameof(IsSuppliersSelected));
 
         await System.Windows.Application.Current.Dispatcher.InvokeAsync(
             () => { },

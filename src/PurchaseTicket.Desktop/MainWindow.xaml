@@ -262,13 +262,13 @@
                TargetType="{x:Type Button}">
 
             <Setter Property="Background"
-                    Value="{StaticResource SurfaceBrush}"/>
+                    Value="{StaticResource SidebarBrush}"/>
 
             <Setter Property="Foreground"
-                    Value="{StaticResource PrimaryTextBrush}"/>
+                    Value="White"/>
 
             <Setter Property="BorderBrush"
-                    Value="{StaticResource BorderBrushLight}"/>
+                    Value="{StaticResource SidebarBrush}"/>
 
             <Setter Property="BorderThickness"
                     Value="1"/>
@@ -288,7 +288,7 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="0,9,9,0">
+                                CornerRadius="9,9,9,9">
 
                             <Border.Effect>
                                 <DropShadowEffect
@@ -310,14 +310,14 @@
                                      Value="True">
                                 <Setter TargetName="TabBorder"
                                         Property="Background"
-                                        Value="{StaticResource ContentBrush}"/>
+                                        Value="{StaticResource SidebarHoverBrush}"/>
                             </Trigger>
 
                             <Trigger Property="IsPressed"
                                      Value="True">
                                 <Setter TargetName="TabBorder"
                                         Property="Background"
-                                        Value="{StaticResource BorderBrushLight}"/>
+                                        Value="{StaticResource EcoBlueDarkBrush}"/>
                             </Trigger>
 
                         </ControlTemplate.Triggers>
@@ -348,7 +348,7 @@
                     Value="M 11,4 L 6,9 L 11,14"/>
 
             <Setter Property="Stroke"
-                    Value="{StaticResource PrimaryTextBrush}"/>
+                    Value="White"/>
 
             <Setter Property="StrokeThickness"
                     Value="2"/>
@@ -687,10 +687,9 @@
 
         <!-- Area principal -->
         <Grid Grid.Column="1"
-              Background="{StaticResource ContentBrush}">
+            Background="{StaticResource ContentBrush}">
 
-            <ContentControl
-                Content="{Binding CurrentViewModel}"/>
+            <ContentControl Content="{Binding CurrentViewModel}"/>
 
         </Grid>
 
@@ -700,7 +699,7 @@
                 Style="{StaticResource SidebarCollapseButtonStyle}"
                 Command="{Binding ToggleSidebarCommand}"
                 Width="30"
-                Height="42"
+                Height="30"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 Margin="0,12,0,0">
@@ -708,7 +707,7 @@
             <!-- Lo coloca justo fuera del borde derecho
                  del menu, independientemente de su ancho -->
             <Button.RenderTransform>
-                <TranslateTransform X="30"/>
+                <TranslateTransform X="20"/>
             </Button.RenderTransform>
 
             <Path Style="{StaticResource SidebarCollapseArrowStyle}"/>
