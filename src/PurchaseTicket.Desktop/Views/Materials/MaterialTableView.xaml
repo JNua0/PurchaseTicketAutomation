@@ -1,0 +1,141 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Views.Materials.MaterialTableView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions">
+
+    <!-- Tabla de materiales -->
+    <DataGrid Style="{StaticResource AppDataGridStyle}"
+              ItemsSource="{Binding Materials}"
+              SelectedItem="{Binding SelectedMaterial, Mode=TwoWay}">
+
+        <DataGrid.Columns>
+
+            <!-- Identificador del material -->
+            <DataGridTextColumn Header="ID"
+                                Binding="{Binding Id}"
+                                Width="75"
+                                MinWidth="75"/>
+
+            <!-- Nombre del material -->
+            <DataGridTextColumn Header="Material"
+                                Binding="{Binding Name}"
+                                Width="*"
+                                MinWidth="220"/>
+
+            <!-- Estado del material -->
+            <DataGridTemplateColumn Header="Estado"
+                                    Width="120"
+                                    MinWidth="120">
+
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+
+                            <!-- Indicador de estado -->
+                            <Ellipse Width="9"
+                                     Height="9"
+                                     Margin="0,0,8,0">
+
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+
+                                        <Setter Property="Fill"
+                                                Value="{StaticResource SuccessBrush}"/>
+
+                                        <Style.Triggers>
+
+                                            <DataTrigger Binding="{Binding IsActive}"
+                                                         Value="False">
+
+                                                <Setter Property="Fill"
+                                                        Value="{StaticResource SecondaryTextBrush}"/>
+
+                                            </DataTrigger>
+
+                                        </Style.Triggers>
+
+                                    </Style>
+                                </Ellipse.Style>
+
+                            </Ellipse>
+
+                            <!-- Texto del estado -->
+                            <TextBlock VerticalAlignment="Center">
+
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+
+                                        <Setter Property="Text"
+                                                Value="Activo"/>
+
+                                        <Setter Property="Foreground"
+                                                Value="{StaticResource PrimaryTextBrush}"/>
+
+                                        <Style.Triggers>
+
+                                            <DataTrigger Binding="{Binding IsActive}"
+                                                         Value="False">
+
+                                                <Setter Property="Text"
+                                                        Value="Inactivo"/>
+
+                                            </DataTrigger>
+
+                                        </Style.Triggers>
+
+                                    </Style>
+                                </TextBlock.Style>
+
+                            </TextBlock>
+
+                        </StackPanel>
+
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+
+            </DataGridTemplateColumn>
+
+            <!-- Acciones individuales del material -->
+            <DataGridTemplateColumn Header="Acciones"
+                                    Width="120"
+                                    MinWidth="120"
+                                    MaxWidth="120"
+                                    CanUserResize="False">
+
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+
+                            <!-- Editar material -->
+                            <actions:EditActionButton
+                                Command="{Binding DataContext.EditMaterialCommand,
+                                                  RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                CommandParameter="{Binding}"
+                                ToolTip="Editar material"
+                                Margin="0,0,8,0"/>
+
+                            <!-- Activar o desactivar material -->
+                            <actions:StatusActionButton
+                                IsActive="{Binding IsActive}"
+                                Command="{Binding DataContext.ChangeMaterialStatusCommand,
+                                                  RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                CommandParameter="{Binding}"
+                                VerticalAlignment="Center"/>
+
+                        </StackPanel>
+
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+
+            </DataGridTemplateColumn>
+
+        </DataGrid.Columns>
+
+    </DataGrid>
+
+</UserControl>

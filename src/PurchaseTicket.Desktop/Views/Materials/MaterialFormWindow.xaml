@@ -1,0 +1,123 @@
+﻿<Window x:Class="PurchaseTicket.Desktop.Views.Materials.MaterialFormWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
+        xmlns:forms="clr-namespace:PurchaseTicket.Desktop.Components.Forms"
+        Title="{Binding WindowTitle}"
+        Width="520"
+        MinWidth="480"
+        SizeToContent="Height"
+        MaxHeight="650"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource ContentBrush}"
+        Closing="Window_Closing">
+
+    <!-- Contenedor principal -->
+    <Grid Margin="25">
+
+        <Grid.RowDefinitions>
+            <!-- Encabezado -->
+            <RowDefinition Height="Auto"/>
+
+            <!-- Campos y mensajes -->
+            <RowDefinition Height="Auto"/>
+
+            <!-- Botones -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Encabezado reutilizable -->
+        <forms:FormHeader
+            Grid.Row="0"
+            Title="{Binding WindowTitle}"
+            Description="Información del material"
+            Margin="0,0,0,24"/>
+
+        <!-- Contenido del formulario -->
+        <StackPanel Grid.Row="1">
+
+            <!-- Campos editables -->
+            <StackPanel>
+
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+
+                        <Style.Triggers>
+
+                            <!-- Bloquear campos durante el guardado -->
+                            <DataTrigger Binding="{Binding IsSaving}"
+                                         Value="True">
+
+                                <Setter Property="IsEnabled"
+                                        Value="False"/>
+
+                            </DataTrigger>
+
+                        </Style.Triggers>
+
+                    </Style>
+                </StackPanel.Style>
+
+                <!-- Nombre del material -->
+                <forms:FormTextField
+                    Label="Nombre del material"
+                    IsRequired="True"
+                    Text="{Binding Name,
+                                   Mode=TwoWay,
+                                   UpdateSourceTrigger=PropertyChanged}"
+                    MaxLength="50"
+                    Margin="0,0,0,15"/>
+
+            </StackPanel>
+
+            <!-- Indicador de guardado -->
+            <TextBlock Text="Guardando material..."
+                       FontSize="13"
+                       FontStyle="Italic"
+                       Foreground="{StaticResource SecondaryTextBrush}">
+
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+
+                        <Setter Property="Visibility"
+                                Value="Collapsed"/>
+
+                        <Style.Triggers>
+
+                            <DataTrigger Binding="{Binding IsSaving}"
+                                         Value="True">
+
+                                <Setter Property="Visibility"
+                                        Value="Visible"/>
+
+                            </DataTrigger>
+
+                        </Style.Triggers>
+
+                    </Style>
+                </TextBlock.Style>
+
+            </TextBlock>
+
+            <!-- Mensaje de error reutilizable -->
+            <feedback:QueryStatus
+                ErrorMessage="{Binding ErrorMessage}"
+                IsLoading="False"
+                Margin="0,10,0,0"/>
+
+        </StackPanel>
+
+        <!-- Acciones reutilizables -->
+        <forms:FormActions
+            Grid.Row="2"
+            Margin="0,20,0,0"
+            SaveButtonText="{Binding SaveButtonText}"
+            SaveCommand="{Binding SaveCommand}"
+            CancelCommand="{Binding CancelCommand,
+                                    RelativeSource={RelativeSource AncestorType=Window}}"
+            IsSaving="{Binding IsSaving}"/>
+
+    </Grid>
+
+</Window>

@@ -8,6 +8,11 @@ using PurchaseTicket.Application.UseCases.Suppliers.Create;
 using PurchaseTicket.Application.UseCases.Suppliers.Update;
 using PurchaseTicket.Application.UseCases.Suppliers.Activate;
 using PurchaseTicket.Application.UseCases.Suppliers.Deactivate;
+using PurchaseTicket.Application.UseCases.Materials.Get;
+using PurchaseTicket.Application.UseCases.Materials.Create;
+using PurchaseTicket.Application.UseCases.Materials.Update;
+using PurchaseTicket.Application.UseCases.Materials.Activate;
+using PurchaseTicket.Application.UseCases.Materials.Deactivate;
 using PurchaseTicket.Infrastructure.Persistence;
 using PurchaseTicket.Infrastructure.Persistence.Repositories;
 using PurchaseTicket.Desktop.Configuration;
@@ -16,6 +21,8 @@ using PurchaseTicket.Desktop.Views.Suppliers;
 using PurchaseTicket.Desktop.ViewModels;
 using PurchaseTicket.Desktop.ViewModels.Home;
 using PurchaseTicket.Desktop.ViewModels.Suppliers;
+using PurchaseTicket.Desktop.Views.Materials;
+using PurchaseTicket.Desktop.ViewModels.Materials;
 
 namespace PurchaseTicket.Desktop;
 
@@ -28,38 +35,65 @@ public partial class App : System.Windows.Application
     {
         EnvironmentLoader.Load();
 
-        _host = Host.CreateDefaultBuilder().ConfigureServices(services =>
+        _host = Host.CreateDefaultBuilder()
+            .ConfigureServices(services =>
             {
                 var connectionString = DatabaseConfiguration.GetConnectionString();
 
+                // Database
                 services.AddDbContext<ApplicationDbContext>(
-                    options =>
-                        options.UseNpgsql(connectionString));
+                    options => options.UseNpgsql(connectionString));
 
-                // Repositories
-                services.AddScoped<ISupplierQueryRepository, SupplierQueryRepository>();
-                services.AddScoped<ISupplierRepository, SupplierRepository>();
+                // General services
+                services.AddSingleton<
+                    IConfirmationDialogService,
+                    ConfirmationDialogService>();
 
-                // Use cases
-                services.AddScoped<GetSuppliers>();
-                services.AddScoped<CreateSupplier>();
-                services.AddScoped<UpdateSupplier>();
-                services.AddTransient<SuppliersViewModel>();
+                // Main window and view models
                 services.AddTransient<MainWindow>();
                 services.AddTransient<MainViewModel>();
                 services.AddTransient<HomeViewModel>();
-                services.AddTransient<SuppliersViewModel>();
-                services.AddTransient<SupplierFormViewModel>();
-                services.AddTransient<SupplierFormWindow>();
-                services.AddTransient<ISupplierDialogService, SupplierDialogService>();
+
+                // Supplier repositories
+                services.AddScoped<ISupplierRepository, SupplierRepository>();
+                services.AddScoped<ISupplierQueryRepository, SupplierQueryRepository>();
+
+                // Supplier use cases
+                services.AddScoped<GetSuppliers>();
+                services.AddScoped<CreateSupplier>();
+                services.AddScoped<UpdateSupplier>();
                 services.AddScoped<ActivateSupplier>();
                 services.AddScoped<DeactivateSupplier>();
 
-                services.AddSingleton<IConfirmationDialogService, ConfirmationDialogService>();
+                // Supplier view models
+                services.AddTransient<SuppliersViewModel>();
+                services.AddTransient<SupplierFormViewModel>();
+
+                // Supplier dialogs
+                services.AddTransient<SupplierFormWindow>();
+                services.AddTransient<ISupplierDialogService, SupplierDialogService>();
+
+                // Material repositories
+                services.AddScoped<IMaterialRepository, MaterialRepository>();
+                services.AddScoped<IMaterialQueryRepository, MaterialQueryRepository>();
+
+                // Material use cases
+                services.AddScoped<GetMaterials>();
+                services.AddScoped<CreateMaterial>();
+                services.AddScoped<UpdateMaterial>();
+                services.AddScoped<ActivateMaterial>();
+                services.AddScoped<DeactivateMaterial>();
+
+                // Material view models
+                services.AddTransient<MaterialsViewModel>();
+                services.AddTransient<MaterialFormViewModel>();
+
+                // Material dialogs
+                services.AddTransient<MaterialFormWindow>();
+                services.AddTransient<IMaterialDialogService, MaterialDialogService>();
             })
             .Build();
     }
-
 
     protected override async void OnStartup(StartupEventArgs e)
     {

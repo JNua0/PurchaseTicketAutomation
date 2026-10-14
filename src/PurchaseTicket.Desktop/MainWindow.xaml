@@ -6,6 +6,8 @@
         xmlns:homeVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Home"
         xmlns:homeViews="clr-namespace:PurchaseTicket.Desktop.Views.Home"
         xmlns:vm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Suppliers"
+        xmlns:materialsVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Materials"
+        xmlns:materialsViews="clr-namespace:PurchaseTicket.Desktop.Views.Materials"
         Title="EcoPapel Recycling | Tickets de Compra"
         Width="1200"
         Height="750"
@@ -24,6 +26,11 @@
 
         <DataTemplate DataType="{x:Type vm:SuppliersViewModel}">
             <views:SuppliersView/>
+        </DataTemplate>
+
+        <!-- Plantilla de materiales -->
+        <DataTemplate DataType="{x:Type materialsVm:MaterialsViewModel}">
+            <materialsViews:MaterialsView/>
         </DataTemplate>
 
         <!-- Texto de las opciones -->
@@ -652,11 +659,13 @@
                     </primitives:ToggleButton>
 
                     <!-- Materiales -->
-                    <Button Style="{StaticResource SidebarButtonStyle}"
-                            IsEnabled="False"
-                            ToolTip="Materiales"
-                            Height="50"
-                            Margin="0,0,0,6">
+                    <primitives:ToggleButton
+                        Command="{Binding ShowMaterialsCommand}"
+                        IsChecked="{Binding IsMaterialsSelected, Mode=OneWay}"
+                        Style="{StaticResource SidebarToggleButtonStyle}"
+                        ToolTip="Materiales"
+                        Height="50"
+                        Margin="0,0,0,6">
 
                         <StackPanel Orientation="Horizontal">
 
@@ -664,7 +673,7 @@
                                   Style="{StaticResource SidebarIconStyle}"
                                   Fill="Transparent"
                                   Stroke="{Binding Foreground,
-                                      RelativeSource={RelativeSource AncestorType=Button}}"
+                                      RelativeSource={RelativeSource AncestorType=primitives:ToggleButton}}"
                                   StrokeThickness="1.7"
                                   StrokeLineJoin="Round"
                                   Width="22"
@@ -676,8 +685,7 @@
 
                         </StackPanel>
 
-                    </Button>
-
+                    </primitives:ToggleButton>
 
                 </StackPanel>
 

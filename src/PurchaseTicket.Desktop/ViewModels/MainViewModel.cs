@@ -4,6 +4,7 @@ using System.Windows.Threading;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.ViewModels.Home;
 using PurchaseTicket.Desktop.ViewModels.Suppliers;
+using PurchaseTicket.Desktop.ViewModels.Materials;
 
 namespace PurchaseTicket.Desktop.ViewModels;
 
@@ -11,16 +12,22 @@ public class MainViewModel : INotifyPropertyChanged
 {
     private readonly HomeViewModel _homeViewModel;
     private readonly SuppliersViewModel _suppliersViewModel;
+    private readonly MaterialsViewModel _materialsViewModel;
     private object? _currentViewModel;
     private bool _isSidebarExpanded = true;
 
-    public MainViewModel(HomeViewModel homeViewModel, SuppliersViewModel suppliersViewModel)
+    public MainViewModel(
+        HomeViewModel homeViewModel,
+        SuppliersViewModel suppliersViewModel,
+        MaterialsViewModel materialsViewModel)
     {
         _homeViewModel = homeViewModel;
         _suppliersViewModel = suppliersViewModel;
+        _materialsViewModel = materialsViewModel;
 
         ShowHomeCommand = new RelayCommand(ShowHome);
         ShowSuppliersCommand = new AsyncRelayCommand(ShowSuppliersAsync);
+        ShowMaterialsCommand = new AsyncRelayCommand(ShowMaterialsAsync);
         ToggleSidebarCommand = new RelayCommand(ToggleSidebar);
 
         CurrentViewModel = _homeViewModel;
@@ -39,9 +46,11 @@ public class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(CurrentViewModel));
             OnPropertyChanged(nameof(IsHomeSelected));
             OnPropertyChanged(nameof(IsSuppliersSelected));
+            OnPropertyChanged(nameof(IsMaterialsSelected));
         }
     }
     public bool IsHomeSelected => ReferenceEquals(CurrentViewModel, _homeViewModel);
+    public bool IsMaterialsSelected => ReferenceEquals(CurrentViewModel, _materialsViewModel);
     public bool IsSuppliersSelected => ReferenceEquals(CurrentViewModel, _suppliersViewModel);
     public bool IsSidebarExpanded
     {
@@ -62,6 +71,7 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ShowHomeCommand { get; }
     public ICommand ShowSuppliersCommand { get; }
     public ICommand ToggleSidebarCommand { get; }
+    public ICommand ShowMaterialsCommand { get; }
 
     private void ShowHome()
     {
@@ -95,5 +105,17 @@ public class MainViewModel : INotifyPropertyChanged
     private void ToggleSidebar()
     {
         IsSidebarExpanded = !IsSidebarExpanded;
+    }
+
+    // Mostrar el modulo de materiales
+    private async Task ShowMaterialsAsync()
+    {
+        CurrentViewModel = _materialsViewModel;
+
+        await System.Windows.Application.Current.Dispatcher.InvokeAsync(
+            () => { },
+            DispatcherPriority.ApplicationIdle);
+
+        await _materialsViewModel.LoadMaterialsAsync();
     }
 }
