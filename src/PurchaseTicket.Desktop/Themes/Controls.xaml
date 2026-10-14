@@ -1,0 +1,562 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Boton secundario reutilizable -->
+    <Style x:Key="SecondaryButtonStyle"
+           TargetType="Button">
+
+        <!-- Tamaño de fuente -->
+        <Setter Property="FontSize"
+            Value="14"/>
+
+        <Setter Property="Height"
+                Value="36"/>
+
+        <Setter Property="Padding"
+                Value="14,0"/>
+
+        <Setter Property="Background"
+                Value="{StaticResource SurfaceBrush}"/>
+
+        <Setter Property="Foreground"
+                Value="{StaticResource PrimaryTextBrush}"/>
+
+        <Setter Property="BorderBrush"
+                Value="{StaticResource BorderBrushLight}"/>
+
+        <Setter Property="BorderThickness"
+                Value="1"/>
+
+        <Setter Property="Cursor"
+                Value="Hand"/>
+
+        <Setter Property="Template">
+
+            <Setter.Value>
+
+                <ControlTemplate TargetType="Button">
+
+                    <Border x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8">
+
+                        <ContentPresenter
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="{TemplateBinding Padding}"/>
+
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+
+                        <!-- Efecto al pasar el cursor -->
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+
+                            <Setter TargetName="ButtonBorder"
+                                    Property="Background"
+                                    Value="#F0F7FA"/>
+
+                        </Trigger>
+
+                        <!-- Efecto al presionar -->
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+
+                            <Setter TargetName="ButtonBorder"
+                                    Property="Background"
+                                    Value="#E4EFF4"/>
+
+                        </Trigger>
+
+                        <!-- Estado deshabilitado -->
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+
+                            <Setter Property="Opacity"
+                                    Value="0.45"/>
+
+                            <Setter Property="Cursor"
+                                    Value="Arrow"/>
+
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+
+                </ControlTemplate>
+
+            </Setter.Value>
+
+        </Setter>
+
+    </Style>
+
+
+    <!-- Selector reutilizable -->
+    <Style x:Key="ComboBoxStyle"
+       TargetType="ComboBox">
+
+        <!-- Tamaño de fuente -->
+        <Setter Property="FontSize"
+            Value="14"/>
+
+        <Setter Property="Height" Value="38"/>
+        <Setter Property="MinWidth" Value="70"/>
+        <Setter Property="Padding" Value="10,0"/>
+        <Setter Property="Background"
+            Value="{StaticResource SurfaceBrush}"/>
+        <Setter Property="Foreground"
+            Value="{StaticResource PrimaryTextBrush}"/>
+        <Setter Property="BorderBrush"
+            Value="{StaticResource BorderBrushLight}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+
+                <ControlTemplate TargetType="ComboBox">
+
+                    <Grid>
+
+                        <!-- Borde principal -->
+                        <Border x:Name="SelectorBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8"/>
+
+                        <!-- Contenido seleccionado -->
+                        <ContentPresenter x:Name="SelectedContent"
+                                      Content="{TemplateBinding SelectionBoxItem}"
+                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                      Margin="{TemplateBinding Padding}"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Center"
+                                      IsHitTestVisible="False"/>
+
+                        <!-- Boton desplegable -->
+                        <ToggleButton x:Name="DropDownButton"
+                                  Focusable="False"
+                                  ClickMode="Press"
+                                  Background="Transparent"
+                                  BorderThickness="0"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
+                                  IsChecked="{Binding IsDropDownOpen,
+                                                      RelativeSource={RelativeSource TemplatedParent},
+                                                      Mode=TwoWay}">
+
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+
+                                    <Grid Background="Transparent">
+
+                                        <!-- Flecha -->
+                                        <Path Data="M 0,0 L 4,4 L 8,0"
+                                          Stroke="{StaticResource SecondaryTextBrush}"
+                                          StrokeThickness="1.6"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round"
+                                          HorizontalAlignment="Right"
+                                          VerticalAlignment="Center"
+                                          Margin="0,0,12,0"/>
+
+                                    </Grid>
+
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+
+                        </ToggleButton>
+
+                        <!-- Lista desplegable -->
+                        <Popup x:Name="PART_Popup"
+                           Placement="Bottom"
+                           AllowsTransparency="True"
+                           Focusable="False"
+                           IsOpen="{TemplateBinding IsDropDownOpen}"
+                           PopupAnimation="Fade">
+
+                            <Border Background="{StaticResource SurfaceBrush}"
+                                BorderBrush="{StaticResource BorderBrushLight}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                MinWidth="{Binding ActualWidth,
+                                                   RelativeSource={RelativeSource TemplatedParent}}"
+                                MaxHeight="{TemplateBinding MaxDropDownHeight}">
+
+                                <ScrollViewer Margin="4"
+                                          CanContentScroll="True">
+
+                                    <ItemsPresenter/>
+
+                                </ScrollViewer>
+
+                            </Border>
+
+                        </Popup>
+
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+
+                        <!-- Foco del selector -->
+                        <Trigger Property="IsKeyboardFocusWithin"
+                             Value="True">
+
+                            <Setter TargetName="SelectorBorder"
+                                Property="BorderBrush"
+                                Value="{StaticResource EcoBlueBrush}"/>
+
+                        </Trigger>
+
+                        <!-- Estado deshabilitado -->
+                        <Trigger Property="IsEnabled"
+                             Value="False">
+
+                            <Setter TargetName="SelectorBorder"
+                                Property="Opacity"
+                                Value="0.55"/>
+
+                            <Setter TargetName="SelectedContent"
+                                Property="Opacity"
+                                Value="0.55"/>
+
+                            <Setter TargetName="DropDownButton"
+                                Property="IsEnabled"
+                                Value="False"/>
+
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+
+                </ControlTemplate>
+
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+    <!-- Campo de texto reutilizable -->
+    <Style x:Key="TextBoxStyle"
+       TargetType="TextBox">
+
+        <!-- Tamaño de fuente -->
+        <Setter Property="FontSize"
+            Value="14"/>
+
+        <Setter Property="Height" Value="38"/>
+        <Setter Property="MinWidth" Value="100"/>
+        <Setter Property="Padding" Value="12,0"/>
+
+        <Setter Property="Background"
+            Value="{StaticResource SurfaceBrush}"/>
+
+        <Setter Property="Foreground"
+            Value="{StaticResource PrimaryTextBrush}"/>
+
+        <Setter Property="BorderBrush"
+            Value="{StaticResource BorderBrushLight}"/>
+
+        <Setter Property="BorderThickness" Value="1"/>
+
+        <Setter Property="VerticalContentAlignment"
+            Value="Center"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+
+                <ControlTemplate TargetType="TextBox">
+
+                    <Border x:Name="TextBoxBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="8">
+
+                        <ScrollViewer x:Name="PART_ContentHost"/>
+
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+
+                        <!-- Resaltar el borde al recibir el foco -->
+                        <Trigger Property="IsKeyboardFocusWithin"
+                             Value="True">
+
+                            <Setter TargetName="TextBoxBorder"
+                                Property="BorderBrush"
+                                Value="{StaticResource EcoBlueBrush}"/>
+
+                        </Trigger>
+
+                        <!-- Estado deshabilitado -->
+                        <Trigger Property="IsEnabled"
+                             Value="False">
+
+                            <Setter TargetName="TextBoxBorder"
+                                Property="Opacity"
+                                Value="0.55"/>
+
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+
+                </ControlTemplate>
+
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+    <!-- Boton principal reutilizable -->
+    <Style x:Key="PrimaryButtonStyle"
+       TargetType="Button">
+
+        <Setter Property="Height" Value="38"/>
+        <Setter Property="Padding" Value="18,0"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Background"
+            Value="{StaticResource EcoBlueBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+
+                <ControlTemplate TargetType="Button">
+
+                    <Border x:Name="ButtonBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="8">
+
+                        <ContentPresenter
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="{TemplateBinding Padding}"/>
+
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+
+                        <!-- Efecto al pasar el cursor -->
+                        <Trigger Property="IsMouseOver"
+                             Value="True">
+
+                            <Setter TargetName="ButtonBorder"
+                                Property="Background"
+                                Value="{StaticResource EcoBlueDarkBrush}"/>
+
+                        </Trigger>
+
+                        <!-- Efecto al presionar -->
+                        <Trigger Property="IsPressed"
+                             Value="True">
+
+                            <Setter TargetName="ButtonBorder"
+                                Property="Opacity"
+                                Value="0.85"/>
+
+                        </Trigger>
+
+                        <!-- Estado deshabilitado -->
+                        <Trigger Property="IsEnabled"
+                             Value="False">
+
+                            <Setter Property="Opacity"
+                                Value="0.45"/>
+
+                            <Setter Property="Cursor"
+                                Value="Arrow"/>
+
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+
+                </ControlTemplate>
+
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+    <!-- Estilo base para botones de acciones -->
+    <Style x:Key="ActionButtonBaseStyle"
+       TargetType="Button">
+
+        <Setter Property="Width" Value="34"/>
+        <Setter Property="Height" Value="34"/>
+        <Setter Property="Padding" Value="8"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+
+                <ControlTemplate TargetType="Button">
+
+                    <Border x:Name="ButtonBorder"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="8">
+
+                        <ContentPresenter HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+
+                        <!-- Efecto al pasar el cursor -->
+                        <Trigger Property="IsMouseOver"
+                             Value="True">
+
+                            <Setter TargetName="ButtonBorder"
+                                Property="Opacity"
+                                Value="0.8"/>
+
+                        </Trigger>
+
+                        <!-- Efecto al presionar -->
+                        <Trigger Property="IsPressed"
+                             Value="True">
+
+                            <Setter TargetName="ButtonBorder"
+                                Property="Opacity"
+                                Value="0.65"/>
+
+                        </Trigger>
+
+                        <!-- Estado deshabilitado -->
+                        <Trigger Property="IsEnabled"
+                             Value="False">
+
+                            <Setter Property="Opacity"
+                                Value="0.4"/>
+
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+
+                </ControlTemplate>
+
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+
+    <!-- Boton para editar registros -->
+    <Style x:Key="EditActionButtonStyle"
+       TargetType="Button"
+       BasedOn="{StaticResource ActionButtonBaseStyle}">
+
+        <Setter Property="Background"
+            Value="#EAF3FF"/>
+
+        <Setter Property="ToolTip"
+            Value="Editar registro"/>
+
+    </Style>
+
+    <!-- Boton para activar registros -->
+    <Style x:Key="ActivateActionButtonStyle"
+       TargetType="Button"
+       BasedOn="{StaticResource ActionButtonBaseStyle}">
+
+        <Setter Property="Background"
+            Value="#EDF8E7"/>
+
+        <Setter Property="ToolTip"
+            Value="Activar registro"/>
+
+    </Style>
+
+    <!-- Boton para desactivar registros -->
+    <Style x:Key="DeactivateActionButtonStyle"
+       TargetType="Button"
+       BasedOn="{StaticResource ActionButtonBaseStyle}">
+
+        <Setter Property="Background"
+            Value="#FEECEC"/>
+
+        <Setter Property="ToolTip"
+            Value="Desactivar registro"/>
+
+    </Style>
+
+    <!-- Boton verde para acciones de creacion -->
+    <Style x:Key="SuccessButtonStyle"
+       TargetType="Button"
+       BasedOn="{StaticResource PrimaryButtonStyle}">
+
+        <Setter Property="Background"
+            Value="#84CC16"/>
+
+        <Setter Property="Foreground"
+            Value="#544848"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+
+                <ControlTemplate TargetType="Button">
+
+                    <Border x:Name="ButtonBorder"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="12">
+
+                        <ContentPresenter HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Margin="{TemplateBinding Padding}"/>
+
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+
+                        <!-- Hover verde oscuro -->
+                        <Trigger Property="IsMouseOver"
+                             Value="True">
+
+                            <Setter TargetName="ButtonBorder"
+                                Property="Background"
+                                Value="#65A30D"/>
+
+                        </Trigger>
+
+                        <!-- Boton presionado -->
+                        <Trigger Property="IsPressed"
+                             Value="True">
+
+                            <Setter TargetName="ButtonBorder"
+                                Property="Background"
+                                Value="#4D7C0F"/>
+
+                        </Trigger>
+
+                        <!-- Boton deshabilitado -->
+                        <Trigger Property="IsEnabled"
+                             Value="False">
+
+                            <Setter Property="Opacity"
+                                Value="0.5"/>
+
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+
+                </ControlTemplate>
+
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+</ResourceDictionary>

@@ -1,5 +1,4 @@
-﻿
-using System.Windows.Input;
+﻿using System.Windows.Input;
 
 namespace PurchaseTicket.Desktop.Commands;
 
@@ -32,7 +31,7 @@ public class AsyncRelayCommand : ICommand
             return;
 
         _isExecuting = true;
-        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        NotifyCanExecuteChanged();
 
         try
         {
@@ -41,7 +40,7 @@ public class AsyncRelayCommand : ICommand
         finally
         {
             _isExecuting = false;
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+            NotifyCanExecuteChanged();
         }
     }
 
@@ -49,6 +48,4 @@ public class AsyncRelayCommand : ICommand
     {
         CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
-
-    
 }

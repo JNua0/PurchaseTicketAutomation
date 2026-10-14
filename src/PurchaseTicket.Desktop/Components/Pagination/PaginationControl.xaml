@@ -1,0 +1,110 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Pagination.PaginationControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <!-- Controles de paginacion -->
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Informacion y cantidad de registros -->
+        <StackPanel Grid.Column="0"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center">
+
+            <!-- Total de registros -->
+            <TextBlock Foreground="{StaticResource SecondaryTextBrush}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,20,0">
+
+                <Run Text="Total de registros:"/>
+                <Run Text="{Binding TotalCount, ElementName=Root, Mode=OneWay}"/>
+
+            </TextBlock>
+
+            <!-- Etiqueta del selector -->
+            <TextBlock Text="Mostrar"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource SecondaryTextBrush}"
+                       Margin="0,0,8,0"/>
+
+            <!-- Selector de registros por pagina -->
+            <ComboBox x:Name="PageSizeComboBox"
+                      Width="75"
+                      ItemsSource="{Binding PageSizeOptions, ElementName=Root}"
+                      SelectedItem="{Binding PageSize,
+                                             ElementName=Root,
+                                             Mode=TwoWay,
+                                             UpdateSourceTrigger=PropertyChanged}"
+                      SelectionChanged="PageSizeComboBox_SelectionChanged">
+
+                <ComboBox.Style>
+
+                    <Style TargetType="ComboBox"
+                           BasedOn="{StaticResource ComboBoxStyle}">
+
+                        <!-- Deshabilitar durante la carga -->
+                        <Style.Triggers>
+
+                            <DataTrigger Binding="{Binding IsLoading, ElementName=Root}"
+                                         Value="True">
+
+                                <Setter Property="IsEnabled"
+                                        Value="False"/>
+
+                            </DataTrigger>
+
+                        </Style.Triggers>
+
+                    </Style>
+
+                </ComboBox.Style>
+
+            </ComboBox>
+
+            <!-- Texto descriptivo -->
+            <TextBlock Text="registros"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource SecondaryTextBrush}"
+                       Margin="8,0,0,0"/>
+
+        </StackPanel>
+
+        <!-- Navegacion entre paginas -->
+        <StackPanel Grid.Column="1"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center">
+
+            <!-- Pagina anterior -->
+            <Button Content="Anterior"
+                    Command="{Binding PreviousPageCommand, ElementName=Root}"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Width="95"/>
+
+            <!-- Indicador de pagina actual -->
+            <TextBlock Margin="15,0"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource SecondaryTextBrush}">
+
+                <Run Text="Página"/>
+                <Run Text="{Binding CurrentPage, ElementName=Root, Mode=OneWay}"/>
+                <Run Text="de"/>
+                <Run Text="{Binding TotalPages, ElementName=Root, Mode=OneWay}"/>
+
+            </TextBlock>
+
+            <!-- Pagina siguiente -->
+            <Button Content="Siguiente"
+                    Command="{Binding NextPageCommand, ElementName=Root}"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Width="95"/>
+
+        </StackPanel>
+
+    </Grid>
+
+</UserControl>

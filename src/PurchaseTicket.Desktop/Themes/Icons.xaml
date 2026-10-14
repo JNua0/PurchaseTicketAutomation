@@ -72,4 +72,59 @@
         A3.5,3.5 0 0 1 12,15.5 Z
     </Geometry>
 
+    <!-- Editar registro -->
+    <Geometry x:Key="EditIcon">
+        M16.862,3.487
+        A2.25,2.25 0 0 1 20.044,6.669
+        L9.393,17.32
+        A4.5,4.5 0 0 1 7.5,18.446
+        L4.5,19.5
+        L5.554,16.5
+        A4.5,4.5 0 0 1 6.68,14.607
+        Z
+        M15.75,4.5
+        L19.5,8.25
+    </Geometry>
+
+    <!-- Activar registro -->
+    <Geometry x:Key="ActivateUserIcon">
+        M 8,9
+        A 3,3 0 1 0 8,3
+        A 3,3 0 1 0 8,9
+        Z
+        M 2,17
+        V 14
+        C 2,11 12,11 12,14
+        V 17
+        Z
+        M 14,14
+        L 17,17
+        L 22,11
+    </Geometry>
+
+    <!-- Desactivar registro -->
+    <Geometry x:Key="DeactivateUserIcon">
+        M 8,9
+        A 3,3 0 1 0 8,3
+        A 3,3 0 1 0 8,9
+        Z
+        M 2,17
+        V 14
+        C 2,11 12,11 12,14
+        V 17
+        Z
+        M 15,11
+        L 21,17
+        M 21,11
+        L 15,17
+    </Geometry>
+
+    <!-- Icono para agregar nuevos registros -->
+    <Geometry x:Key="PlusIcon">
+        M 12,5
+        V 19
+        M 5,12
+        H 19
+    </Geometry>
+
 </ResourceDictionary>

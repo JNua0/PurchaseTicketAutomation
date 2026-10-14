@@ -15,14 +15,16 @@ public class SuppliersViewModel : INotifyPropertyChanged
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ISupplierDialogService _supplierDialogService;
     private readonly IConfirmationDialogService _confirmationDialogService;
+
     private string _queryErrorMessage = string.Empty;
     private string _searchText = string.Empty;
-    private bool? _isActiveFilter = null;
+    private bool? _isActiveFilter;
     private int _currentPage = 1;
-    private int _pageSize = 2;
+    private int _pageSize = 20;
     private int _totalCount;
     private bool _isLoading;
     private SupplierDto? _selectedSupplier;
+    public int[] PageSizeOptions { get; } = [10, 20, 30, 50, 100];
     private bool _isChangingStatus;
 
     public SuppliersViewModel(
@@ -34,6 +36,7 @@ public class SuppliersViewModel : INotifyPropertyChanged
         _supplierDialogService = supplierDialogService;
         _confirmationDialogService = confirmationDialogService;
 
+        // Comandos generales
         SearchSuppliersCommand = new AsyncRelayCommand(
             SearchSuppliersAsync,
             CanSearchSuppliers);
@@ -50,16 +53,35 @@ public class SuppliersViewModel : INotifyPropertyChanged
             NewSupplierAsync,
             CanOpenSupplierForm);
 
-        EditSupplierCommand = new AsyncRelayCommand(
+        // Comandos que reciben un proveedor
+        EditSupplierCommand = new AsyncRelayCommand<SupplierDto>(
             EditSupplierAsync,
             CanEditSupplier);
 
-        ChangeSupplierStatusCommand = new AsyncRelayCommand(
+        ChangeSupplierStatusCommand = new AsyncRelayCommand<SupplierDto>(
             ChangeSupplierStatusAsync,
             CanChangeSupplierStatus);
+
+        ChangePageSizeCommand = new AsyncRelayCommand(
+            ChangePageSizeAsync,
+            CanChangePageSize);
     }
 
+    // Coleccion de proveedores
     public ObservableCollection<SupplierDto> Suppliers { get; } = new();
+
+    // Comandos generales
+    public AsyncRelayCommand SearchSuppliersCommand { get; }
+    public AsyncRelayCommand NextPageCommand { get; }
+    public AsyncRelayCommand PreviousPageCommand { get; }
+    public AsyncRelayCommand NewSupplierCommand { get; }
+    public AsyncRelayCommand ChangePageSizeCommand { get; }
+
+    // Comandos para acciones individuales
+    public AsyncRelayCommand<SupplierDto> EditSupplierCommand { get; }
+    public AsyncRelayCommand<SupplierDto> ChangeSupplierStatusCommand { get; }
+
+    // Mensaje de error de consultas
     public string QueryErrorMessage
     {
         get => _queryErrorMessage;
@@ -72,6 +94,8 @@ public class SuppliersViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(QueryErrorMessage));
         }
     }
+
+    // Texto de busqueda
     public string SearchText
     {
         get => _searchText;
@@ -84,6 +108,8 @@ public class SuppliersViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(SearchText));
         }
     }
+
+    // Filtro de proveedores activos o inactivos
     public bool? IsActiveFilter
     {
         get => _isActiveFilter;
@@ -96,6 +122,8 @@ public class SuppliersViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsActiveFilter));
         }
     }
+
+    // Pagina actual
     public int CurrentPage
     {
         get => _currentPage;
@@ -109,10 +137,26 @@ public class SuppliersViewModel : INotifyPropertyChanged
             NotifyPaginationCommands();
         }
     }
+
+    // Cantidad de registros por pagina
     public int PageSize
     {
         get => _pageSize;
+        set
+        {
+            if (_pageSize == value || !PageSizeOptions.Contains(value))
+                return;
+
+            _pageSize = value;
+
+            OnPropertyChanged(nameof(PageSize));
+            OnPropertyChanged(nameof(TotalPages));
+            NotifyPaginationCommands();
+        }
     }
+
+
+    // Cantidad total de proveedores
     public int TotalCount
     {
         get => _totalCount;
@@ -127,7 +171,12 @@ public class SuppliersViewModel : INotifyPropertyChanged
             NotifyPaginationCommands();
         }
     }
-    public int TotalPages => Math.Max(1, (int)Math.Ceiling((double)TotalCount / PageSize));
+
+    // Cantidad total de paginas
+    public int TotalPages =>
+        Math.Max(1, (int)Math.Ceiling((double)TotalCount / PageSize));
+
+    // Estado de carga
     public bool IsLoading
     {
         get => _isLoading;
@@ -142,6 +191,8 @@ public class SuppliersViewModel : INotifyPropertyChanged
             NotifyCommandsCanExecuteChanged();
         }
     }
+
+    // Proveedor seleccionado
     public SupplierDto? SelectedSupplier
     {
         get => _selectedSupplier;
@@ -151,21 +202,11 @@ public class SuppliersViewModel : INotifyPropertyChanged
                 return;
 
             _selectedSupplier = value;
-
             OnPropertyChanged(nameof(SelectedSupplier));
-            OnPropertyChanged(nameof(ChangeSupplierStatusButtonText));
-
-            EditSupplierCommand?.NotifyCanExecuteChanged();
-            ChangeSupplierStatusCommand?.NotifyCanExecuteChanged();
         }
     }
-    public AsyncRelayCommand ChangeSupplierStatusCommand { get; }
-    public string ChangeSupplierStatusButtonText =>
-        SelectedSupplier is null
-            ? "Cambiar estado"
-            : SelectedSupplier.IsActive
-                ? "Desactivar proveedor"
-                : "Activar proveedor";
+
+    // Estado de actualizacion
     public bool IsChangingStatus
     {
         get => _isChangingStatus;
@@ -181,13 +222,7 @@ public class SuppliersViewModel : INotifyPropertyChanged
         }
     }
 
-
     public event PropertyChangedEventHandler? PropertyChanged;
-
-    public async Task LoadSuppliersAsync()
-    {
-        await LoadPageAsync(CurrentPage);
-    }
 
     private void OnPropertyChanged(string propertyName)
     {
@@ -196,6 +231,13 @@ public class SuppliersViewModel : INotifyPropertyChanged
             new PropertyChangedEventArgs(propertyName));
     }
 
+    // Cargar proveedores
+    public async Task LoadSuppliersAsync()
+    {
+        await LoadPageAsync(CurrentPage);
+    }
+
+    // Validar navegacion a la siguiente pagina
     private bool CanGoToNextPage()
     {
         return !IsLoading
@@ -203,6 +245,7 @@ public class SuppliersViewModel : INotifyPropertyChanged
             && CurrentPage < TotalPages;
     }
 
+    // Validar navegacion a la pagina anterior
     private bool CanGoToPreviousPage()
     {
         return !IsLoading
@@ -210,27 +253,38 @@ public class SuppliersViewModel : INotifyPropertyChanged
             && CurrentPage > 1;
     }
 
+    // Navegar a la siguiente pagina
     private async Task NextPageAsync()
     {
         await GoToPageAsync(CurrentPage + 1);
     }
 
+    // Navegar a la pagina anterior
     private async Task PreviousPageAsync()
     {
         await GoToPageAsync(CurrentPage - 1);
     }
 
+    // Notificar cambios en la paginacion
     private void NotifyPaginationCommands()
     {
         NextPageCommand?.NotifyCanExecuteChanged();
         PreviousPageCommand?.NotifyCanExecuteChanged();
     }
 
+    // Buscar proveedores
     private async Task SearchSuppliersAsync()
     {
         await LoadPageAsync(1);
     }
 
+    // Actualizar los registros mostrados
+    private async Task ChangePageSizeAsync()
+    {
+        await LoadPageAsync(1);
+    }
+
+    // Navegar a una pagina especifica
     private async Task GoToPageAsync(int page)
     {
         if (page < 1 || page > TotalPages)
@@ -239,11 +293,13 @@ public class SuppliersViewModel : INotifyPropertyChanged
         await LoadPageAsync(page);
     }
 
+    // Validar disponibilidad de busqueda
     private bool CanSearchSuppliers()
     {
         return !IsLoading && !IsChangingStatus;
     }
 
+    // Consultar proveedores con paginacion
     private async Task<bool> LoadPageAsync(int page)
     {
         if (IsLoading)
@@ -256,7 +312,8 @@ public class SuppliersViewModel : INotifyPropertyChanged
         {
             await using var scope = _scopeFactory.CreateAsyncScope();
 
-            var getSuppliers = scope.ServiceProvider.GetRequiredService<GetSuppliers>();
+            var getSuppliers = scope.ServiceProvider
+                .GetRequiredService<GetSuppliers>();
 
             var query = new GetSuppliersQuery(
                 Page: page,
@@ -272,16 +329,16 @@ public class SuppliersViewModel : INotifyPropertyChanged
                 1,
                 (int)Math.Ceiling(
                     (double)result.TotalCount / PageSize));
-            
+
             if (page > totalPages)
             {
                 page = totalPages;
-            
+
                 query = query with
                 {
                     Page = page
                 };
-            
+
                 result = await getSuppliers.ExecuteAsync(query);
             }
 
@@ -300,7 +357,8 @@ public class SuppliersViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            QueryErrorMessage = "No fue posible cargar los proveedores.";
+            QueryErrorMessage =
+                "No fue posible cargar los proveedores.";
 
             Console.Error.WriteLine(ex);
 
@@ -312,11 +370,13 @@ public class SuppliersViewModel : INotifyPropertyChanged
         }
     }
 
+    // Validar apertura del formulario
     private bool CanOpenSupplierForm()
     {
         return !IsLoading && !IsChangingStatus;
     }
 
+    // Registrar un proveedor
     private async Task NewSupplierAsync()
     {
         if (!CanOpenSupplierForm())
@@ -337,21 +397,18 @@ public class SuppliersViewModel : INotifyPropertyChanged
         }
     }
 
-    private bool CanEditSupplier()
+    // Validar edicion de un proveedor
+    private bool CanEditSupplier(SupplierDto supplier)
     {
-        return SelectedSupplier is not null
+        return supplier is not null
             && !IsLoading
             && !IsChangingStatus;
     }
 
-    private async Task EditSupplierAsync()
+    // Editar el proveedor recibido
+    private async Task EditSupplierAsync(SupplierDto supplier)
     {
-        if (!CanEditSupplier())
-            return;
-
-        var supplier = SelectedSupplier;
-
-        if (supplier is null)
+        if (!CanEditSupplier(supplier))
             return;
 
         var saved = _supplierDialogService.ShowEditDialog(
@@ -372,21 +429,18 @@ public class SuppliersViewModel : INotifyPropertyChanged
         }
     }
 
-    private bool CanChangeSupplierStatus()
+    // Validar cambio de estado
+    private bool CanChangeSupplierStatus(SupplierDto supplier)
     {
-        return SelectedSupplier is not null
+        return supplier is not null
             && !IsLoading
             && !IsChangingStatus;
     }
 
-    private async Task ChangeSupplierStatusAsync()
+    // Activar o desactivar el proveedor recibido
+    private async Task ChangeSupplierStatusAsync(SupplierDto supplier)
     {
-        if (!CanChangeSupplierStatus())
-            return;
-
-        var supplier = SelectedSupplier;
-
-        if (supplier is null)
+        if (!CanChangeSupplierStatus(supplier))
             return;
 
         var action = supplier.IsActive
@@ -434,7 +488,8 @@ public class SuppliersViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            QueryErrorMessage = "No fue posible cambiar el estado del proveedor.";
+            QueryErrorMessage =
+                "No fue posible cambiar el estado del proveedor.";
 
             Console.Error.WriteLine(ex);
         }
@@ -444,6 +499,13 @@ public class SuppliersViewModel : INotifyPropertyChanged
         }
     }
 
+    // Validar cambio de registros por pagina
+    private bool CanChangePageSize()
+    {
+        return !IsLoading && !IsChangingStatus;
+    }
+
+    // Notificar disponibilidad de comandos
     private void NotifyCommandsCanExecuteChanged()
     {
         SearchSuppliersCommand?.NotifyCanExecuteChanged();
@@ -452,11 +514,6 @@ public class SuppliersViewModel : INotifyPropertyChanged
         NewSupplierCommand?.NotifyCanExecuteChanged();
         EditSupplierCommand?.NotifyCanExecuteChanged();
         ChangeSupplierStatusCommand?.NotifyCanExecuteChanged();
+        ChangePageSizeCommand?.NotifyCanExecuteChanged();
     }
-
-    public AsyncRelayCommand SearchSuppliersCommand { get; }
-    public AsyncRelayCommand NextPageCommand { get; }
-    public AsyncRelayCommand PreviousPageCommand { get; }
-    public AsyncRelayCommand NewSupplierCommand { get; }
-    public AsyncRelayCommand EditSupplierCommand { get; }
 }
