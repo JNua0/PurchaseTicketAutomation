@@ -15,6 +15,8 @@
 
                 <ResourceDictionary Source="Themes/DataGridStyles.xaml"/>
 
+                <ResourceDictionary Source="Themes/SidebarStyles.xaml"/>
+
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

@@ -1,0 +1,208 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Layout.Sidebar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:navigation="clr-namespace:PurchaseTicket.Desktop.Components.Navigation">
+
+    <!-- Menu lateral con animacion de ancho -->
+    <Border Background="{StaticResource SidebarBrush}"
+            ClipToBounds="True">
+
+        <Border.Style>
+            <Style TargetType="{x:Type Border}">
+
+                <Setter Property="Width" Value="310"/>
+
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsSidebarExpanded}"
+                                 Value="False">
+
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation
+                                        Storyboard.TargetProperty="Width"
+                                        To="75"
+                                        Duration="0:0:0.25"
+                                        AccelerationRatio="0.2"
+                                        DecelerationRatio="0.8"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+
+                        <DataTrigger.ExitActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation
+                                        Storyboard.TargetProperty="Width"
+                                        To="310"
+                                        Duration="0:0:0.25"
+                                        AccelerationRatio="0.2"
+                                        DecelerationRatio="0.8"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.ExitActions>
+
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+
+        <DockPanel LastChildFill="True">
+
+            <!-- Encabezado EcoPapel -->
+            <Grid DockPanel.Dock="Top"
+                  Margin="10,25,10,20">
+
+                <!-- Encabezado expandido -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="{x:Type StackPanel}">
+
+                            <Setter Property="Visibility"
+                                    Value="Visible"/>
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSidebarExpanded}"
+                                             Value="False">
+                                    <Setter Property="Visibility"
+                                            Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+
+                        </Style>
+                    </StackPanel.Style>
+
+                    <!-- Imagotipo -->
+                    <Border Background="{StaticResource SurfaceBrush}"
+                            CornerRadius="14"
+                            Padding="12"
+                            Margin="10,0,10,16">
+
+                        <Image Source="pack://application:,,,/PurchaseTicket.Desktop;component/Assets/Images/ecopapel_imagotipo.png"
+                               Height="155"
+                               Stretch="Uniform"/>
+
+                    </Border>
+
+                    <TextBlock Text="Tickets de Compra"
+                               Foreground="White"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               TextAlignment="Center"/>
+
+                    <TextBlock Text="Sistema de tickets de compra"
+                               Foreground="{StaticResource SidebarSecondaryTextBrush}"
+                               FontSize="12"
+                               TextAlignment="Center"
+                               Margin="0,6,0,0"/>
+
+                </StackPanel>
+
+                <!-- Encabezado contraido -->
+                <Border Width="48"
+                        Height="48"
+                        Padding="4"
+                        CornerRadius="10"
+                        Background="{StaticResource SurfaceBrush}"
+                        HorizontalAlignment="Center">
+
+                    <Border.Style>
+                        <Style TargetType="{x:Type Border}">
+
+                            <Setter Property="Visibility"
+                                    Value="Collapsed"/>
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSidebarExpanded}"
+                                             Value="False">
+                                    <Setter Property="Visibility"
+                                            Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+
+                        </Style>
+                    </Border.Style>
+
+                    <!-- Isotipo -->
+                    <Image Source="pack://application:,,,/PurchaseTicket.Desktop;component/Assets/Images/ecopapel_isotipo.png"
+                           Stretch="Uniform"
+                           ToolTip="EcoPapel Recycling"/>
+
+                </Border>
+
+            </Grid>
+
+            <!-- Configuracion anclada al fondo -->
+            <StackPanel DockPanel.Dock="Bottom"
+                        Margin="12,0,12,20">
+
+                <Border Height="1"
+                        Background="#34606D"
+                        Margin="8,0,8,12"/>
+
+                <!-- Configuracion -->
+                <navigation:SidebarNavItem
+                    Text="Configuración"
+                    Icon="{StaticResource SettingsIcon}"
+                    IsEnabled="False"/>
+
+            </StackPanel>
+
+            <!-- Area desplazable de navegacion -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Disabled"
+                CanContentScroll="True"
+                PanningMode="VerticalOnly"
+                Focusable="False">
+
+                <!-- Opciones de navegacion -->
+                    <StackPanel Margin="12,0,12,0">
+
+                        <!-- Separador -->
+                        <Border Height="1"
+                                Background="#34606D"
+                                Margin="8,0,8,18"/>
+
+                        <!-- Inicio -->
+                    <navigation:SidebarNavItem
+                            Text="Inicio"
+                            Icon="{StaticResource HomeIcon}"
+                            Command="{Binding ShowHomeCommand}"
+                            IsSelected="{Binding IsHomeSelected, Mode=OneWay}"/>
+
+                    <!-- Pesaje de vehiculos -->
+                    <navigation:SidebarNavItem
+                        Text="Pesaje de vehículos"
+                        Icon="{StaticResource TruckIcon}"
+                        IsEnabled="False"/>
+
+                    <!-- Importes de tickets -->
+                    <navigation:SidebarNavItem
+                        Text="Importes de tickets"
+                        Icon="{StaticResource TicketAmountIcon}"
+                        IsEnabled="False"/>
+
+                    <!-- Proveedores -->
+                        <navigation:SidebarNavItem
+                            Text="Proveedores"
+                            Icon="{StaticResource SuppliersIcon}"
+                            Command="{Binding ShowSuppliersCommand}"
+                            IsSelected="{Binding IsSuppliersSelected, Mode=OneWay}"/>
+
+                    <!-- Materiales -->
+                    <navigation:SidebarNavItem
+                        Text="Materiales"
+                        Icon="{StaticResource MaterialsIcon}"
+                        Command="{Binding ShowMaterialsCommand}"
+                        IsSelected="{Binding IsMaterialsSelected, Mode=OneWay}"/>
+
+                    </StackPanel>
+
+            </ScrollViewer>
+
+
+        </DockPanel>
+
+    </Border>
+
+</UserControl>
