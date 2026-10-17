@@ -1,4 +1,5 @@
-﻿using PurchaseTicket.Application.Abstractions.Persistence;
+﻿using System.IO;
+using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.Printing;
 using PurchaseTicket.Domain.Enums;
 
@@ -89,11 +90,45 @@ public class PrintPurchaseTicket
                 ticket.TicketNumber,
                 Printed: true);
         }
-        catch
+        catch (FileNotFoundException ex)
         {
+            // El puerto configurado no existe
+            Console.Error.WriteLine(ex);
+
             return new PrintPurchaseTicketResult(
                 ticket.TicketNumber,
-                Printed: false);
+                Printed: false,
+                ErrorCode: PrinterErrorCode.PortNotFound);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            // El puerto no permite el acceso
+            Console.Error.WriteLine(ex);
+
+            return new PrintPurchaseTicketResult(
+                ticket.TicketNumber,
+                Printed: false,
+                ErrorCode: PrinterErrorCode.PortAccessDenied);
+        }
+        catch (IOException ex)
+        {
+            // Error durante la comunicacion serial
+            Console.Error.WriteLine(ex);
+
+            return new PrintPurchaseTicketResult(
+                ticket.TicketNumber,
+                Printed: false,
+                ErrorCode: PrinterErrorCode.CommunicationError);
+        }
+        catch (Exception ex)
+        {
+            // Error de impresion no identificado
+            Console.Error.WriteLine(ex);
+
+            return new PrintPurchaseTicketResult(
+                ticket.TicketNumber,
+                Printed: false,
+                ErrorCode: PrinterErrorCode.Unknown);
         }
     }
 }

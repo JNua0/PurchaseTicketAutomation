@@ -1,0 +1,65 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Filters.StatusFilter"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+             x:Name="Root">
+
+    <!-- Filtro de estado reutilizable -->
+    <StackPanel>
+
+        <!-- Etiqueta del filtro -->
+        <TextBlock Text="{Binding Label, ElementName=Root}"
+                   FontSize="14"
+                   FontWeight="SemiBold"
+                   Foreground="{StaticResource PrimaryTextBrush}"
+                   Margin="0,0,0,7"/>
+
+        <!-- Selector de estado -->
+        <ComboBox SelectedValue="{Binding SelectedStatus,
+                                          ElementName=Root,
+                                          Mode=TwoWay}"
+                  SelectedValuePath="Tag">
+
+            <ComboBox.Style>
+                <Style TargetType="ComboBox"
+                       BasedOn="{StaticResource ComboBoxStyle}">
+
+                    <Style.Triggers>
+
+                        <!-- Deshabilitar durante la carga -->
+                        <DataTrigger Binding="{Binding IsLoading, ElementName=Root}"
+                                     Value="True">
+
+                            <Setter Property="IsEnabled"
+                                    Value="False"/>
+
+                        </DataTrigger>
+
+                    </Style.Triggers>
+
+                </Style>
+            </ComboBox.Style>
+
+            <!-- Todos los registros -->
+            <ComboBoxItem Content="Todos"
+                          Tag="{x:Null}"/>
+
+            <!-- Registros activos -->
+            <ComboBoxItem Content="Activos">
+                <ComboBoxItem.Tag>
+                    <sys:Boolean>True</sys:Boolean>
+                </ComboBoxItem.Tag>
+            </ComboBoxItem>
+
+            <!-- Registros inactivos -->
+            <ComboBoxItem Content="Inactivos">
+                <ComboBoxItem.Tag>
+                    <sys:Boolean>False</sys:Boolean>
+                </ComboBoxItem.Tag>
+            </ComboBoxItem>
+
+        </ComboBox>
+
+    </StackPanel>
+
+</UserControl>

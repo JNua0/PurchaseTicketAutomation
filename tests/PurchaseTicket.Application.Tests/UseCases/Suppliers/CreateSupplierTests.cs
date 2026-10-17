@@ -62,7 +62,7 @@ public class CreateSupplierTests
         Assert.NotNull(repository.AddedSupplier);
 
         Assert.Equal(
-            "Proveedor de prueba",
+            "Proveedor De Prueba",
             repository.AddedSupplier.Name);
 
         Assert.Equal(
@@ -134,7 +134,7 @@ public class CreateSupplierTests
 
         // Assert
         Assert.Equal(
-            "Proveedor de prueba",
+            "Proveedor De Prueba",
             repository.CheckedName);
     }
 }

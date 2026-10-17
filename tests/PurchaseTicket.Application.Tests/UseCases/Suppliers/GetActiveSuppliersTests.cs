@@ -76,7 +76,7 @@ public class GetActiveSuppliersTests
         // Assert
         Assert.Equal(2, result.Count);
 
-        Assert.Equal("Aceros del Norte", result[0].Name);
-        Assert.Equal("Metales del Centro", result[1].Name);
+        Assert.Equal("Aceros Del Norte", result[0].Name);
+        Assert.Equal("Metales Del Centro", result[1].Name);
     }
 }

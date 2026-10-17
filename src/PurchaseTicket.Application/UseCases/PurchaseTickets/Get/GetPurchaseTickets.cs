@@ -34,12 +34,15 @@ public class GetPurchaseTickets
 
         var items = result.Items
             .Select(item => new PurchaseTicketDto(
+                item.Id,
                 item.TicketNumber,
                 item.CheckInAt,
                 item.SupplierName,
                 item.MaterialName,
                 item.LicensePlate,
                 item.Transporter,
+                item.GrossWeight,
+                item.NetWeight,
                 item.FinalWeight,
                 item.Amount,
                 item.WeighingType,

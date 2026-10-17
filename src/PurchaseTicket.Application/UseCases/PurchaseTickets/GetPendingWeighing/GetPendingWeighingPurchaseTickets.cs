@@ -19,6 +19,7 @@ public class GetPendingWeighingPurchaseTickets
 
         return tickets
             .Select(ticket => new PendingWeighingPurchaseTicketDto(
+                ticket.Id,
                 ticket.TicketNumber,
                 ticket.CheckInAt,
                 ticket.LicensePlate

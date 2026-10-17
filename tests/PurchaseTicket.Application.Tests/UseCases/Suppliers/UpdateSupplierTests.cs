@@ -74,7 +74,7 @@ public class UpdateSupplierTests
 
         // Assert
         Assert.Equal(
-            "Proveedor actualizado",
+            "Proveedor Actualizado",
             supplier.Name);
 
         Assert.Equal(
@@ -195,7 +195,7 @@ public class UpdateSupplierTests
 
         // Assert
         Assert.Equal(
-            "Proveedor actualizado",
+            "Proveedor Actualizado",
             repository.CheckedName);
     }
 }

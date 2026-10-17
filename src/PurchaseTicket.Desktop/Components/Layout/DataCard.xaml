@@ -1,0 +1,17 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Layout.DataCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <!-- Contenedor de resultados -->
+    <Border Background="{StaticResource SurfaceBrush}"
+            BorderBrush="{StaticResource BorderBrushLight}"
+            BorderThickness="1"
+            CornerRadius="12"
+            Padding="16">
+
+        <ContentPresenter Content="{Binding DataContent, ElementName=Root}"/>
+
+    </Border>
+
+</UserControl>

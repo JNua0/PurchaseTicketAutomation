@@ -1,0 +1,61 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Views.Materials.MaterialFiltersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:filters="clr-namespace:PurchaseTicket.Desktop.Components.Filters"
+             xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback">
+
+    <!-- Contenedor principal de filtros -->
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Controles de busqueda y filtrado -->
+        <Grid Grid.Row="0">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"
+                                  MinWidth="150"/>
+                <ColumnDefinition Width="190"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Busqueda por nombre -->
+            <filters:SearchBox
+                Grid.Column="0"
+                Margin="0,0,15,0"
+                Label="Buscar material"
+                SearchText="{Binding SearchText, Mode=TwoWay}"
+                IsLoading="{Binding IsLoading}"/>
+
+            <!-- Filtro de estado -->
+            <filters:StatusFilter
+                Grid.Column="1"
+                Margin="0,0,15,0"
+                Label="Estado"
+                SelectedStatus="{Binding IsActiveFilter, Mode=TwoWay}"
+                IsLoading="{Binding IsLoading}"/>
+
+            <!-- Accion de busqueda -->
+            <Button Grid.Column="2"
+                    Content="Buscar"
+                    Command="{Binding SearchMaterialsCommand}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Width="110"
+                    VerticalAlignment="Bottom"/>
+
+        </Grid>
+
+        <!-- Mensajes de carga y error -->
+        <feedback:QueryStatus
+            Grid.Row="1"
+            Margin="0,12,0,0"
+            IsLoading="{Binding IsLoading}"
+            LoadingMessage="Cargando materiales..."
+            ErrorMessage="{Binding QueryErrorMessage}"/>
+
+    </Grid>
+
+</UserControl>

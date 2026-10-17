@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/PurchaseTicket.Application/PurchaseTicket.Application.csproj" />
+    <Project Path="src/PurchaseTicket.Desktop/PurchaseTicket.Desktop.csproj" />
     <Project Path="src/PurchaseTicket.Domain/PurchaseTicket.Domain.csproj" />
     <Project Path="src/PurchaseTicket.Infrastructure/PurchaseTicket.Infrastructure.csproj" />
   </Folder>

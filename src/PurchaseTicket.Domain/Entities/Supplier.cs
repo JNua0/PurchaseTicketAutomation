@@ -1,4 +1,6 @@
-﻿namespace PurchaseTicket.Domain.Entities;
+﻿using System.Globalization;
+
+namespace PurchaseTicket.Domain.Entities;
 
 public class Supplier
 {
@@ -42,7 +44,12 @@ public class Supplier
                 nameof(name));
         }
 
-        return name;
+        var textInfo = CultureInfo
+            .GetCultureInfo("es-MX")
+            .TextInfo;
+
+        return textInfo.ToTitleCase(name.ToLower(
+            CultureInfo.GetCultureInfo("es-MX")));
     }
 
     public void Deactivate()

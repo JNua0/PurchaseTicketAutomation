@@ -1,0 +1,90 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Views.Suppliers.SuppliersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:layout="clr-namespace:PurchaseTicket.Desktop.Components.Layout"
+             xmlns:suppliers="clr-namespace:PurchaseTicket.Desktop.Views.Suppliers"
+             xmlns:pagination="clr-namespace:PurchaseTicket.Desktop.Components.Pagination"
+             xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions">
+
+    <!-- Estructura principal -->
+    <layout:PageLayout>
+
+        <layout:PageLayout.PageContent>
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Bloque 1: Encabezado -->
+                <layout:PageHeader Grid.Row="0"
+                                   Title="Proveedores"
+                                   Description="Administra los proveedores registrados">
+
+                    <layout:PageHeader.Actions>
+
+                        <!-- Accion para registrar proveedores -->
+                        <actions:CreateActionButton
+                            Text="Nuevo proveedor"
+                            Command="{Binding NewSupplierCommand}"/>
+
+                    </layout:PageHeader.Actions>
+
+                </layout:PageHeader>
+
+                <!-- Bloque 2: Filtros -->
+                <layout:FilterCard Grid.Row="1"
+                                   Margin="0,0,0,20">
+
+                    <layout:FilterCard.FilterContent>
+
+                        <suppliers:SupplierFiltersView/>
+
+                    </layout:FilterCard.FilterContent>
+
+                </layout:FilterCard>
+
+                <!-- Bloque 3: Tabla y paginacion -->
+                <layout:DataCard Grid.Row="2">
+
+                    <layout:DataCard.DataContent>
+
+                        <Grid>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Tabla de proveedores -->
+                            <suppliers:SupplierTableView Grid.Row="0"/>
+
+                            <!-- Controles de paginacion -->
+                            <pagination:PaginationControl
+                                Grid.Row="1"
+                                Margin="0,16,0,0"
+                                TotalCount="{Binding TotalCount}"
+                                CurrentPage="{Binding CurrentPage}"
+                                TotalPages="{Binding TotalPages}"
+                                PageSize="{Binding PageSize, Mode=TwoWay}"
+                                PageSizeOptions="{Binding PageSizeOptions}"
+                                ChangePageSizeCommand="{Binding ChangePageSizeCommand}"
+                                PreviousPageCommand="{Binding PreviousPageCommand}"
+                                NextPageCommand="{Binding NextPageCommand}"/>
+
+                        </Grid>
+
+                    </layout:DataCard.DataContent>
+
+                </layout:DataCard>
+
+            </Grid>
+
+        </layout:PageLayout.PageContent>
+
+    </layout:PageLayout>
+
+</UserControl>

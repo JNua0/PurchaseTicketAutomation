@@ -51,6 +51,7 @@ public class GetPurchaseTicketsTests
                 Result = new PagedResult<PurchaseTicketListItem>(
                     [
                         new PurchaseTicketListItem(
+                            1,
                             TicketNumber: "T-000001",
                             CheckInAt: new DateTime(
                                 2026, 10, 6, 8, 30, 0),
@@ -58,6 +59,8 @@ public class GetPurchaseTicketsTests
                             MaterialName: "Acero",
                             LicensePlate: "ABC123",
                             Transporter: "Juan Perez",
+                            GrossWeight: 20000m,
+                            NetWeight: 15000m,
                             FinalWeight: 14250m,
                             Amount: 28500m,
                             WeighingType: WeighingType.Conventional,
@@ -79,6 +82,7 @@ public class GetPurchaseTicketsTests
             await useCase.ExecuteAsync(query);
 
         // Assert
+        Assert.Equal(1, result.Items[0].Id);
         Assert.Single(result.Items);
 
         Assert.Equal(1, result.Page);
@@ -129,6 +133,9 @@ public class GetPurchaseTicketsTests
         Assert.Equal(
             TicketStatus.Completed,
             item.Status);
+
+        Assert.Equal(15000m, item.NetWeight);
+        Assert.Equal(20000m, item.GrossWeight);
     }
 
     [Fact]

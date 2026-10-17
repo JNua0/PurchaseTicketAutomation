@@ -1,0 +1,39 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Actions.CreateActionButton"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <!-- Boton reutilizable para crear registros -->
+    <Button Style="{StaticResource SuccessButtonStyle}"
+            Command="{Binding Command, ElementName=Root}"
+            CommandParameter="{Binding CommandParameter, ElementName=Root}"
+            Height="40"
+            Padding="18,0">
+
+        <StackPanel Orientation="Horizontal"
+                    VerticalAlignment="Center">
+
+            <!-- Icono para agregar registros -->
+            <Path Data="{StaticResource PlusIcon}"
+                  Stroke="{Binding Foreground,
+                                   RelativeSource={RelativeSource AncestorType=Button}}"
+                  StrokeThickness="2.5"
+                  StrokeStartLineCap="Round"
+                  StrokeEndLineCap="Round"
+                  Width="19"
+                  Height="19"
+                  Stretch="Uniform"
+                  Margin="0,0,9,0"
+                  VerticalAlignment="Center"/>
+
+            <!-- Texto configurable -->
+            <TextBlock Text="{Binding Text, ElementName=Root}"
+                       FontSize="14"
+                       FontWeight="Medium"
+                       VerticalAlignment="Center"/>
+
+        </StackPanel>
+
+    </Button>
+
+</UserControl>

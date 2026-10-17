@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Forms.FormActions"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <!-- Acciones reutilizables del formulario -->
+    <StackPanel Orientation="Horizontal"
+                HorizontalAlignment="Right">
+
+        <!-- Cancelar operacion -->
+        <Button Content="Cancelar"
+                Command="{Binding CancelCommand, ElementName=Root}"
+                Width="110"
+                Height="38"
+                Margin="0,0,10,0">
+
+            <Button.Style>
+                <Style TargetType="Button"
+                       BasedOn="{StaticResource SecondaryButtonStyle}">
+
+                    <Style.Triggers>
+
+                        <!-- Deshabilitar durante el guardado -->
+                        <DataTrigger Binding="{Binding IsSaving, ElementName=Root}"
+                                     Value="True">
+
+                            <Setter Property="IsEnabled"
+                                    Value="False"/>
+
+                        </DataTrigger>
+
+                    </Style.Triggers>
+
+                </Style>
+            </Button.Style>
+
+        </Button>
+
+        <!-- Guardar formulario -->
+        <Button Content="{Binding SaveButtonText, ElementName=Root}"
+                Command="{Binding SaveCommand, ElementName=Root}"
+                Style="{StaticResource PrimaryButtonStyle}"
+                Width="140"
+                Height="38"/>
+
+    </StackPanel>
+
+</UserControl>

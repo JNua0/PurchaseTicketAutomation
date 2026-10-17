@@ -1,0 +1,94 @@
+﻿<Window x:Class="PurchaseTicket.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:layout="clr-namespace:PurchaseTicket.Desktop.Components.Layout"
+        xmlns:homeVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Home"
+        xmlns:homeViews="clr-namespace:PurchaseTicket.Desktop.Views.Home"
+        xmlns:suppliersVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Suppliers"
+        xmlns:suppliersViews="clr-namespace:PurchaseTicket.Desktop.Views.Suppliers"
+        xmlns:materialsVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Materials"
+        xmlns:materialsViews="clr-namespace:PurchaseTicket.Desktop.Views.Materials"
+        xmlns:weighingVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.VehicleWeighing"
+        xmlns:weighingViews="clr-namespace:PurchaseTicket.Desktop.Views.VehicleWeighing"
+        xmlns:settingsVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Settings"
+        xmlns:settingsView="clr-namespace:PurchaseTicket.Desktop.Views.Settings"
+        Title="EcoPapel Recycling | Tickets de Compra"
+        Width="1200"
+        Height="750"
+        MinWidth="900"
+        MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource ContentBrush}"
+        FontFamily="Segoe UI">
+
+    <Window.Resources>
+
+        <!-- Plantilla de inicio -->
+        <DataTemplate DataType="{x:Type homeVm:HomeViewModel}">
+            <homeViews:HomeView/>
+        </DataTemplate>
+
+        <!-- Plantilla de proveedores -->
+        <DataTemplate DataType="{x:Type suppliersVm:SuppliersViewModel}">
+            <suppliersViews:SuppliersView/>
+        </DataTemplate>
+
+        <!-- Plantilla de materiales -->
+        <DataTemplate DataType="{x:Type materialsVm:MaterialsViewModel}">
+            <materialsViews:MaterialsView/>
+        </DataTemplate>
+
+        <!-- Plantilla de pesaje de vehiculos -->
+        <DataTemplate DataType="{x:Type weighingVm:VehicleWeighingViewModel}">
+            <weighingViews:VehicleWeighingView/>
+        </DataTemplate>
+
+        <!-- Pantalla de configuracion -->
+        <DataTemplate DataType="{x:Type settingsVm:SettingsViewModel}">
+            <settingsView:SettingsView/>
+        </DataTemplate>
+
+    </Window.Resources>
+
+    <!-- Estructura principal -->
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Menu lateral reutilizable -->
+        <layout:Sidebar Grid.Column="0"/>
+
+        <!-- Area principal -->
+        <Grid Grid.Column="1"
+              Background="{StaticResource ContentBrush}">
+
+            <ContentControl Content="{Binding CurrentViewModel}"/>
+
+        </Grid>
+
+        <!-- Boton flotante del menu -->
+        <Button Grid.Column="0"
+                Panel.ZIndex="10"
+                Style="{StaticResource SidebarCollapseButtonStyle}"
+                Command="{Binding ToggleSidebarCommand}"
+                Width="30"
+                Height="30"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="0,12,0,0">
+
+            <!-- Desplazar el boton hacia el borde del contenido -->
+            <Button.RenderTransform>
+                <TranslateTransform X="20"/>
+            </Button.RenderTransform>
+
+            <Path Style="{StaticResource SidebarCollapseArrowStyle}"/>
+
+        </Button>
+
+    </Grid>
+
+</Window>
