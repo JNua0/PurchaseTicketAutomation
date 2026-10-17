@@ -71,12 +71,15 @@ public class PurchaseTicketQueryRepository
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(x => new PurchaseTicketListItem(
+                    x.Ticket.Id,
                     x.Ticket.TicketNumber,
                     x.Ticket.CheckInAt,
                     x.SupplierName,
                     x.MaterialName,
                     x.Ticket.LicensePlate,
                     x.Ticket.Transporter,
+                    x.Ticket.GrossWeight,
+                    x.Ticket.NetWeight,
                     x.Ticket.NetWeightAfterDiscount,
                     x.Ticket.Amount,
                     x.Ticket.WeighingType,

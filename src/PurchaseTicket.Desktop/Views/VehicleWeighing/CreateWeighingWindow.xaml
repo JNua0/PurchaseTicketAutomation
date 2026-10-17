@@ -1,0 +1,331 @@
+﻿<Window x:Class="PurchaseTicket.Desktop.Views.VehicleWeighing.CreateWeighingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:forms="clr-namespace:PurchaseTicket.Desktop.Components.Forms"
+        xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
+        Title="Nuevo pesaje"
+        Width="590"
+        MinWidth="540"
+        Height="740"
+        MinHeight="600"
+        MaxHeight="900"
+        ResizeMode="CanResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource ContentBrush}"
+        Closing="Window_Closing"
+        Loaded="Window_Loaded">
+
+    <Grid Margin="25">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Encabezado de captura -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsRegistered}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+            <forms:FormHeader Title="Nuevo pesaje"
+                              Description="Registra el peso de entrada o un pesaje único"/>
+        </StackPanel>
+
+        <!-- Encabezado de registro y edicion -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsRegistered}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+            <TextBlock FontSize="22" FontWeight="SemiBold">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Text" Value="Pesaje registrado"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                <Setter Property="Text" Value="Editar pesaje"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <TextBlock Text="{Binding TicketNumberDisplay, StringFormat=Folio: {0}}"
+                       Foreground="{StaticResource SecondaryTextBrush}"
+                       Margin="0,6,0,0"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Captura y edicion comparten los mismos campos -->
+                <StackPanel IsEnabled="{Binding CanEditForm}">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowForm}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <!-- Tipo de pesaje: inmutable despues del registro -->
+                    <TextBlock Text="Tipo de pesaje" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20" IsEnabled="{Binding IsCreating}">
+                        <RadioButton Content="Convencional"
+                                     IsChecked="{Binding IsConventional, Mode=TwoWay}"
+                                     Margin="0,0,25,0"/>
+                        <RadioButton Content="Único"
+                                     IsChecked="{Binding IsSingle, Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Proveedor *" Margin="0,0,0,6"/>
+                    <ComboBox ItemsSource="{Binding Suppliers}"
+                              SelectedItem="{Binding SelectedSupplier, Mode=TwoWay}"
+                              DisplayMemberPath="Name"
+                              Height="36" Margin="0,0,0,16"/>
+
+                    <TextBlock Text="Material *" Margin="0,0,0,6"/>
+                    <ComboBox ItemsSource="{Binding Materials}"
+                              SelectedItem="{Binding SelectedMaterial, Mode=TwoWay}"
+                              DisplayMemberPath="Name"
+                              Height="36" Margin="0,0,0,16"/>
+
+                    <forms:FormTextField Label="Placas del vehículo"
+                                         IsRequired="{Binding IsConventional}"
+                                         Text="{Binding LicensePlate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Margin="0,0,0,16"/>
+                    <forms:FormTextField Label="Transportista"
+                                         IsRequired="True"
+                                         Text="{Binding Transporter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Margin="0,0,0,16"/>
+
+                    <TextBlock Text="{Binding WeightLabel}" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding Weight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Height="38" VerticalContentAlignment="Center"
+                                 Padding="10,0" Margin="0,0,10,0"/>
+                        <Button Grid.Column="1"
+                                Content="Obtener peso"
+                                Command="{Binding ReadWeightCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                MinWidth="125"/>
+                    </Grid>
+                    <TextBlock Text="También puedes introducir el peso manualmente."
+                               Foreground="{StaticResource SecondaryTextBrush}"
+                               FontSize="12" Margin="0,0,0,12"/>
+                </StackPanel>
+
+                <!-- Resumen del ticket guardado -->
+                <StackPanel Margin="0,0,0,12">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowSummary}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <Border BorderBrush="{StaticResource SecondaryTextBrush}"
+                            BorderThickness="1" CornerRadius="8" Padding="18">
+                        <StackPanel>
+                            <TextBlock Text="FOLIO" FontWeight="SemiBold"
+                                       Foreground="{StaticResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding TicketNumberDisplay}"
+                                       FontSize="28" FontWeight="Bold" Margin="0,4,0,16"/>
+                            <Separator Margin="0,0,0,14"/>
+
+                            <TextBlock Text="Tipo de pesaje" Foreground="{StaticResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding WeighingTypeDisplay}" FontWeight="SemiBold" Margin="0,3,0,10"/>
+                            <TextBlock Text="Estado" Foreground="{StaticResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding StatusDisplay}" FontWeight="SemiBold" Margin="0,3,0,10"/>
+                            <TextBlock Text="Proveedor" Foreground="{StaticResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding SupplierDisplay}" TextWrapping="Wrap" FontWeight="SemiBold" Margin="0,3,0,10"/>
+                            <TextBlock Text="Material" Foreground="{StaticResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding MaterialDisplay}" TextWrapping="Wrap" FontWeight="SemiBold" Margin="0,3,0,10"/>
+                            <TextBlock Text="Placas" Foreground="{StaticResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding LicensePlateDisplay}" FontWeight="SemiBold" Margin="0,3,0,10"/>
+                            <TextBlock Text="Transportista" Foreground="{StaticResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding Transporter}" TextWrapping="Wrap" FontWeight="SemiBold" Margin="0,3,0,10"/>
+                            <TextBlock Text="{Binding WeightLabel}" Foreground="{StaticResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding WeightDisplay}" FontSize="23" FontWeight="Bold" Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Estados de las operaciones -->
+                <TextBlock Text="Esperando lectura estable del indicador..."
+                           Foreground="{StaticResource SecondaryTextBrush}"
+                           FontStyle="Italic" Margin="0,0,0,10">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsReadingWeight}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Text="Enviando ticket a la impresora..."
+                           Foreground="{StaticResource SecondaryTextBrush}"
+                           FontStyle="Italic" Margin="0,0,0,10">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsPrinting}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <TextBlock Text="{Binding SuccessMessage}"
+                           TextWrapping="Wrap" Margin="0,0,0,12">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SuccessMessage}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <feedback:QueryStatus ErrorMessage="{Binding ErrorMessage}"
+                                      IsLoading="{Binding IsLoadingCatalogs}"
+                                      LoadingMessage="Cargando proveedores y materiales..."/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Acciones para captura, resumen y edicion -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="Cancelar"
+                    Command="{Binding CancelCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                    IsEnabled="{Binding CanCloseForm}"
+                    MinWidth="95" Height="38" Margin="0,0,10,0">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsRegistered}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+            <Button Content="Registrar pesaje" Command="{Binding SaveCommand}"
+                    MinWidth="145" Height="38">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCreating}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+            <Button Content="Cancelar edición" Command="{Binding CancelEditCommand}"
+                    IsEnabled="{Binding CanCloseForm}"
+                    MinWidth="125" Height="38" Margin="0,0,10,0">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Content="Guardar cambios" Command="{Binding UpdateCommand}"
+                    MinWidth="145" Height="38">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+            <Button Content="Editar" Command="{Binding EditCommand}"
+                    MinWidth="80" Height="38" Margin="0,0,10,0">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShowSummary}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Content="Cerrar"
+                    Command="{Binding CancelCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                    IsEnabled="{Binding CanCloseForm}"
+                    MinWidth="80" Height="38" Margin="0,0,10,0">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShowSummary}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Content="Imprimir ticket" Command="{Binding PrintTicketCommand}"
+                    MinWidth="135" Height="38">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShowSummary}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

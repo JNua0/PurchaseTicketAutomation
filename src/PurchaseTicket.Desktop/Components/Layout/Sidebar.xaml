@@ -144,7 +144,8 @@
                 <navigation:SidebarNavItem
                     Text="Configuración"
                     Icon="{StaticResource SettingsIcon}"
-                    IsEnabled="False"/>
+                    Command="{Binding ShowSettingsCommand}"
+                    IsSelected="{Binding IsSettingsSelected, Mode=OneWay}"/>
 
             </StackPanel>
 
@@ -174,7 +175,8 @@
                     <navigation:SidebarNavItem
                         Text="Pesaje de vehículos"
                         Icon="{StaticResource TruckIcon}"
-                        IsEnabled="False"/>
+                        Command="{Binding ShowVehicleWeighingCommand}"
+                        IsSelected="{Binding IsVehicleWeighingSelected, Mode=OneWay}"/>
 
                     <!-- Importes de tickets -->
                     <navigation:SidebarNavItem

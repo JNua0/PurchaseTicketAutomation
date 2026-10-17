@@ -8,6 +8,10 @@
         xmlns:suppliersViews="clr-namespace:PurchaseTicket.Desktop.Views.Suppliers"
         xmlns:materialsVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Materials"
         xmlns:materialsViews="clr-namespace:PurchaseTicket.Desktop.Views.Materials"
+        xmlns:weighingVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.VehicleWeighing"
+        xmlns:weighingViews="clr-namespace:PurchaseTicket.Desktop.Views.VehicleWeighing"
+        xmlns:settingsVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Settings"
+        xmlns:settingsView="clr-namespace:PurchaseTicket.Desktop.Views.Settings"
         Title="EcoPapel Recycling | Tickets de Compra"
         Width="1200"
         Height="750"
@@ -32,6 +36,16 @@
         <!-- Plantilla de materiales -->
         <DataTemplate DataType="{x:Type materialsVm:MaterialsViewModel}">
             <materialsViews:MaterialsView/>
+        </DataTemplate>
+
+        <!-- Plantilla de pesaje de vehiculos -->
+        <DataTemplate DataType="{x:Type weighingVm:VehicleWeighingViewModel}">
+            <weighingViews:VehicleWeighingView/>
+        </DataTemplate>
+
+        <!-- Pantalla de configuracion -->
+        <DataTemplate DataType="{x:Type settingsVm:SettingsViewModel}">
+            <settingsView:SettingsView/>
         </DataTemplate>
 
     </Window.Resources>

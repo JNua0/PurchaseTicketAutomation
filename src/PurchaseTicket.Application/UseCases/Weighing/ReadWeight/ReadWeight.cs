@@ -11,8 +11,9 @@ public sealed class ReadWeightUseCase
         _weightReader = weightReader;
     }
 
-    public Task<decimal> ExecuteAsync()
+    public async Task<decimal> ExecuteAsync()
     {
-        return _weightReader.ReadStableWeightAsync();
+        return await Task.Run(
+            async () => await _weightReader.ReadStableWeightAsync());
     }
 }

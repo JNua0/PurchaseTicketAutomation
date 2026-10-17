@@ -56,7 +56,6 @@ public class CreateSinglePurchaseTicket
 
         await _repository.AddAsync(ticket);
 
-        return new CreatePurchaseTicketResult(
-            ticket.TicketNumber);
+        return new CreatePurchaseTicketResult(ticket.Id, ticket.TicketNumber);
     }
 }

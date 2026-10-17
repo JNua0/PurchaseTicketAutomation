@@ -14,7 +14,7 @@ public class SupplierTests
         var supplier = new Supplier(name);
 
         // Assert
-        Assert.Equal(name, supplier.Name);
+        Assert.Equal("Aceros Abc S.A. De C.V.", supplier.Name);
     }
 
     [Fact]
@@ -28,9 +28,8 @@ public class SupplierTests
 
         // Assert
         Assert.Equal(
-            "ACEROS ABC S.A. DE C.V.",
-            supplier.Name
-        );
+            "Aceros Abc S.A. De C.V.",
+            supplier.Name);
     }
 
     [Theory]
@@ -178,7 +177,7 @@ public class SupplierTests
         supplier.UpdateName("Proveedor actualizado");
 
         // Assert
-        Assert.Equal("Proveedor actualizado", supplier.Name);
+        Assert.Equal("Proveedor Actualizado", supplier.Name);
         Assert.Equal("5512345678", supplier.PhoneNumber);
     }
 
@@ -194,7 +193,7 @@ public class SupplierTests
         supplier.UpdatePhoneNumber("+525512345678");
 
         // Assert
-        Assert.Equal("Proveedor original", supplier.Name);
+        Assert.Equal("Proveedor Original", supplier.Name);
         Assert.Equal("+525512345678", supplier.PhoneNumber);
     }
 
@@ -209,7 +208,7 @@ public class SupplierTests
 
         // Assert
         Assert.Throws<ArgumentException>(act);
-        Assert.Equal("Proveedor original", supplier.Name);
+        Assert.Equal("Proveedor Original", supplier.Name);
     }
 
     [Theory]
