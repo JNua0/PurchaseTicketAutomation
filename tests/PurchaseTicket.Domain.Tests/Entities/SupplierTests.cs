@@ -110,32 +110,45 @@ public class SupplierTests
     }
 
     [Theory]
-    [InlineData("5512345678")]
-    [InlineData("+525512345678")]
-    public void Constructor_ShouldAcceptValidPhoneNumber(string phoneNumber)
+    [InlineData("5512345678", "5512345678")]
+    [InlineData("+525512345678", "+525512345678")]
+    [InlineData("55 1234 5678", "5512345678")]
+    [InlineData("55-1234-5678", "5512345678")]
+    [InlineData("+52 55 1234 5678", "+525512345678")]
+    [InlineData("+1 555 123 4567", "+15551234567")]
+    [InlineData("525512345678", "525512345678")]
+    [InlineData("+123456789012345", "+123456789012345")]
+    public void Constructor_ShouldAcceptValidPhoneNumber(
+        string phoneNumber,
+        string expected)
     {
         // Act
         var supplier = new Supplier("Proveedor de prueba", phoneNumber);
 
         // Assert
-        Assert.Equal(phoneNumber, supplier.PhoneNumber);
+        Assert.Equal(expected, supplier.PhoneNumber);
     }
 
     [Theory]
     [InlineData("551234567")]
-    [InlineData("55123456789")]
-    [InlineData("525512345678")]
-    [InlineData("+15512345678")]
-    [InlineData("55 1234 5678")]
-    [InlineData("55-1234-5678")]
+    [InlineData("1234567890123456")]
     [InlineData("abcdefghij")]
+    [InlineData("55.1234.5678")]
+    [InlineData("(55) 1234 5678")]
+    [InlineData("55+12345678")]
+    [InlineData("++525512345678")]
+    [InlineData("+")]
     public void Constructor_ShouldThrow_WhenPhoneNumberIsInvalid(string phoneNumber)
     {
         // Act
         Action act = () => new Supplier("Proveedor de prueba", phoneNumber);
 
         // Assert
-        Assert.Throws<ArgumentException>(act);
+        var exception = Assert.Throws<ArgumentException>(act);
+
+        Assert.Contains(
+            "El teléfono debe tener entre 10 y 15 dígitos y solo puede iniciar con +.",
+            exception.Message);
     }
 
     [Theory]
@@ -213,12 +226,13 @@ public class SupplierTests
 
     [Theory]
     [InlineData("551234567")]
-    [InlineData("55123456789")]
-    [InlineData("525512345678")]
-    [InlineData("+15512345678")]
-    [InlineData("55 1234 5678")]
-    [InlineData("55-1234-5678")]
+    [InlineData("1234567890123456")]
     [InlineData("abcdefghij")]
+    [InlineData("55.1234.5678")]
+    [InlineData("(55) 1234 5678")]
+    [InlineData("55+12345678")]
+    [InlineData("++525512345678")]
+    [InlineData("+")]
     public void UpdatePhoneNumber_ShouldThrow_WhenPhoneNumberIsInvalid(
     string phoneNumber)
     {

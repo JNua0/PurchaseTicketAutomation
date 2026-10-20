@@ -26,7 +26,7 @@ public class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
 
         builder.Property(supplier => supplier.PhoneNumber)
             .HasColumnName("phone_number")
-            .HasMaxLength(15);
+            .HasMaxLength(16);
 
         builder.Property(supplier => supplier.IsActive)
             .HasColumnName("is_active")

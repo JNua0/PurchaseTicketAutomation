@@ -184,8 +184,8 @@ namespace PurchaseTicket.Infrastructure.Persistence.Migrations
                         .HasColumnName("name");
 
                     b.Property<string>("PhoneNumber")
-                        .HasMaxLength(15)
-                        .HasColumnType("character varying(15)")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
                         .HasColumnName("phone_number");
 
                     b.HasKey("Id");

@@ -69,20 +69,31 @@ public class Supplier
 
         phoneNumber = phoneNumber.Trim();
 
-        bool isNationalFormat =
-            phoneNumber.Length == 10 &&
-            phoneNumber.All(char.IsDigit);
+        // El signo + solo se permite al inicio
+        bool hasPlusSign = phoneNumber.StartsWith('+');
 
-        bool isInternationalFormat =
-            phoneNumber.Length == 13 &&
-            phoneNumber.StartsWith("+52") &&
-            phoneNumber[3..].All(char.IsDigit);
+        string body = hasPlusSign
+            ? phoneNumber[1..]
+            : phoneNumber;
 
-        if (!isNationalFormat && !isInternationalFormat)
+        // Quitar los separadores permitidos: espacios y guiones
+        string digits = new(
+            body
+                .Where(c => c != ' ' && c != '-')
+                .ToArray());
+
+        bool isValid =
+            digits.Length >= 10 &&
+            digits.Length <= 15 &&
+            digits.All(char.IsAsciiDigit);
+
+        if (!isValid)
             throw new ArgumentException(
-                "Phone number must contain 10 digits or +52 followed by 10 digits.",
+                "El teléfono debe tener entre 10 y 15 dígitos y solo puede iniciar con +.",
                 nameof(phoneNumber));
 
-        return phoneNumber;
+        return hasPlusSign
+            ? "+" + digits
+            : digits;
     }
 }
