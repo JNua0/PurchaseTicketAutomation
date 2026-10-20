@@ -74,8 +74,7 @@ public class PurchaseTicketConfiguration
             .HasPrecision(10, 2);
 
         builder.Property(ticket => ticket.Discount)
-            .HasColumnName("discount")
-            .HasPrecision(10, 2);
+            .HasColumnName("discount");
 
         builder.Property(ticket => ticket.DiscountWeight)
             .HasColumnName("discount_weight")

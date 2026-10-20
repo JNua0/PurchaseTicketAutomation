@@ -732,7 +732,7 @@ public class CorrectPurchaseTicketTests
 
         ticket.RegisterTare(8000m);
         ticket.RegisterAmount(
-            discount: 10m,
+            discount: 10,
             pricePerKg: 2m);
 
         var repository =
@@ -776,7 +776,7 @@ public class CorrectPurchaseTicketTests
             ticket.NetWeight);
 
         Assert.Equal(
-            10m,
+            10,
             ticket.Discount);
 
         Assert.Equal(
@@ -901,7 +901,7 @@ public class CorrectPurchaseTicketTests
         ticket.RegisterTare(8000m);
 
         ticket.RegisterAmount(
-            discount: 10m,
+            discount: 10,
             pricePerKg: 2m);
 
         var repository =
@@ -1046,7 +1046,7 @@ public class CorrectPurchaseTicketTests
         ticket.RegisterTare(8000m);
 
         ticket.RegisterAmount(
-            discount: 10m,
+            discount: 10,
             pricePerKg: 2m);
 
         var repository =
@@ -1064,7 +1064,7 @@ public class CorrectPurchaseTicketTests
         var command =
             new CorrectPurchaseTicketCommand(
                 TicketId: 1,
-                Discount: 5m);
+                Discount: 5);
 
         var useCase =
             new CorrectPurchaseTicket(
@@ -1078,7 +1078,7 @@ public class CorrectPurchaseTicketTests
 
         // Assert
         Assert.Equal(
-            5m,
+            5,
             ticket.Discount);
 
         Assert.Equal(
@@ -1126,7 +1126,7 @@ public class CorrectPurchaseTicketTests
         ticket.RegisterTare(8000m);
 
         ticket.RegisterAmount(
-            discount: 10m,
+            discount: 10,
             pricePerKg: 2m);
 
         var repository =
@@ -1166,7 +1166,7 @@ public class CorrectPurchaseTicketTests
             ticket.NetWeight);
 
         Assert.Equal(
-            10m,
+            10,
             ticket.Discount);
 
         Assert.Equal(
@@ -1609,7 +1609,7 @@ public class CorrectPurchaseTicketTests
         var command =
             new CorrectPurchaseTicketCommand(
                 TicketId: 1,
-                Discount: 5m);
+                Discount: 5);
 
         var useCase =
             new CorrectPurchaseTicket(
@@ -1728,7 +1728,7 @@ public class CorrectPurchaseTicketTests
         ticket.RegisterTare(8000m);
 
         ticket.RegisterAmount(
-            discount: 10m,
+            discount: 10,
             pricePerKg: 2m);
 
         var supplier =

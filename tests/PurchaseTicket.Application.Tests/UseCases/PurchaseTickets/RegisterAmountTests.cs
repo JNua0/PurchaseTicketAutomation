@@ -56,14 +56,14 @@ public class RegisterAmountTests
         var command =
             new RegisterAmountCommand(
                 TicketId: 1,
-                Discount: 5m,
+                Discount: 5,
                 PricePerKg: 2m);
 
         // Act
         await useCase.ExecuteAsync(command);
 
         // Assert
-        Assert.Equal(5m, ticket.Discount);
+        Assert.Equal(5, ticket.Discount);
         Assert.Equal(2m, ticket.PricePerKg);
 
         Assert.Equal(
@@ -100,7 +100,7 @@ public class RegisterAmountTests
         var command =
             new RegisterAmountCommand(
                 TicketId: 999,
-                Discount: 5m,
+                Discount: 5,
                 PricePerKg: 2m);
 
         // Act
@@ -142,7 +142,7 @@ public class RegisterAmountTests
         var command =
             new RegisterAmountCommand(
                 TicketId: 1,
-                Discount: 100m,
+                Discount: 100,
                 PricePerKg: 2m);
 
         // Act
@@ -187,7 +187,7 @@ public class RegisterAmountTests
         var command =
             new RegisterAmountCommand(
                 TicketId: 1,
-                Discount: 5m,
+                Discount: 5,
                 PricePerKg: 0m);
 
         // Act

@@ -111,7 +111,7 @@ public class EpsonTmU295TicketPrinterTests
         var ticket = CreateTicketWithTare();
 
         ticket.RegisterAmount(
-            discount: 5m,
+            discount: 5,
             pricePerKg: 3m);
 
         return ticket;

@@ -10,5 +10,5 @@ public record CorrectPurchaseTicketCommand(
     decimal? GrossWeight = null,
     decimal? TareWeight = null,
     decimal? NetWeight = null,
-    decimal? Discount = null,
+    int? Discount = null,
     decimal? PricePerKg = null);

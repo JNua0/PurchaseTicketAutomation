@@ -118,7 +118,7 @@ public class CancelPurchaseTicketTests
             netWeight: 15000m);
 
         ticket.RegisterAmount(
-            discount: 5m,
+            discount: 5,
             pricePerKg: 2m);
 
         var repository = new FakePurchaseTicketRepository

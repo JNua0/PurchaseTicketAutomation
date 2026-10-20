@@ -77,9 +77,8 @@ namespace PurchaseTicket.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("departure_at");
 
-                    b.Property<decimal?>("Discount")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
+                    b.Property<int?>("Discount")
+                        .HasColumnType("integer")
                         .HasColumnName("discount");
 
                     b.Property<decimal?>("DiscountWeight")

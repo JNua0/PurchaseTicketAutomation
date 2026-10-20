@@ -725,7 +725,7 @@ public class PurchaseTicketTests
 
         ticket.RegisterTare(10000m);
 
-        const decimal discount = 2m;
+        const int discount = 2;
         const decimal pricePerKg = 5m;
 
         // Act
@@ -734,7 +734,7 @@ public class PurchaseTicketTests
             pricePerKg);
 
         // Assert
-        Assert.Equal(2m, ticket.Discount);
+        Assert.Equal(2, ticket.Discount);
         Assert.Equal(300m, ticket.DiscountWeight);
         Assert.Equal(14700m, ticket.NetWeightAfterDiscount);
         Assert.Equal(5m, ticket.PricePerKg);
@@ -759,12 +759,12 @@ public class PurchaseTicketTests
 
         // Act
         ticket.RegisterAmount(
-            10m,
+            10,
             5m);
 
         // Assert
         Assert.Equal(500m, ticket.NetWeight);
-        Assert.Equal(10m, ticket.Discount);
+        Assert.Equal(10, ticket.Discount);
         Assert.Equal(50m, ticket.DiscountWeight);
         Assert.Equal(450m, ticket.NetWeightAfterDiscount);
         Assert.Equal(5m, ticket.PricePerKg);
@@ -788,10 +788,10 @@ public class PurchaseTicketTests
             500m);
 
         // Act
-        ticket.RegisterAmount(0m, 5m);
+        ticket.RegisterAmount(0, 5m);
 
         // Assert
-        Assert.Equal(0m, ticket.Discount);
+        Assert.Equal(0, ticket.Discount);
         Assert.Equal(0m, ticket.DiscountWeight);
         Assert.Equal(500m, ticket.NetWeightAfterDiscount);
         Assert.Equal(2500m, ticket.Amount);
@@ -802,8 +802,7 @@ public class PurchaseTicketTests
     [InlineData(-1)]
     [InlineData(100)]
     [InlineData(101)]
-    public void RegisterAmount_ShouldThrowWhenDiscountIsOutsideValidRange(
-    decimal discount)
+    public void RegisterAmount_ShouldThrowWhenDiscountIsOutsideValidRange(int discount)
     {
         // Arrange
         var ticket = Ticket.CreateSingle(
@@ -823,12 +822,35 @@ public class PurchaseTicketTests
             Assert.Throws<ArgumentException>(act);
 
         Assert.Contains(
-            "El descuento debe ser mayor o igual a 0 y menor que 100.",
+            "El descuento debe ser un número entero entre 0 y 99.",
             exception.Message);
 
         Assert.Equal(
             "discount",
             exception.ParamName);
+    }
+
+    [Fact]
+    public void RegisterAmount_ShouldAllowMaximumDiscount()
+    {
+        // Arrange
+        var ticket = Ticket.CreateSingle(
+            "T-000002",
+            1,
+            1,
+            null,
+            "Juan Perez",
+            500m);
+
+        // Act
+        ticket.RegisterAmount(99, 5m);
+
+        // Assert
+        Assert.Equal(99, ticket.Discount);
+        Assert.Equal(495m, ticket.DiscountWeight);
+        Assert.Equal(5m, ticket.NetWeightAfterDiscount);
+        Assert.Equal(25m, ticket.Amount);
+        Assert.Equal(TicketStatus.Completed, ticket.Status);
     }
 
     [Theory]
@@ -849,7 +871,7 @@ public class PurchaseTicketTests
         // Act
         Action act = () =>
             ticket.RegisterAmount(
-                2m,
+                2,
                 pricePerKg);
 
         // Assert
@@ -876,7 +898,7 @@ public class PurchaseTicketTests
         // Act
         Action act = () =>
             ticket.RegisterAmount(
-                2m,
+                2,
                 5m);
 
         // Assert
@@ -901,13 +923,13 @@ public class PurchaseTicketTests
             500m);
 
         ticket.RegisterAmount(
-            2m,
+            2,
             5m);
 
         // Act
         Action act = () =>
             ticket.RegisterAmount(
-                3m,
+                3,
                 6m);
 
         // Assert
@@ -977,7 +999,7 @@ public class PurchaseTicketTests
         ticket.RegisterTare(8000m);
 
         ticket.RegisterAmount(
-            discount: 10m,
+            discount: 10,
             pricePerKg: 2m);
 
         // Act
@@ -1055,7 +1077,7 @@ public class PurchaseTicketTests
             500m);
 
         ticket.RegisterAmount(
-            0m,
+            0,
             5m);
 
         // Act
@@ -1188,7 +1210,7 @@ public class PurchaseTicketTests
             500m);
 
         ticket.RegisterAmount(
-            0m,
+            0,
             5m);
 
         // Act
@@ -1338,7 +1360,7 @@ public class PurchaseTicketTests
             "Juan Perez",
             500m);
 
-        ticket.RegisterAmount(0m, 5m);
+        ticket.RegisterAmount(0, 5m);
 
         // Act
         ticket.ChangeLicensePlate("abc1234");
@@ -1360,7 +1382,7 @@ public class PurchaseTicketTests
             "Juan Perez",
             500m);
 
-        ticket.RegisterAmount(0m, 5m);
+        ticket.RegisterAmount(0, 5m);
 
         // Act
         ticket.ChangeLicensePlate(null);
@@ -1384,7 +1406,7 @@ public class PurchaseTicketTests
             "Juan Perez",
             500m);
 
-        ticket.RegisterAmount(0m, 5m);
+        ticket.RegisterAmount(0, 5m);
 
         // Act
         ticket.ChangeLicensePlate(licensePlate);
@@ -1471,7 +1493,7 @@ public class PurchaseTicketTests
             "Juan Perez",
             500m);
 
-        ticket.RegisterAmount(0m, 5m);
+        ticket.RegisterAmount(0, 5m);
 
         // Act
         ticket.ChangeTransporter("maria lopez");
@@ -1615,7 +1637,7 @@ public class PurchaseTicketTests
             25000m);
 
         ticket.RegisterTare(10000m);
-        ticket.RegisterAmount(2m, 5m);
+        ticket.RegisterAmount(2, 5m);
 
         // Act
         ticket.ChangeGrossWeight(26000m);
@@ -1626,7 +1648,7 @@ public class PurchaseTicketTests
 
         Assert.Equal(16000m, ticket.NetWeight);
 
-        Assert.Equal(2m, ticket.Discount);
+        Assert.Equal(2, ticket.Discount);
         Assert.Equal(320m, ticket.DiscountWeight);
         Assert.Equal(15680m, ticket.NetWeightAfterDiscount);
 
@@ -1650,7 +1672,7 @@ public class PurchaseTicketTests
             25000m);
 
         ticket.RegisterTare(10000m);
-        ticket.RegisterAmount(2m, 5m);
+        ticket.RegisterAmount(2, 5m);
 
         // Act
         Action act = () =>
@@ -1818,13 +1840,13 @@ public class PurchaseTicketTests
             25000m);
 
         ticket.RegisterTare(10000m);
-        ticket.RegisterAmount(2m, 5m);
+        ticket.RegisterAmount(2, 5m);
 
         // Act
-        ticket.ChangeDiscount(5m);
+        ticket.ChangeDiscount(5);
 
         // Assert
-        Assert.Equal(5m, ticket.Discount);
+        Assert.Equal(5, ticket.Discount);
         Assert.Equal(750m, ticket.DiscountWeight);
         Assert.Equal(14250m, ticket.NetWeightAfterDiscount);
 
@@ -1839,7 +1861,7 @@ public class PurchaseTicketTests
     [InlineData(-1)]
     [InlineData(100)]
     [InlineData(101)]
-    public void ChangeDiscount_ShouldThrowWhenDiscountIsOutsideValidRange(decimal discount)
+    public void ChangeDiscount_ShouldThrowWhenDiscountIsOutsideValidRange(int discount)
     {
         // Arrange
         var ticket = Ticket.CreateConventional(
@@ -1851,7 +1873,7 @@ public class PurchaseTicketTests
             25000m);
 
         ticket.RegisterTare(10000m);
-        ticket.RegisterAmount(2m, 5m);
+        ticket.RegisterAmount(2, 5m);
 
         // Act
         Action act = () =>
@@ -1860,7 +1882,7 @@ public class PurchaseTicketTests
         // Assert
         Assert.Throws<ArgumentException>(act);
 
-        Assert.Equal(2m, ticket.Discount);
+        Assert.Equal(2, ticket.Discount);
         Assert.Equal(300m, ticket.DiscountWeight);
         Assert.Equal(14700m, ticket.NetWeightAfterDiscount);
         Assert.Equal(73500m, ticket.Amount);
@@ -1880,13 +1902,13 @@ public class PurchaseTicketTests
             25000m);
 
         ticket.RegisterTare(10000m);
-        ticket.RegisterAmount(2m, 5m);
+        ticket.RegisterAmount(2, 5m);
 
         // Act
-        ticket.ChangeDiscount(0m);
+        ticket.ChangeDiscount(0);
 
         // Assert
-        Assert.Equal(0m, ticket.Discount);
+        Assert.Equal(0, ticket.Discount);
         Assert.Equal(0m, ticket.DiscountWeight);
         Assert.Equal(15000m, ticket.NetWeightAfterDiscount);
         Assert.Equal(75000m, ticket.Amount);
@@ -1909,7 +1931,7 @@ public class PurchaseTicketTests
 
         // Act
         Action act = () =>
-            ticket.ChangeDiscount(5m);
+            ticket.ChangeDiscount(5);
 
         // Assert
         Assert.Throws<InvalidOperationException>(act);
@@ -1937,7 +1959,7 @@ public class PurchaseTicketTests
 
         // Act
         Action act = () =>
-            ticket.ChangeDiscount(5m);
+            ticket.ChangeDiscount(5);
 
         // Assert
         Assert.Throws<InvalidOperationException>(act);
@@ -1969,7 +1991,7 @@ public class PurchaseTicketTests
         // Act
         var exception =
             Assert.Throws<InvalidOperationException>(
-                () => ticket.ChangeDiscount(5m));
+                () => ticket.ChangeDiscount(5));
 
         // Assert
         Assert.Equal("El ticket debe estar completado.", exception.Message);
@@ -1996,7 +2018,7 @@ public class PurchaseTicketTests
             25000m);
 
         ticket.RegisterTare(10000m);
-        ticket.RegisterAmount(2m, 5m);
+        ticket.RegisterAmount(2, 5m);
 
         // Act
         ticket.ChangePricePerKg(6m);
@@ -2028,7 +2050,7 @@ public class PurchaseTicketTests
             25000m);
 
         ticket.RegisterTare(10000m);
-        ticket.RegisterAmount(2m, 5m);
+        ticket.RegisterAmount(2, 5m);
 
         // Act
         Action act = () =>
@@ -2169,7 +2191,7 @@ public class PurchaseTicketTests
             15000m);
 
         ticket.RegisterAmount(
-            2m,
+            2,
             5m);
 
         // Act
@@ -2178,7 +2200,7 @@ public class PurchaseTicketTests
         // Assert
         Assert.Equal(14000m, ticket.NetWeight);
 
-        Assert.Equal(2m, ticket.Discount);
+        Assert.Equal(2, ticket.Discount);
         Assert.Equal(280m, ticket.DiscountWeight);
         Assert.Equal(13720m, ticket.NetWeightAfterDiscount);
 
@@ -2288,7 +2310,7 @@ public class PurchaseTicketTests
             25000m);
 
         ticket.RegisterTare(10000m);
-        ticket.RegisterAmount(2m, 5m);
+        ticket.RegisterAmount(2, 5m);
 
         // Act
         Action act = () =>

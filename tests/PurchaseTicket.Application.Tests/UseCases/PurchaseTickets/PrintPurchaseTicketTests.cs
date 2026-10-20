@@ -519,7 +519,7 @@ public class PrintPurchaseTicketTests
             tareWeight: 10000m);
 
         ticket.RegisterAmount(
-            discount: 5m,
+            discount: 5,
             pricePerKg: 2m);
 
         var supplier =

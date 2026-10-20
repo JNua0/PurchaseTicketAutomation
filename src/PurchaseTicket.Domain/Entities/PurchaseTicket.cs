@@ -18,7 +18,7 @@ public class PurchaseTicket
     public decimal? GrossWeight { get; private set; }
     public decimal? TareWeight { get; private set; }
     public decimal? NetWeight { get; private set; }
-    public decimal? Discount { get; private set; }
+    public int? Discount { get; private set; }
     public decimal? DiscountWeight { get; private set; }
     public decimal? NetWeightAfterDiscount { get; private set; }
     public decimal? PricePerKg { get; private set; }
@@ -141,7 +141,7 @@ public class PurchaseTicket
         Status = TicketStatus.AmountPending;
     }
 
-    public void RegisterAmount(decimal discount, decimal pricePerKg)
+    public void RegisterAmount(int discount, decimal pricePerKg)
     {
         ValidateAmountPendingStatus();
 
@@ -165,7 +165,7 @@ public class PurchaseTicket
             ?? throw new InvalidOperationException(
                 "El ticket debe tener un peso neto.");
 
-        decimal discount = Discount
+        int discount = Discount
             ?? throw new InvalidOperationException(
                 "El ticket debe tener un descuento.");
 
@@ -288,7 +288,7 @@ public class PurchaseTicket
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void ChangeDiscount(decimal discount)
+    public void ChangeDiscount(int discount)
     {
         ValidateCompletedStatus();
         ValidateDiscount(discount);
@@ -488,11 +488,11 @@ public class PurchaseTicket
             throw new InvalidOperationException("El ticket debe estar completado.");
     }
 
-    private static void ValidateDiscount(decimal discount)
+    private static void ValidateDiscount(int discount)
     {
-        if (discount < 0 || discount >= 100)
+        if (discount < 0 || discount > 99)
             throw new ArgumentException(
-                "El descuento debe ser mayor o igual a 0 y menor que 100.",
+                "El descuento debe ser un número entero entre 0 y 99.",
                 nameof(discount));
     }
 
@@ -516,9 +516,9 @@ public class PurchaseTicket
         return grossWeight - tareWeight;
     }
 
-    private static decimal CalculateDiscountWeight(decimal netWeight, decimal discount)
+    private static decimal CalculateDiscountWeight(decimal netWeight, int discount)
     {
-        return netWeight * (discount / 100);
+        return netWeight * discount / 100;
     }
 
     private static decimal CalculateNetWeightAfterDiscount(decimal netWeight, decimal discountWeight)

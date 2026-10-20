@@ -2,5 +2,5 @@
 
 public record RegisterAmountCommand(
     int TicketId,
-    decimal Discount,
+    int Discount,
     decimal PricePerKg);
