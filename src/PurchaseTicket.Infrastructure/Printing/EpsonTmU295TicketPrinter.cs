@@ -10,13 +10,16 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
     private const int LineWidth = 35;
     private readonly ISerialPortFactory _serialPortFactory;
     private readonly TicketPrinterOptions _options;
+    private readonly TimeProvider _timeProvider;
 
     public EpsonTmU295TicketPrinter(
         ISerialPortFactory serialPortFactory,
-        TicketPrinterOptions options)
+        TicketPrinterOptions options,
+        TimeProvider timeProvider)
     {
         _serialPortFactory = serialPortFactory;
         _options = options;
+        _timeProvider = timeProvider;
     }
 
     public Task PrintConventionalInitialAsync(TicketPrintData data)
@@ -158,8 +161,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         AppendField(
             builder,
             "FECHA",
-            ticket.CheckInAt.ToString(
-                "dd/MM/yyyy HH:mm"));
+            FormatLocalDate(ticket.CheckInAt));
 
         AppendField(
             builder,
@@ -172,7 +174,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
                 "\r\n");
     }
 
-    private static string BuildFinalTicket(TicketPrintData data)
+    private string BuildFinalTicket(TicketPrintData data)
     {
         var ticket = data.Ticket;
 
@@ -195,8 +197,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         AppendField(
             builder,
             "FECHA",
-            ticket.DepartureAt.Value.ToString(
-                "dd/MM/yyyy HH:mm"));
+            FormatLocalDate(ticket.DepartureAt.Value));
 
         AppendField(
             builder,
@@ -254,7 +255,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
 
         AppendField(
             builder,
-            "TRANSPORTISTA",
+            "CHOFER",
             ticket.Transporter);
 
         AppendField(
@@ -269,20 +270,30 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         AppendField(
             builder,
             "FECHA",
-            ticket.CheckInAt.ToString(
-                "dd/MM/yyyy HH:mm"));
+            FormatLocalDate(ticket.CheckInAt));
 
         AppendField(
             builder,
             "PESO NETO",
             $"{FormatWeight(ticket.NetWeight.Value)} kg");
 
-        builder.AppendLine(new string('=', LineWidth));
-
         return builder.ToString()
             .Replace(
                 Environment.NewLine,
                 "\r\n");
+    }
+
+    // Las fechas se guardan en UTC y se imprimen en la hora local del equipo
+    private string FormatLocalDate(DateTime utcDate)
+    {
+        DateTime localDate =
+            TimeZoneInfo.ConvertTimeFromUtc(
+                utcDate,
+                _timeProvider.LocalTimeZone);
+
+        return localDate.ToString(
+            "dd/MM/yyyy HH:mm",
+            CultureInfo.InvariantCulture);
     }
 
     private static string FormatWeight(decimal weight)

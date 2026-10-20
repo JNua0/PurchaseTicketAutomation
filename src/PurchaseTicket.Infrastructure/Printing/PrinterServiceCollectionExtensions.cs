@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using PurchaseTicket.Application.Abstractions.Printing;
 using PurchaseTicket.Infrastructure.Printing.Serial;
 
@@ -42,6 +43,9 @@ public static class PrinterServiceCollectionExtensions
         services.AddTransient<
             ISerialPortFactory,
             SerialPortFactory>();
+
+        // Reloj del sistema, usado para convertir las fechas a hora local
+        services.TryAddSingleton(TimeProvider.System);
 
         // Implementacion de la impresora
         services.AddTransient<

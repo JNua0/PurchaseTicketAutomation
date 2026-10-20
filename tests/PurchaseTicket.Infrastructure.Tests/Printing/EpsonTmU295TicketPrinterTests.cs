@@ -1,4 +1,5 @@
-﻿using PurchaseTicket.Application.Abstractions.Printing;
+﻿using System.Globalization;
+using PurchaseTicket.Application.Abstractions.Printing;
 using PurchaseTicket.Infrastructure.Printing;
 using PurchaseTicket.Infrastructure.Printing.Serial;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
@@ -8,6 +9,37 @@ namespace PurchaseTicket.Infrastructure.Tests.Printing;
 
 public class EpsonTmU295TicketPrinterTests
 {
+    // Zona horaria fija UTC-06:00 para que las pruebas no dependan del equipo
+    private static readonly TimeZoneInfo TestTimeZone =
+        TimeZoneInfo.CreateCustomTimeZone(
+            "UTC-06",
+            TimeSpan.FromHours(-6),
+            "UTC-06",
+            "UTC-06");
+
+    private static readonly TimeProvider TestTimeProvider =
+        new FixedTimeZoneProvider(TestTimeZone);
+
+    private sealed class FixedTimeZoneProvider : TimeProvider
+    {
+        private readonly TimeZoneInfo _timeZone;
+
+        public FixedTimeZoneProvider(TimeZoneInfo timeZone)
+        {
+            _timeZone = timeZone;
+        }
+
+        public override TimeZoneInfo LocalTimeZone => _timeZone;
+    }
+
+    // Fecha esperada en el ticket: UTC menos 6 horas
+    private static string LocalDate(DateTime utcDate)
+    {
+        return utcDate
+            .AddHours(-6)
+            .ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+    }
+
     private sealed class FakeSerialPortFactory
         : ISerialPortFactory
     {
@@ -140,7 +172,8 @@ public class EpsonTmU295TicketPrinterTests
         var printer =
             new EpsonTmU295TicketPrinter(
                 serialPortFactory,
-                CreateOptions());
+                CreateOptions(),
+                TestTimeProvider);
 
         var ticket =
             CreateInitialTicket();
@@ -172,7 +205,8 @@ public class EpsonTmU295TicketPrinterTests
         var printer =
             new EpsonTmU295TicketPrinter(
                 serialPortFactory,
-                CreateOptions());
+                CreateOptions(),
+                TestTimeProvider);
 
         var ticket =
             CreateInitialTicket();
@@ -200,7 +234,7 @@ public class EpsonTmU295TicketPrinterTests
             "PRODUCTO : Aluminio\r\n" +
             "-----------------------------------\r\n" +
             "ENTRADA\r\n" +
-            $"FECHA    : {ticket.CheckInAt:dd/MM/yyyy HH:mm}\r\n" +
+            $"FECHA    : {LocalDate(ticket.CheckInAt)}\r\n" +
             "PESO     : 25,000 kg\r\n";
 
         Assert.Equal(
@@ -223,7 +257,8 @@ public class EpsonTmU295TicketPrinterTests
         var printer =
             new EpsonTmU295TicketPrinter(
                 serialPortFactory,
-                CreateOptions());
+                CreateOptions(),
+                TestTimeProvider);
 
         var ticket =
             CreateInitialTicket();
@@ -258,7 +293,8 @@ public class EpsonTmU295TicketPrinterTests
         var printer =
             new EpsonTmU295TicketPrinter(
                 serialPortFactory,
-                CreateOptions());
+                CreateOptions(),
+                TestTimeProvider);
 
         var ticket =
             CreateInitialTicket();
@@ -298,7 +334,8 @@ public class EpsonTmU295TicketPrinterTests
         var printer =
             new EpsonTmU295TicketPrinter(
                 serialPortFactory,
-                CreateOptions());
+                CreateOptions(),
+                TestTimeProvider);
 
         var ticket =
             CreateInitialTicket();
@@ -338,7 +375,8 @@ public class EpsonTmU295TicketPrinterTests
         var printer =
             new EpsonTmU295TicketPrinter(
                 serialPortFactory,
-                CreateOptions());
+                CreateOptions(),
+                TestTimeProvider);
 
         var ticket =
             CreateTicketWithTare();
@@ -355,7 +393,7 @@ public class EpsonTmU295TicketPrinterTests
         var expected =
             "-----------------------------------\r\n" +
             "SALIDA\r\n" +
-            $"FECHA    : {ticket.DepartureAt:dd/MM/yyyy HH:mm}\r\n" +
+            $"FECHA    : {LocalDate(ticket.DepartureAt!.Value)}\r\n" +
             "PESO     : 10,000 kg\r\n" +
             "-----------------------------------\r\n" +
             "PESO NETO: 15,000 kg\r\n" +
@@ -381,7 +419,8 @@ public class EpsonTmU295TicketPrinterTests
         var printer =
             new EpsonTmU295TicketPrinter(
                 serialPortFactory,
-                CreateOptions());
+                CreateOptions(),
+                TestTimeProvider);
 
         var ticket =
             CreateTicketWithTare();
@@ -416,7 +455,8 @@ public class EpsonTmU295TicketPrinterTests
         var printer =
             new EpsonTmU295TicketPrinter(
                 serialPortFactory,
-                CreateOptions());
+                CreateOptions(),
+                TestTimeProvider);
 
         var ticket =
             CreateCompletedConventionalTicket();
@@ -448,7 +488,8 @@ public class EpsonTmU295TicketPrinterTests
         var printer =
             new EpsonTmU295TicketPrinter(
                 serialPortFactory,
-                CreateOptions());
+                CreateOptions(),
+                TestTimeProvider);
 
         var ticket =
             CreateCompletedConventionalTicket();
@@ -476,11 +517,11 @@ public class EpsonTmU295TicketPrinterTests
             "PRODUCTO : Aluminio\r\n" +
             "-----------------------------------\r\n" +
             "ENTRADA\r\n" +
-            $"FECHA    : {ticket.CheckInAt:dd/MM/yyyy HH:mm}\r\n" +
+            $"FECHA    : {LocalDate(ticket.CheckInAt)}\r\n" +
             "PESO     : 25,000 kg\r\n" +
             "-----------------------------------\r\n" +
             "SALIDA\r\n" +
-            $"FECHA    : {ticket.DepartureAt:dd/MM/yyyy HH:mm}\r\n" +
+            $"FECHA    : {LocalDate(ticket.DepartureAt!.Value)}\r\n" +
             "PESO     : 10,000 kg\r\n" +
             "-----------------------------------\r\n" +
             "PESO NETO: 15,000 kg\r\n" +
@@ -503,7 +544,8 @@ public class EpsonTmU295TicketPrinterTests
         var printer =
             new EpsonTmU295TicketPrinter(
                 serialPortFactory,
-                CreateOptions());
+                CreateOptions(),
+                TestTimeProvider);
 
         var ticket =
             CreateSingleTicket();
@@ -535,7 +577,8 @@ public class EpsonTmU295TicketPrinterTests
         var printer =
             new EpsonTmU295TicketPrinter(
                 serialPortFactory,
-                CreateOptions());
+                CreateOptions(),
+                TestTimeProvider);
 
         var ticket =
             CreateSingleTicket();
@@ -559,18 +602,59 @@ public class EpsonTmU295TicketPrinterTests
             "FOLIO    : T-000002\r\n" +
             "PLACAS   : XYZ789\r\n" +
             "PROVEEDOR: Proveedor Uno\r\n" +
-            "TRANSPORTISTA: Pedro Lopez\r\n" +
+            "CHOFER   : Pedro Lopez\r\n" +
             "PRODUCTO : Acero\r\n" +
             "-----------------------------------\r\n" +
             "PESAJE UNICO\r\n" +
-            $"FECHA    : {ticket.CheckInAt:dd/MM/yyyy HH:mm}\r\n" +
-            "PESO NETO: 12,500 kg\r\n" +
-            "===================================\r\n";
+            $"FECHA    : {LocalDate(ticket.CheckInAt)}\r\n" +
+            "PESO NETO: 12,500 kg\r\n";
 
         Assert.Equal(
             expected,
             serialPort.WrittenText);
     }
 
+    [Fact]
+    public async Task PrintSingleAsync_ShouldPrintDateInLocalTime()
+    {
+        var serialPort =
+            new FakeSerialPort();
 
+        var serialPortFactory =
+            new FakeSerialPortFactory(serialPort);
+
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                serialPortFactory,
+                CreateOptions(),
+                TestTimeProvider);
+
+        var ticket =
+            CreateSingleTicket();
+
+        var printData =
+            new TicketPrintData(
+                ticket,
+                "Proveedor Uno",
+                "Acero");
+
+        await printer.PrintSingleAsync(
+            printData);
+
+        string utcDate =
+            ticket.CheckInAt.ToString(
+                "dd/MM/yyyy HH:mm",
+                CultureInfo.InvariantCulture);
+
+        Assert.NotNull(serialPort.WrittenText);
+
+        // Debe imprimir la hora local y no la hora UTC guardada
+        Assert.Contains(
+            $"FECHA    : {LocalDate(ticket.CheckInAt)}",
+            serialPort.WrittenText);
+
+        Assert.DoesNotContain(
+            $"FECHA    : {utcDate}",
+            serialPort.WrittenText);
+    }
 }
