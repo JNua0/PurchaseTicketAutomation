@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.Printing;
 using PurchaseTicket.Domain.Enums;
@@ -11,17 +12,20 @@ public class PrintPurchaseTicket
     private readonly ISupplierRepository _supplierRepository;
     private readonly IMaterialRepository _materialRepository;
     private readonly ITicketPrinter _ticketPrinter;
+    private readonly ILogger<PrintPurchaseTicket> _logger;
 
     public PrintPurchaseTicket(
         IPurchaseTicketRepository repository,
         ISupplierRepository supplierRepository,
         IMaterialRepository materialRepository,
-        ITicketPrinter ticketPrinter)
+        ITicketPrinter ticketPrinter,
+        ILogger<PrintPurchaseTicket> logger)
     {
         _repository = repository;
         _supplierRepository = supplierRepository;
         _materialRepository = materialRepository;
         _ticketPrinter = ticketPrinter;
+        _logger = logger;
     }
 
     public async Task<PrintPurchaseTicketResult> ExecuteAsync(PrintPurchaseTicketCommand command)
@@ -95,7 +99,10 @@ public class PrintPurchaseTicket
         catch (FileNotFoundException ex)
         {
             // El puerto configurado no existe
-            Console.Error.WriteLine(ex);
+            _logger.LogError(
+                ex,
+                "No se encontró el puerto de la impresora al imprimir el ticket {TicketNumber}.",
+                ticket.TicketNumber);
 
             return new PrintPurchaseTicketResult(
                 ticket.TicketNumber,
@@ -105,7 +112,10 @@ public class PrintPurchaseTicket
         catch (UnauthorizedAccessException ex)
         {
             // El puerto no permite el acceso
-            Console.Error.WriteLine(ex);
+            _logger.LogError(
+                ex,
+                "Acceso denegado al puerto de la impresora al imprimir el ticket {TicketNumber}.",
+                ticket.TicketNumber);
 
             return new PrintPurchaseTicketResult(
                 ticket.TicketNumber,
@@ -115,7 +125,10 @@ public class PrintPurchaseTicket
         catch (IOException ex)
         {
             // Error durante la comunicacion serial
-            Console.Error.WriteLine(ex);
+            _logger.LogError(
+                ex,
+                "Error de comunicación con la impresora al imprimir el ticket {TicketNumber}.",
+                ticket.TicketNumber);
 
             return new PrintPurchaseTicketResult(
                 ticket.TicketNumber,
@@ -125,7 +138,10 @@ public class PrintPurchaseTicket
         catch (Exception ex)
         {
             // Error de impresion no identificado
-            Console.Error.WriteLine(ex);
+            _logger.LogError(
+                ex,
+                "Error no identificado al imprimir el ticket {TicketNumber}.",
+                ticket.TicketNumber);
 
             return new PrintPurchaseTicketResult(
                 ticket.TicketNumber,

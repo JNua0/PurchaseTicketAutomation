@@ -1,4 +1,6 @@
-﻿using PurchaseTicket.Application.Abstractions.Persistence;
+﻿using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.Printing;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Print;
 using PurchaseTicket.Domain.Entities;
@@ -113,6 +115,29 @@ public class PrintPurchaseTicketTests
         }
     }
 
+    private sealed class FakeLogger<T> : ILogger<T>
+    {
+        // Cada mensaje registrado con su nivel y excepcion
+        public List<(LogLevel Level, string Message, Exception? Exception)> Entries { get; } = new();
+
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull
+            => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+            // El formatter arma el texto final con los valores de la plantilla
+            Entries.Add((logLevel, formatter(state, exception), exception));
+        }
+    }
+
     [Fact]
     public async Task ExecuteAsync_ShouldThrowWhenPurchaseTicketDoesNotExist()
     {
@@ -138,7 +163,8 @@ public class PrintPurchaseTicketTests
                 repository,
                 supplierRepository,
                 materialRepository,
-                printer);
+                printer,
+                NullLogger<PrintPurchaseTicket>.Instance);
 
         // Act
         var exception =
@@ -188,7 +214,8 @@ public class PrintPurchaseTicketTests
                 repository,
                 supplierRepository,
                 materialRepository,
-                printer);
+                printer,
+                NullLogger<PrintPurchaseTicket>.Instance);
 
         // Act
         var exception =
@@ -243,7 +270,8 @@ public class PrintPurchaseTicketTests
                 repository,
                 supplierRepository,
                 materialRepository,
-                printer);
+                printer,
+                NullLogger<PrintPurchaseTicket>.Instance);
 
         // Act
         var exception =
@@ -308,7 +336,8 @@ public class PrintPurchaseTicketTests
                 repository,
                 supplierRepository,
                 materialRepository,
-                printer);
+                printer,
+                NullLogger<PrintPurchaseTicket>.Instance);
 
         // Act
         var result =
@@ -392,7 +421,8 @@ public class PrintPurchaseTicketTests
                 repository,
                 supplierRepository,
                 materialRepository,
-                printer);
+                printer,
+                NullLogger<PrintPurchaseTicket>.Instance);
 
         // Act
         var result =
@@ -473,7 +503,8 @@ public class PrintPurchaseTicketTests
                 repository,
                 supplierRepository,
                 materialRepository,
-                printer);
+                printer,
+                NullLogger<PrintPurchaseTicket>.Instance);
 
         // Act
         var result =
@@ -558,7 +589,8 @@ public class PrintPurchaseTicketTests
                 repository,
                 supplierRepository,
                 materialRepository,
-                printer);
+                printer,
+                NullLogger<PrintPurchaseTicket>.Instance);
 
         // Act
         var result =
@@ -637,7 +669,8 @@ public class PrintPurchaseTicketTests
                 repository,
                 supplierRepository,
                 materialRepository,
-                printer);
+                printer,
+                NullLogger<PrintPurchaseTicket>.Instance);
 
         // Act
         var result =
@@ -720,7 +753,8 @@ public class PrintPurchaseTicketTests
                 repository,
                 supplierRepository,
                 materialRepository,
-                printer);
+                printer,
+                NullLogger<PrintPurchaseTicket>.Instance);
 
         // Act
         var exception =
@@ -783,12 +817,15 @@ public class PrintPurchaseTicketTests
             new PrintPurchaseTicketCommand(
                 TicketId: 1);
 
+        var logger = new FakeLogger<PrintPurchaseTicket>();
+
         var useCase =
             new PrintPurchaseTicket(
                 repository,
                 supplierRepository,
                 materialRepository,
-                printer);
+                printer,
+                logger);
 
         // Act
         var result =
@@ -800,5 +837,75 @@ public class PrintPurchaseTicketTests
             result.TicketNumber);
 
         Assert.False(result.Printed);
+
+        // Debe registrar exactamente un error con la excepcion original
+        var entry = Assert.Single(logger.Entries);
+
+        Assert.Equal(
+            LogLevel.Error,
+            entry.Level);
+
+        Assert.Equal(
+            "Error no identificado al imprimir el ticket T-000001.",
+            entry.Message);
+
+        Assert.IsType<InvalidOperationException>(
+            entry.Exception);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldNotLogWhenPrintSucceeds()
+    {
+        // Arrange
+        var ticket =
+            Ticket.CreateConventional(
+                ticketNumber: "T-000001",
+                supplierId: 1,
+                materialId: 2,
+                licensePlate: "ABC123",
+                transporter: "Juan Perez",
+                grossWeight: 25000m);
+
+        var repository =
+            new FakePurchaseTicketRepository
+            {
+                Ticket = ticket
+            };
+
+        var supplierRepository =
+            new FakeSupplierRepository
+            {
+                Supplier = new Supplier(
+                    name: "Proveedor Uno",
+                    phoneNumber: null)
+            };
+
+        var materialRepository =
+            new FakeMaterialRepository
+            {
+                Material = new Material(
+                    name: "Material Uno")
+            };
+
+        var logger =
+            new FakeLogger<PrintPurchaseTicket>();
+
+        var useCase =
+            new PrintPurchaseTicket(
+                repository,
+                supplierRepository,
+                materialRepository,
+                new FakeTicketPrinter(),
+                logger);
+
+        // Act
+        var result =
+            await useCase.ExecuteAsync(
+                new PrintPurchaseTicketCommand(TicketId: 1));
+
+        // Assert
+        Assert.True(result.Printed);
+
+        Assert.Empty(logger.Entries);
     }
 }
