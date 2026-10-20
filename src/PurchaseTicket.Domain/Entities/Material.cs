@@ -31,14 +31,14 @@ public class Material
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException(
-                "Material name is required."
+                "El nombre del material es obligatorio."
             );
 
         name = name.Trim();
 
         if (name.Length > 50)
             throw new ArgumentException(
-                "Material name cannot exceed 50 characters."
+                "El nombre del material no puede exceder los 50 caracteres."
             );
 
         name = name.ToLower();

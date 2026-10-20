@@ -21,7 +21,7 @@ public class UpdateSupplier
         if (supplier is null)
         {
             throw new InvalidOperationException(
-                "Supplier not found.");
+                "No se encontró el proveedor.");
         }
 
         var normalizedName = Supplier.NormalizeName(
@@ -32,7 +32,7 @@ public class UpdateSupplier
             command.SupplierId))
         {
             throw new InvalidOperationException(
-                "A supplier with the same name already exists.");
+                "Ya existe un proveedor registrado con ese nombre.");
         }
 
         supplier.UpdateName(command.Name);

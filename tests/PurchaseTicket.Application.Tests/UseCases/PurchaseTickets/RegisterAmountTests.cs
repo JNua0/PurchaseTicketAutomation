@@ -112,7 +112,7 @@ public class RegisterAmountTests
             await Assert.ThrowsAsync<InvalidOperationException>(Act);
 
         Assert.Equal(
-            "Purchase ticket was not found.",
+            "No se encontró el ticket.",
             exception.Message);
 
         Assert.Null(

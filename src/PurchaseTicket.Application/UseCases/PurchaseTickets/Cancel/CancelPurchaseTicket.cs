@@ -20,7 +20,7 @@ public class CancelPurchaseTicket
 
         if (ticket is null)
             throw new InvalidOperationException(
-                "Purchase ticket was not found.");
+                "No se encontró el ticket.");
 
         ticket.Cancel();
 

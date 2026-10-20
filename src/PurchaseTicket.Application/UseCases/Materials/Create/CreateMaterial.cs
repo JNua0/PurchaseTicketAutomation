@@ -19,7 +19,7 @@ public class CreateMaterial
         if (await _repository.ExistsByNameAsync(material.Name))
         {
             throw new InvalidOperationException(
-                "A material with the same name already exists.");
+                "Ya existe un material registrado con ese nombre.");
         }
 
         await _repository.AddAsync(material);

@@ -116,6 +116,10 @@ public class GetMaterialsTests
 
         // Assert
         Assert.Equal("Page", exception.ParamName);
+
+        Assert.Contains(
+            "La página debe ser mayor a cero.",
+            exception.Message);
     }
 
     [Theory]
@@ -139,6 +143,10 @@ public class GetMaterialsTests
 
         // Assert
         Assert.Equal("PageSize", exception.ParamName);
+
+        Assert.Contains(
+            "El tamaño de página debe estar entre 1 y 100.",
+            exception.Message);
     }
 
     [Fact]

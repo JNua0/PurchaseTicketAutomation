@@ -401,7 +401,7 @@ public class PurchaseTicket
     private void ValidateConventionalWeighing()
     {
         if (WeighingType != WeighingType.Conventional)
-            throw new InvalidOperationException("La tara solo puede registrarse en un pesaje convencional.");
+            throw new InvalidOperationException("Esta operación solo aplica a un pesaje convencional.");
     }
 
     private static void ValidateTareWeight(decimal tareWeight, decimal grossWeight)
@@ -462,7 +462,7 @@ public class PurchaseTicket
     private static void ValidateGrossWeight(decimal grossWeight)
     {
         if (grossWeight <= 0)
-            throw new ArgumentException("El peso bruto debe ser mayor a cero");
+            throw new ArgumentException("El peso bruto debe ser mayor a cero.");
     }
 
     private static void ValidateNetWeight(decimal netWeight)

@@ -33,11 +33,11 @@ public class CreateSinglePurchaseTicket
 
         if (supplier is null)
             throw new InvalidOperationException(
-                "Supplier was not found.");
+                "No se encontró el proveedor.");
 
         if (!supplier.IsActive)
             throw new InvalidOperationException(
-                "Supplier is inactive.");
+                "El proveedor seleccionado está inactivo.");
 
         var material =
             await _materialRepository.GetByIdAsync(
@@ -45,11 +45,11 @@ public class CreateSinglePurchaseTicket
 
         if (material is null)
             throw new InvalidOperationException(
-                "Material was not found.");
+                "No se encontró el material.");
 
         if (!material.IsActive)
             throw new InvalidOperationException(
-                "Material is inactive.");
+                "El material seleccionado está inactivo.");
 
         string ticketNumber =
             await _ticketNumberGenerator.GenerateAsync();

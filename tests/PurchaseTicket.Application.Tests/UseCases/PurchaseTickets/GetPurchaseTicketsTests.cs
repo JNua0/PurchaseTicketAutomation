@@ -241,7 +241,7 @@ public class GetPurchaseTicketsTests
             await Assert.ThrowsAsync<ArgumentException>(Act);
 
         Assert.Equal(
-            "Page must be greater than zero.",
+            "La página debe ser mayor a cero.",
             exception.Message);
     }
 
@@ -272,7 +272,7 @@ public class GetPurchaseTicketsTests
             await Assert.ThrowsAsync<ArgumentException>(Act);
 
         Assert.Equal(
-            "Page size must be between 1 and 100.",
+            "El tamaño de página debe estar entre 1 y 100.",
             exception.Message);
     }
 

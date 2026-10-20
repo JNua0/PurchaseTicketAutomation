@@ -99,7 +99,7 @@ public class CancelPurchaseTicketTests
 
         // Assert
         Assert.Equal(
-            "Purchase ticket was not found.",
+            "No se encontró el ticket.",
             exception.Message);
 
         Assert.Null(repository.UpdatedTicket);

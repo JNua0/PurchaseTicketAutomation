@@ -449,7 +449,7 @@ public class PurchaseTicketTests
         var exception = Assert.Throws<ArgumentException>(act);
 
         Assert.Equal(
-            "El peso bruto debe ser mayor a cero",
+            "El peso bruto debe ser mayor a cero.",
             exception.Message);
     }
 
@@ -720,7 +720,7 @@ public class PurchaseTicketTests
             Assert.Throws<InvalidOperationException>(act);
 
         Assert.Equal(
-            "La tara solo puede registrarse en un pesaje convencional.",
+            "Esta operación solo aplica a un pesaje convencional.",
             exception.Message);
     }
 

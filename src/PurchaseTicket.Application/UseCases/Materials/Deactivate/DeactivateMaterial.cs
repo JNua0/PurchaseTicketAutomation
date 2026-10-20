@@ -18,7 +18,7 @@ public class DeactivateMaterial
         if (material is null)
         {
             throw new InvalidOperationException(
-                "Material not found.");
+                "No se encontró el material.");
         }
 
         material.Deactivate();

@@ -108,7 +108,7 @@ public class CorrectPurchaseTicketTests
 
         // Assert
         Assert.Equal(
-            "Purchase ticket was not found.",
+            "No se encontró el ticket.",
             exception.Message);
     }
 
@@ -152,7 +152,7 @@ public class CorrectPurchaseTicketTests
 
         // Assert
         Assert.Equal(
-            "Supplier was not found.",
+            "No se encontró el proveedor.",
             exception.Message);
     }
 
@@ -206,7 +206,7 @@ public class CorrectPurchaseTicketTests
 
         // Assert
         Assert.Equal(
-            "Supplier is inactive.",
+            "El proveedor seleccionado está inactivo.",
             exception.Message);
     }
 
@@ -399,7 +399,7 @@ public class CorrectPurchaseTicketTests
 
         // Assert
         Assert.Equal(
-            "Material was not found.",
+            "No se encontró el material.",
             exception.Message);
 
         Assert.Equal(
@@ -466,7 +466,7 @@ public class CorrectPurchaseTicketTests
 
         // Assert
         Assert.Equal(
-            "Material is inactive.",
+            "El material seleccionado está inactivo.",
             exception.Message);
 
         Assert.Equal(
@@ -1236,7 +1236,7 @@ public class CorrectPurchaseTicketTests
 
         // Assert
         Assert.Equal(
-            "No corrections were provided.",
+            "No se indicó ningún cambio para corregir.",
             exception.Message);
 
         Assert.Null(

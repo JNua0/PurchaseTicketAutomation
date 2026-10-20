@@ -18,7 +18,7 @@ public class DeactivateSupplier
         if (supplier is null)
         {
             throw new InvalidOperationException(
-                "Supplier not found.");
+                "No se encontró el proveedor.");
         }
 
         supplier.Deactivate();

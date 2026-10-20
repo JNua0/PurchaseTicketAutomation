@@ -114,7 +114,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         var ticket = data.Ticket;
 
         if (ticket.GrossWeight is null)
-            throw new InvalidOperationException("Purchase ticket does not have a gross weight.");
+            throw new InvalidOperationException("El ticket no tiene peso bruto.");
 
         var builder = new StringBuilder();
 
@@ -179,13 +179,13 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         var ticket = data.Ticket;
 
         if (ticket.DepartureAt is null)
-            throw new InvalidOperationException("Purchase ticket does not have a departure date.");
+            throw new InvalidOperationException("El ticket no tiene fecha de salida.");
 
         if (ticket.TareWeight is null)
-            throw new InvalidOperationException("Purchase ticket does not have a tare weight.");
+            throw new InvalidOperationException("El ticket no tiene tara.");
 
         if (ticket.NetWeight is null)
-            throw new InvalidOperationException("Purchase ticket does not have a net weight.");
+            throw new InvalidOperationException("El ticket no tiene peso neto.");
 
         var builder = new StringBuilder();
 
@@ -226,7 +226,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         var ticket = data.Ticket;
 
         if (ticket.NetWeight is null)
-            throw new InvalidOperationException("Purchase ticket does not have a net weight.");
+            throw new InvalidOperationException("El ticket no tiene peso neto.");
 
         var builder = new StringBuilder();
 

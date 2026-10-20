@@ -31,7 +31,7 @@ public class Supplier
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new ArgumentException(
-                "Supplier name is required.",
+                "El nombre del proveedor es obligatorio.",
                 nameof(name));
         }
 
@@ -40,7 +40,7 @@ public class Supplier
         if (name.Length > 50)
         {
             throw new ArgumentException(
-                "Supplier name cannot exceed 50 characters.",
+                "El nombre del proveedor no puede exceder los 50 caracteres.",
                 nameof(name));
         }
 

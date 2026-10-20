@@ -29,17 +29,17 @@ public class PrintPurchaseTicket
         var ticket = await _repository.GetByIdAsync(command.TicketId);
 
         if (ticket is null)
-            throw new InvalidOperationException("Purchase ticket was not found.");
+            throw new InvalidOperationException("No se encontró el ticket.");
 
         var supplier = await _supplierRepository.GetByIdAsync(ticket.SupplierId);
 
         if (supplier is null)
-            throw new InvalidOperationException("Supplier was not found.");
+            throw new InvalidOperationException("No se encontró el proveedor.");
 
         var material = await _materialRepository.GetByIdAsync(ticket.MaterialId);
 
         if (material is null)
-            throw new InvalidOperationException("Material was not found.");
+            throw new InvalidOperationException("No se encontró el material.");
 
         var printData = new TicketPrintData(
             ticket,
@@ -81,7 +81,7 @@ public class PrintPurchaseTicket
         else
         {
             throw new InvalidOperationException(
-                "Purchase ticket cannot be printed in its current state.");
+                "El ticket no puede imprimirse en su estado actual.");
         }
 
         try

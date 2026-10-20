@@ -20,7 +20,7 @@ public class UpdateMaterial
         if (material is null)
         {
             throw new InvalidOperationException(
-                "Material not found.");
+                "No se encontró el material.");
         }
 
         var normalizedName = Material.NormalizeName(
@@ -31,7 +31,7 @@ public class UpdateMaterial
             command.MaterialId))
         {
             throw new InvalidOperationException(
-                "A material with the same name already exists.");
+                "Ya existe un material registrado con ese nombre.");
         }
 
         material.UpdateName(command.Name);

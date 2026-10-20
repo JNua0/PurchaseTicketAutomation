@@ -24,11 +24,11 @@ public class GetPendingWeighingPurchaseTickets
                 ticket.CheckInAt,
                 ticket.LicensePlate
                     ?? throw new InvalidOperationException(
-                        "A pending weighing ticket must have a license plate."),
+                        "Un ticket pendiente de pesaje debe tener placas."),
                 ticket.Transporter,
                 ticket.GrossWeight
                     ?? throw new InvalidOperationException(
-                        "A pending weighing ticket must have a gross weight.")))
+                        "Un ticket pendiente de pesaje debe tener peso bruto.")))
             .ToList();
     }
 }

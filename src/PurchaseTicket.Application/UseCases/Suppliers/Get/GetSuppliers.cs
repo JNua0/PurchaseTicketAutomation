@@ -16,10 +16,14 @@ public class GetSuppliers
     public async Task<PagedResult<SupplierDto>> ExecuteAsync(GetSuppliersQuery query)
     {
         if (query.Page < 1)
-            throw new ArgumentOutOfRangeException(nameof(query.Page));
+            throw new ArgumentOutOfRangeException(
+                nameof(query.Page),
+                "La página debe ser mayor a cero.");
 
         if (query.PageSize < 1 || query.PageSize > 100)
-            throw new ArgumentOutOfRangeException(nameof(query.PageSize));
+            throw new ArgumentOutOfRangeException(
+                nameof(query.PageSize),
+                "El tamaño de página debe estar entre 1 y 100.");
 
         var search = string.IsNullOrWhiteSpace(query.Search)
             ? null

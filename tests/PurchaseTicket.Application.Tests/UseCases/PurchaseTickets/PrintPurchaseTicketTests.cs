@@ -147,7 +147,7 @@ public class PrintPurchaseTicketTests
 
         // Assert
         Assert.Equal(
-            "Purchase ticket was not found.",
+            "No se encontró el ticket.",
             exception.Message);
     }
 
@@ -197,7 +197,7 @@ public class PrintPurchaseTicketTests
 
         // Assert
         Assert.Equal(
-            "Supplier was not found.",
+            "No se encontró el proveedor.",
             exception.Message);
     }
 
@@ -252,7 +252,7 @@ public class PrintPurchaseTicketTests
 
         // Assert
         Assert.Equal(
-            "Material was not found.",
+            "No se encontró el material.",
             exception.Message);
     }
 
@@ -729,7 +729,7 @@ public class PrintPurchaseTicketTests
 
         // Assert
         Assert.Equal(
-            "Purchase ticket cannot be printed in its current state.",
+            "El ticket no puede imprimirse en su estado actual.",
             exception.Message);
     }
 

@@ -254,7 +254,7 @@ public class CreateConventionalPurchaseTicketTests
             await Assert.ThrowsAsync<InvalidOperationException>(Act);
 
         Assert.Equal(
-            "Supplier was not found.",
+            "No se encontró el proveedor.",
             exception.Message);
 
         Assert.Null(repository.AddedTicket);
@@ -299,7 +299,7 @@ public class CreateConventionalPurchaseTicketTests
             await Assert.ThrowsAsync<InvalidOperationException>(Act);
 
         Assert.Equal(
-            "Material was not found.",
+            "No se encontró el material.",
             exception.Message);
 
         Assert.Null(repository.AddedTicket);
@@ -344,7 +344,7 @@ public class CreateConventionalPurchaseTicketTests
             await Assert.ThrowsAsync<InvalidOperationException>(Act);
 
         Assert.Equal(
-            "Supplier is inactive.",
+            "El proveedor seleccionado está inactivo.",
             exception.Message);
 
         Assert.Null(repository.AddedTicket);
@@ -389,7 +389,7 @@ public class CreateConventionalPurchaseTicketTests
             await Assert.ThrowsAsync<InvalidOperationException>(Act);
 
         Assert.Equal(
-            "Material is inactive.",
+            "El material seleccionado está inactivo.",
             exception.Message);
 
         Assert.Null(repository.AddedTicket);
