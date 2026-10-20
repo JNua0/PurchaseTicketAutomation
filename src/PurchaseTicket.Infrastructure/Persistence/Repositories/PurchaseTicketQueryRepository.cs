@@ -39,15 +39,16 @@ public class PurchaseTicketQueryRepository
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var value = search.Trim();
+            var pattern = $"%{search.Trim()}%";
 
+            // ILike no distingue mayusculas, igual que en proveedores y materiales
             query = query.Where(x =>
-                x.Ticket.TicketNumber.Contains(value) ||
+                EF.Functions.ILike(x.Ticket.TicketNumber, pattern) ||
                 (x.Ticket.LicensePlate != null &&
-                 x.Ticket.LicensePlate.Contains(value)) ||
-                x.Ticket.Transporter.Contains(value) ||
-                x.SupplierName.Contains(value) ||
-                x.MaterialName.Contains(value));
+                 EF.Functions.ILike(x.Ticket.LicensePlate, pattern)) ||
+                EF.Functions.ILike(x.Ticket.Transporter, pattern) ||
+                EF.Functions.ILike(x.SupplierName, pattern) ||
+                EF.Functions.ILike(x.MaterialName, pattern));
         }
 
         if (status.HasValue)
