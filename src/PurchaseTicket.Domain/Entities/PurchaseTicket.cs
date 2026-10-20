@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using PurchaseTicket.Domain.Enums;
 using PurchaseTicket.Domain.ValueObjects;
 
@@ -6,6 +7,11 @@ namespace PurchaseTicket.Domain.Entities;
 
 public class PurchaseTicket
 {
+    // Palabras de letras, unidas opcionalmente por guion o apostrofo,
+    // separadas por un solo espacio. Ej.: "Juan Perez-Lopez", "O'Neil".
+    private static readonly Regex TransporterPattern = new(
+        @"^\p{L}+(?:['-]\p{L}+)*(?: \p{L}+(?:['-]\p{L}+)*)*$",
+        RegexOptions.Compiled);
     // Attributes
     public int Id { get; private set; }
     public string TicketNumber { get; private set; } = string.Empty;
@@ -340,8 +346,9 @@ public class PurchaseTicket
                 .Trim()
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries));
 
-        if (!transporter.All(c => char.IsLetter(c) || char.IsWhiteSpace(c)))
-            throw new ArgumentException("El transportista solo puede contener letras.");
+        if (!TransporterPattern.IsMatch(transporter))
+            throw new ArgumentException(
+                "El transportista solo puede contener letras, espacios, guiones y apóstrofos.");
 
         TextInfo textInfo =
             CultureInfo

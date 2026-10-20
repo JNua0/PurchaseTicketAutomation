@@ -333,8 +333,12 @@ public class PurchaseTicketTests
     [Theory]
     [InlineData("Juan123")]
     [InlineData("Juan Pérez 2")]
-    [InlineData("Juan-Pérez")]
     [InlineData("Juan.Pérez")]
+    [InlineData("-Juan")]
+    [InlineData("Juan-")]
+    [InlineData("Juan--Pérez")]
+    [InlineData("'Juan")]
+    [InlineData("---")]
     public void CreateConventional_ShouldThrowWhenTransporterContainsInvalidCharacters(string transporter)
     {
         // Act
@@ -350,8 +354,44 @@ public class PurchaseTicketTests
         var exception = Assert.Throws<ArgumentException>(act);
 
         Assert.Equal(
-            "El transportista solo puede contener letras.",
+            "El transportista solo puede contener letras, espacios, guiones y apóstrofos.",
             exception.Message);
+    }
+
+    [Theory]
+    [InlineData("juan pérez-lópez", "Juan Pérez-López")]
+    [InlineData("MARÍA FERNÁNDEZ-NÚÑEZ", "María Fernández-Núñez")]
+    public void CreateConventional_ShouldAllowHyphenatedTransporter(
+    string transporter,
+    string expected)
+    {
+        // Act
+        var ticket = Ticket.CreateConventional(
+            "T-000001",
+            1,
+            1,
+            "ABC1234",
+            transporter,
+            25000m);
+
+        // Assert
+        Assert.Equal(expected, ticket.Transporter);
+    }
+
+    [Fact]
+    public void CreateConventional_ShouldAllowApostropheInTransporter()
+    {
+        // Act
+        var ticket = Ticket.CreateConventional(
+            "T-000001",
+            1,
+            1,
+            "ABC1234",
+            "pedro o'neil",
+            25000m);
+
+        // Assert
+        Assert.StartsWith("Pedro O'", ticket.Transporter);
     }
 
     [Fact]
