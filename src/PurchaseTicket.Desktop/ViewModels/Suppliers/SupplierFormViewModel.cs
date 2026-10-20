@@ -1,19 +1,25 @@
-﻿using System.ComponentModel;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using PurchaseTicket.Application.UseCases.Suppliers.Create;
 using PurchaseTicket.Application.UseCases.Suppliers.Update;
 using PurchaseTicket.Desktop.Commands;
+using PurchaseTicket.Desktop.ViewModels.Base;
 
 namespace PurchaseTicket.Desktop.ViewModels.Suppliers;
 
-public class SupplierFormViewModel : INotifyPropertyChanged
+// Formulario para registrar o editar un proveedor
+public class SupplierFormViewModel : ObservableObject
 {
+    // Campos
+
     private readonly IServiceScopeFactory _scopeFactory;
+
     private int? _supplierId;
     private string _name = string.Empty;
     private string _phoneNumber = string.Empty;
     private string _errorMessage = string.Empty;
     private bool _isSaving;
+
+    // Constructor
 
     public SupplierFormViewModel(IServiceScopeFactory scopeFactory)
     {
@@ -22,88 +28,80 @@ public class SupplierFormViewModel : INotifyPropertyChanged
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
     }
 
+    // Eventos
+
+    // Avisa a la ventana que el proveedor se guardo para que se cierre
+    public event EventHandler? Saved;
+
+    // Propiedades
+
+    // Null al registrar; con valor al editar
     public int? SupplierId
     {
         get => _supplierId;
         private set
         {
-            if (_supplierId == value)
+            if (!SetProperty(ref _supplierId, value))
                 return;
 
-            _supplierId = value;
-            OnPropertyChanged(nameof(SupplierId));
+            // Estas propiedades se calculan a partir de SupplierId
             OnPropertyChanged(nameof(IsEditMode));
             OnPropertyChanged(nameof(WindowTitle));
             OnPropertyChanged(nameof(SaveButtonText));
         }
     }
+
     public bool IsEditMode => SupplierId.HasValue;
-    public string WindowTitle => IsEditMode ? "Editar proveedor" : "Nuevo proveedor";
-    public string SaveButtonText => IsEditMode ? "Guardar cambios" : "Registrar";
+
+    public string WindowTitle =>
+        IsEditMode ? "Editar proveedor" : "Nuevo proveedor";
+
+    public string SaveButtonText =>
+        IsEditMode ? "Guardar cambios" : "Registrar";
+
     public string Name
     {
         get => _name;
         set
         {
-            if (_name == value)
-                return;
-
-            _name = value;
-            OnPropertyChanged(nameof(Name));
-
-            SaveCommand?.NotifyCanExecuteChanged();
+            if (SetProperty(ref _name, value))
+                SaveCommand.NotifyCanExecuteChanged();
         }
     }
+
     public string PhoneNumber
     {
         get => _phoneNumber;
-        set
-        {
-            if (_phoneNumber == value)
-                return;
-
-            _phoneNumber = value;
-            OnPropertyChanged(nameof(PhoneNumber));
-        }
+        set => SetProperty(ref _phoneNumber, value);
     }
+
     public string ErrorMessage
     {
         get => _errorMessage;
-        private set
-        {
-            if (_errorMessage == value)
-                return;
-
-            _errorMessage = value;
-            OnPropertyChanged(nameof(ErrorMessage));
-        }
+        private set => SetProperty(ref _errorMessage, value);
     }
+
     public bool IsSaving
     {
         get => _isSaving;
         private set
         {
-            if (_isSaving == value)
-                return;
-
-            _isSaving = value;
-            OnPropertyChanged(nameof(IsSaving));
-
-            SaveCommand?.NotifyCanExecuteChanged();
+            if (SetProperty(ref _isSaving, value))
+                SaveCommand.NotifyCanExecuteChanged();
         }
     }
 
+    // El telefono es opcional: un campo vacio se envia como null
+    private string? PhoneNumberOrNull =>
+        string.IsNullOrWhiteSpace(PhoneNumber)
+            ? null
+            : PhoneNumber;
+
+    // Comandos
+
     public AsyncRelayCommand SaveCommand { get; }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-    public event EventHandler? Saved;
-
-    private void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
-    }
+    // Metodos publicos
 
     public void InitializeForCreate()
     {
@@ -118,8 +116,7 @@ public class SupplierFormViewModel : INotifyPropertyChanged
         string name,
         string? phoneNumber)
     {
-        if (supplierId <= 0)
-            throw new ArgumentOutOfRangeException(nameof(supplierId));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(supplierId);
 
         SupplierId = supplierId;
         Name = name;
@@ -127,63 +124,38 @@ public class SupplierFormViewModel : INotifyPropertyChanged
         ErrorMessage = string.Empty;
     }
 
+    // Metodos privados
+
     private bool CanSave()
     {
-        return !IsSaving &&
-               !string.IsNullOrWhiteSpace(Name);
+        return !IsSaving
+            && !string.IsNullOrWhiteSpace(Name);
     }
 
     private async Task SaveAsync()
     {
-        if (IsSaving)
+        if (!CanSave())
             return;
 
         IsSaving = true;
         ErrorMessage = string.Empty;
-        bool savedSuccessfully = false;
+
+        bool saved = false;
 
         try
         {
             await using var scope = _scopeFactory.CreateAsyncScope();
 
             if (IsEditMode)
-            {
-                var updateSupplier =
-                    scope.ServiceProvider
-                        .GetRequiredService<UpdateSupplier>();
-
-                var command = new UpdateSupplierCommand(
-                    SupplierId!.Value,
-                    Name,
-                    string.IsNullOrWhiteSpace(PhoneNumber)
-                        ? null
-                        : PhoneNumber);
-
-                await updateSupplier.ExecuteAsync(command);
-            }
+                await UpdateAsync(scope.ServiceProvider);
             else
-            {
-                var createSupplier =
-                    scope.ServiceProvider
-                        .GetRequiredService<CreateSupplier>();
+                await CreateAsync(scope.ServiceProvider);
 
-                var command = new CreateSupplierCommand(
-                    Name,
-                    string.IsNullOrWhiteSpace(PhoneNumber)
-                        ? null
-                        : PhoneNumber);
-
-                await createSupplier.ExecuteAsync(command);
-            }
-
-            savedSuccessfully = true;
+            saved = true;
         }
-        catch (ArgumentException ex)
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
-            ErrorMessage = ex.Message;
-        }
-        catch (InvalidOperationException ex)
-        {
+            // Errores de validacion del dominio: el mensaje ya es para el usuario
             ErrorMessage = ex.Message;
         }
         catch (Exception ex)
@@ -197,9 +169,32 @@ public class SupplierFormViewModel : INotifyPropertyChanged
             IsSaving = false;
         }
 
-        if (savedSuccessfully)
-        {
+        // Fuera del try: un error al cerrar la ventana no debe
+        // mostrarse como error al guardar
+        if (saved)
             Saved?.Invoke(this, EventArgs.Empty);
-        }
+    }
+
+    private async Task CreateAsync(IServiceProvider services)
+    {
+        var createSupplier =
+            services.GetRequiredService<CreateSupplier>();
+
+        await createSupplier.ExecuteAsync(
+            new CreateSupplierCommand(
+                Name,
+                PhoneNumberOrNull));
+    }
+
+    private async Task UpdateAsync(IServiceProvider services)
+    {
+        var updateSupplier =
+            services.GetRequiredService<UpdateSupplier>();
+
+        await updateSupplier.ExecuteAsync(
+            new UpdateSupplierCommand(
+                SupplierId!.Value,
+                Name,
+                PhoneNumberOrNull));
     }
 }

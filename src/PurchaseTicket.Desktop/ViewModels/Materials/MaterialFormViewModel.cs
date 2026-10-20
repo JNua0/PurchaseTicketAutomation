@@ -1,13 +1,16 @@
-﻿using System.ComponentModel;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using PurchaseTicket.Application.UseCases.Materials.Create;
 using PurchaseTicket.Application.UseCases.Materials.Update;
 using PurchaseTicket.Desktop.Commands;
+using PurchaseTicket.Desktop.ViewModels.Base;
 
 namespace PurchaseTicket.Desktop.ViewModels.Materials;
 
-public class MaterialFormViewModel : INotifyPropertyChanged
+// Formulario para registrar o editar un material
+public class MaterialFormViewModel : ObservableObject
 {
+    // Campos
+
     private readonly IServiceScopeFactory _scopeFactory;
 
     private int? _materialId;
@@ -15,33 +18,38 @@ public class MaterialFormViewModel : INotifyPropertyChanged
     private string _errorMessage = string.Empty;
     private bool _isSaving;
 
+    // Constructor
+
     public MaterialFormViewModel(IServiceScopeFactory scopeFactory)
     {
         _scopeFactory = scopeFactory;
 
-        SaveCommand = new AsyncRelayCommand(
-            SaveAsync,
-            CanSave);
+        SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
     }
 
-    // Identificador del material
+    // Eventos
+
+    // Avisa a la ventana que el material se guardo para que se cierre
+    public event EventHandler? Saved;
+
+    // Propiedades
+
+    // Null al registrar; con valor al editar
     public int? MaterialId
     {
         get => _materialId;
         private set
         {
-            if (_materialId == value)
+            if (!SetProperty(ref _materialId, value))
                 return;
 
-            _materialId = value;
-            OnPropertyChanged(nameof(MaterialId));
+            // Estas propiedades se calculan a partir de MaterialId
             OnPropertyChanged(nameof(IsEditMode));
             OnPropertyChanged(nameof(WindowTitle));
             OnPropertyChanged(nameof(SaveButtonText));
         }
     }
 
-    // Informacion del formulario
     public bool IsEditMode => MaterialId.HasValue;
 
     public string WindowTitle =>
@@ -50,65 +58,38 @@ public class MaterialFormViewModel : INotifyPropertyChanged
     public string SaveButtonText =>
         IsEditMode ? "Guardar cambios" : "Registrar";
 
-    // Nombre del material
     public string Name
     {
         get => _name;
         set
         {
-            if (_name == value)
-                return;
-
-            _name = value;
-            OnPropertyChanged(nameof(Name));
-
-            SaveCommand.NotifyCanExecuteChanged();
+            if (SetProperty(ref _name, value))
+                SaveCommand.NotifyCanExecuteChanged();
         }
     }
 
-    // Mensaje de error
     public string ErrorMessage
     {
         get => _errorMessage;
-        private set
-        {
-            if (_errorMessage == value)
-                return;
-
-            _errorMessage = value;
-            OnPropertyChanged(nameof(ErrorMessage));
-        }
+        private set => SetProperty(ref _errorMessage, value);
     }
 
-    // Estado de guardado
     public bool IsSaving
     {
         get => _isSaving;
         private set
         {
-            if (_isSaving == value)
-                return;
-
-            _isSaving = value;
-            OnPropertyChanged(nameof(IsSaving));
-
-            SaveCommand.NotifyCanExecuteChanged();
+            if (SetProperty(ref _isSaving, value))
+                SaveCommand.NotifyCanExecuteChanged();
         }
     }
 
+    // Comandos
+
     public AsyncRelayCommand SaveCommand { get; }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-    public event EventHandler? Saved;
+    // Metodos publicos
 
-    private void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
-    }
-
-    // Preparar el formulario para registrar
     public void InitializeForCreate()
     {
         MaterialId = null;
@@ -116,73 +97,53 @@ public class MaterialFormViewModel : INotifyPropertyChanged
         ErrorMessage = string.Empty;
     }
 
-    // Preparar el formulario para editar
     public void InitializeForEdit(int materialId, string name)
     {
-        if (materialId <= 0)
-            throw new ArgumentOutOfRangeException(nameof(materialId));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(materialId);
 
         MaterialId = materialId;
         Name = name;
         ErrorMessage = string.Empty;
     }
 
-    // Validar si se puede guardar
+    // Metodos privados
+
     private bool CanSave()
     {
         return !IsSaving
             && !string.IsNullOrWhiteSpace(Name);
     }
 
-    // Registrar o actualizar el material
     private async Task SaveAsync()
     {
-        if (IsSaving || !CanSave())
+        if (!CanSave())
             return;
 
         IsSaving = true;
         ErrorMessage = string.Empty;
 
-        bool savedSuccessfully = false;
+        bool saved = false;
 
         try
         {
             await using var scope = _scopeFactory.CreateAsyncScope();
 
             if (IsEditMode)
-            {
-                var updateMaterial = scope.ServiceProvider
-                    .GetRequiredService<UpdateMaterial>();
-
-                var command = new UpdateMaterialCommand(
-                    MaterialId!.Value,
-                    Name);
-
-                await updateMaterial.ExecuteAsync(command);
-            }
+                await UpdateAsync(scope.ServiceProvider);
             else
-            {
-                var createMaterial = scope.ServiceProvider
-                    .GetRequiredService<CreateMaterial>();
+                await CreateAsync(scope.ServiceProvider);
 
-                var command = new CreateMaterialCommand(Name);
-
-                await createMaterial.ExecuteAsync(command);
-            }
-
-            savedSuccessfully = true;
+            saved = true;
         }
-        catch (ArgumentException ex)
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
-            ErrorMessage = ex.Message;
-        }
-        catch (InvalidOperationException ex)
-        {
+            // Errores de validacion del dominio: el mensaje ya es para el usuario
             ErrorMessage = ex.Message;
         }
         catch (Exception ex)
         {
             ErrorMessage = "Ocurrió un error al guardar el material.";
+
             Console.Error.WriteLine(ex);
         }
         finally
@@ -190,9 +151,29 @@ public class MaterialFormViewModel : INotifyPropertyChanged
             IsSaving = false;
         }
 
-        if (savedSuccessfully)
-        {
+        // Fuera del try: un error al cerrar la ventana no debe
+        // mostrarse como error al guardar
+        if (saved)
             Saved?.Invoke(this, EventArgs.Empty);
-        }
+    }
+
+    private async Task CreateAsync(IServiceProvider services)
+    {
+        var createMaterial =
+            services.GetRequiredService<CreateMaterial>();
+
+        await createMaterial.ExecuteAsync(
+            new CreateMaterialCommand(Name));
+    }
+
+    private async Task UpdateAsync(IServiceProvider services)
+    {
+        var updateMaterial =
+            services.GetRequiredService<UpdateMaterial>();
+
+        await updateMaterial.ExecuteAsync(
+            new UpdateMaterialCommand(
+                MaterialId!.Value,
+                Name));
     }
 }
