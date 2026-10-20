@@ -503,6 +503,82 @@ public class PrintPurchaseTicketTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_ShouldPrintSingleWhenCompleted()
+    {
+        // Arrange
+        var ticket =
+            Ticket.CreateSingle(
+                ticketNumber: "T-000001",
+                supplierId: 1,
+                materialId: 2,
+                licensePlate: null,
+                transporter: "Juan Perez",
+                netWeight: 15000m);
+
+        ticket.RegisterAmount(
+            discount: 5,
+            pricePerKg: 2m);
+
+        var supplier =
+            new Supplier(
+                name: "Proveedor Uno",
+                phoneNumber: null);
+
+        var material =
+            new Material(
+                name: "Material Uno");
+
+        var repository =
+            new FakePurchaseTicketRepository
+            {
+                Ticket = ticket
+            };
+
+        var supplierRepository =
+            new FakeSupplierRepository
+            {
+                Supplier = supplier
+            };
+
+        var materialRepository =
+            new FakeMaterialRepository
+            {
+                Material = material
+            };
+
+        var printer =
+            new FakeTicketPrinter();
+
+        var command =
+            new PrintPurchaseTicketCommand(
+                TicketId: 1);
+
+        var useCase =
+            new PrintPurchaseTicket(
+                repository,
+                supplierRepository,
+                materialRepository,
+                printer);
+
+        // Act
+        var result =
+            await useCase.ExecuteAsync(command);
+
+        // Assert
+        Assert.True(result.Printed);
+
+        Assert.NotNull(
+            printer.SingleData);
+
+        Assert.Same(
+            ticket,
+            printer.SingleData.Ticket);
+
+        Assert.Null(
+            printer.ConventionalCompletedData);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_ShouldPrintCompletedConventionalTicket()
     {
         // Arrange

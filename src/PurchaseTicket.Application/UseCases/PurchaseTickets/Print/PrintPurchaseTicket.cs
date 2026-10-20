@@ -70,8 +70,10 @@ public class PrintPurchaseTicket
                     printData);
         }
         else if (ticket.WeighingType == WeighingType.Single &&
-                 ticket.Status == TicketStatus.AmountPending)
+                (ticket.Status == TicketStatus.AmountPending ||
+                ticket.Status == TicketStatus.Completed))
         {
+            // El pesaje unico usa el mismo formato antes y despues del importe
             printOperation =
                 () => _ticketPrinter.PrintSingleAsync(
                     printData);
