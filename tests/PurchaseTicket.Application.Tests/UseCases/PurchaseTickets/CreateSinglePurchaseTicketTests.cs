@@ -1,5 +1,6 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.TicketNumbers;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateConventional;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateSingle;
 using PurchaseTicket.Domain.Entities;
 using PurchaseTicket.Domain.Enums;
@@ -284,5 +285,93 @@ public class CreateSinglePurchaseTicketTests
             repository.AddedTicket.Status);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_ShouldThrowWhenSupplierIsInactive()
+    {
+        // Arrange
+        var repository =
+            new FakePurchaseTicketRepository();
 
+        var supplier = new Supplier("Proveedor Uno");
+        supplier.Deactivate();
+
+        var supplierRepository =
+            new FakeSupplierRepository(supplier);
+
+        var materialRepository =
+            new FakeMaterialRepository(
+                new Material("Acero"));
+
+        var useCase = new CreateSinglePurchaseTicket(
+            repository,
+            supplierRepository,
+            materialRepository,
+            new FakeTicketNumberGenerator());
+
+        var command = new CreateSinglePurchaseTicketCommand(
+            SupplierId: 1,
+            MaterialId: 2,
+            LicensePlate: "abc123",
+            Transporter: "juan perez",
+            NetWeight: 25000m);
+
+        // Act
+        async Task Act() =>
+            await useCase.ExecuteAsync(command);
+
+        // Assert
+        var exception =
+            await Assert.ThrowsAsync<InvalidOperationException>(Act);
+
+        Assert.Equal(
+            "Supplier is inactive.",
+            exception.Message);
+
+        Assert.Null(repository.AddedTicket);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldThrowWhenMaterialIsInactive()
+    {
+        // Arrange
+        var repository =
+            new FakePurchaseTicketRepository();
+
+        var material = new Material("Acero");
+        material.Deactivate();
+
+        var supplierRepository =
+            new FakeSupplierRepository(
+                new Supplier("Proveedor Uno"));
+
+        var materialRepository =
+            new FakeMaterialRepository(material);
+
+        var useCase = new CreateSinglePurchaseTicket(
+            repository,
+            supplierRepository,
+            materialRepository,
+            new FakeTicketNumberGenerator());
+
+        var command = new CreateSinglePurchaseTicketCommand(
+            SupplierId: 1,
+            MaterialId: 2,
+            LicensePlate: "abc123",
+            Transporter: "juan perez",
+            NetWeight: 25000m);
+
+        // Act
+        async Task Act() =>
+            await useCase.ExecuteAsync(command);
+
+        // Assert
+        var exception =
+            await Assert.ThrowsAsync<InvalidOperationException>(Act);
+
+        Assert.Equal(
+            "Material is inactive.",
+            exception.Message);
+
+        Assert.Null(repository.AddedTicket);
+    }
 }

@@ -35,6 +35,10 @@ public class CreateConventionalPurchaseTicket
             throw new InvalidOperationException(
                 "Supplier was not found.");
 
+        if (!supplier.IsActive)
+            throw new InvalidOperationException(
+                "Supplier is inactive.");
+
         var material =
             await _materialRepository.GetByIdAsync(
                 command.MaterialId);
@@ -42,6 +46,10 @@ public class CreateConventionalPurchaseTicket
         if (material is null)
             throw new InvalidOperationException(
                 "Material was not found.");
+
+        if (!material.IsActive)
+            throw new InvalidOperationException(
+                "Material is inactive.");
 
         string ticketNumber =
             await _ticketNumberGenerator.GenerateAsync();
