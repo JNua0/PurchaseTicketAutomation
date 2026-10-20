@@ -1,4 +1,4 @@
-using PurchaseTicket.Application.Abstractions.Printing;
+namespace PurchaseTicket.Application.Abstractions.Printing;
 
 public interface ITicketPrinter
 {

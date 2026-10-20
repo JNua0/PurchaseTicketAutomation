@@ -1,5 +1,6 @@
-﻿
-using PurchaseTicket.Domain.Enums;
+﻿using PurchaseTicket.Domain.Enums;
+
+namespace PurchaseTicket.Application.UseCases.PurchaseTickets.Get;
 
 public record PurchaseTicketDto(
     int Id,

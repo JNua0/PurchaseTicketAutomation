@@ -158,12 +158,6 @@ public partial class App : System.Windows.Application
                 // Correccion de tickets
                 services.AddScoped<CorrectPurchaseTicket>();
 
-                // Casos de uso de tickets
-                services.AddScoped<CreateConventionalPurchaseTicket>();
-                services.AddScoped<CreateSinglePurchaseTicket>();
-                services.AddScoped<CorrectPurchaseTicket>();
-                services.AddScoped<PrintPurchaseTicket>();
-
                 // ViewModel de configuracion
                 services.AddTransient<SettingsViewModel>();
 
