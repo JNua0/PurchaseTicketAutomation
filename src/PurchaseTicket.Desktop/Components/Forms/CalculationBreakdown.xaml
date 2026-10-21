@@ -1,0 +1,71 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Forms.CalculationBreakdown"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <!-- Como se obtiene un resultado, paso a paso: bruto − tara = neto.
+         En Importes servira para neto − descuento = final × precio = importe -->
+    <Border Background="{StaticResource InfoSoftBrush}"
+            CornerRadius="12"
+            Padding="18,12">
+
+        <ItemsControl ItemsSource="{Binding Steps, ElementName=Root}"
+                      Focusable="False">
+
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="1"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+
+                    <StackPanel VerticalAlignment="Bottom">
+
+                        <TextBlock x:Name="StepLabel"
+                                   Text="{Binding Label}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                        <TextBlock x:Name="StepValue"
+                                   Text="{Binding Value}"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryTextBrush}"
+                                   Margin="0,3,0,0"/>
+
+                    </StackPanel>
+
+                    <!-- El resultado se ve mas grande y en azul -->
+                    <DataTemplate.Triggers>
+
+                        <DataTrigger Binding="{Binding IsResult}"
+                                     Value="True">
+                            <Setter TargetName="StepLabel"
+                                    Property="Foreground"
+                                    Value="{StaticResource InfoBrush}"/>
+                            <Setter TargetName="StepLabel"
+                                    Property="FontWeight"
+                                    Value="SemiBold"/>
+                            <Setter TargetName="StepValue"
+                                    Property="Foreground"
+                                    Value="{StaticResource InfoBrush}"/>
+                            <Setter TargetName="StepValue"
+                                    Property="FontSize"
+                                    Value="22"/>
+                            <Setter TargetName="StepValue"
+                                    Property="FontWeight"
+                                    Value="Bold"/>
+                        </DataTrigger>
+
+                    </DataTemplate.Triggers>
+
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+
+        </ItemsControl>
+
+    </Border>
+
+</UserControl>

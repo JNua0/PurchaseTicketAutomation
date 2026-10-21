@@ -85,6 +85,29 @@
                                 Width="140"
                                 MinWidth="140"/>
 
+            <!-- Acciones del vehiculo en planta -->
+            <DataGridTemplateColumn Header="Acciones"
+                                    HeaderStyle="{StaticResource CenteredColumnHeaderStyle}"
+                                    Width="170"
+                                    MinWidth="170"
+                                    CanUserResize="False">
+
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+
+                        <Button Content="Registrar tara"
+                                Command="{Binding DataContext.RegisterTareCommand,
+                                                  RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                CommandParameter="{Binding}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Height="34"
+                                HorizontalAlignment="Center"/>
+
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+
+            </DataGridTemplateColumn>
+
         </DataGrid.Columns>
 
     </DataGrid>

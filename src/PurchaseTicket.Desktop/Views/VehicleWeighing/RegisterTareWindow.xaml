@@ -1,0 +1,102 @@
+﻿<Window x:Class="PurchaseTicket.Desktop.Views.VehicleWeighing.RegisterTareWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:forms="clr-namespace:PurchaseTicket.Desktop.Components.Forms"
+        xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
+        Title="Registrar tara"
+        Width="720"
+        SizeToContent="Height"
+        MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource ContentBrush}"
+        Closing="Window_Closing">
+
+    <forms:DialogLayout Title="Registrar tara"
+                        Description="{Binding Description}">
+
+        <!-- Estado actual del ticket -->
+        <forms:DialogLayout.HeaderContent>
+
+            <feedback:StatusBadge Text="Pendiente de pesaje"
+                                  Kind="Warning"/>
+
+        </forms:DialogLayout.HeaderContent>
+
+        <forms:DialogLayout.BodyContent>
+
+            <StackPanel>
+
+                <!-- Campos bloqueados mientras se registra -->
+                <StackPanel>
+
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+
+                            <Style.Triggers>
+
+                                <DataTrigger Binding="{Binding IsSaving}"
+                                             Value="True">
+                                    <Setter Property="IsEnabled"
+                                            Value="False"/>
+                                </DataTrigger>
+
+                            </Style.Triggers>
+
+                        </Style>
+                    </StackPanel.Style>
+
+                    <!-- Datos de entrada: primera seccion, sin margen superior -->
+                    <TextBlock Text="DATOS DE ENTRADA"
+                               Style="{StaticResource FormSectionTitleStyle}"
+                               Margin="0,0,0,12"/>
+
+                    <forms:DetailList Items="{Binding Details}"/>
+
+                    <!-- Peso de salida -->
+                    <TextBlock Text="PESO DE SALIDA"
+                               Style="{StaticResource FormSectionTitleStyle}"/>
+
+                    <forms:WeightCaptureField Label="Tara"
+                                              Capture="{Binding Tare}"/>
+
+                    <!-- Bruto − tara = neto, se recalcula mientras se captura -->
+                    <forms:CalculationBreakdown Steps="{Binding Breakdown}"
+                                                Margin="0,16,0,0"/>
+
+                </StackPanel>
+
+                <!-- Errores generales, como un ticket que ya no esta en planta -->
+                <feedback:QueryStatus Margin="0,14,0,0"
+                                      IsLoading="False"
+                                      ErrorMessage="{Binding ErrorMessage}"/>
+
+            </StackPanel>
+
+        </forms:DialogLayout.BodyContent>
+
+        <!-- Opcion de impresion -->
+        <forms:DialogLayout.FooterContent>
+
+            <CheckBox Content="Imprimir ticket al registrar"
+                      IsChecked="{Binding PrintOnSave}"
+                      FontSize="14"
+                      VerticalContentAlignment="Center"
+                      Foreground="{StaticResource PrimaryTextBrush}"/>
+
+        </forms:DialogLayout.FooterContent>
+
+        <!-- Cancelar y registrar -->
+        <forms:DialogLayout.Actions>
+
+            <forms:FormActions SaveButtonText="Registrar tara"
+                               SaveCommand="{Binding SaveCommand}"
+                               CancelCommand="{Binding CancelCommand,
+                                                       RelativeSource={RelativeSource AncestorType=Window}}"
+                               IsSaving="{Binding IsSaving}"/>
+
+        </forms:DialogLayout.Actions>
+
+    </forms:DialogLayout>
+
+</Window>

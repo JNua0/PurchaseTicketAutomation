@@ -39,6 +39,10 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
         NewWeighingCommand = new AsyncRelayCommand(
             NewWeighingAsync,
             CanInteract);
+
+        RegisterTareCommand = new AsyncRelayCommand<WeighingListItem>(
+            RegisterTareAsync,
+            CanRegisterTare);
     }
 
     // Propiedades
@@ -94,6 +98,8 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
 
     public AsyncRelayCommand NewWeighingCommand { get; }
 
+    public AsyncRelayCommand<WeighingListItem> RegisterTareCommand { get; }
+
     // Metodos protegidos
 
     protected override async Task<PagedResult<WeighingListItem>> FetchPageAsync(
@@ -138,6 +144,7 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
         base.NotifyCommandsCanExecuteChanged();
 
         NewWeighingCommand?.NotifyCanExecuteChanged();
+        RegisterTareCommand?.NotifyCanExecuteChanged();
     }
 
     // Metodos privados
@@ -188,6 +195,39 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
         return (
             TimeZoneInfo.ConvertTimeToUtc(today, zone),
             TimeZoneInfo.ConvertTimeToUtc(today.AddDays(1), zone));
+    }
+
+    private bool CanRegisterTare(WeighingListItem ticket)
+    {
+        return ticket is not null
+            && ticket.CanRegisterTare
+            && CanInteract();
+    }
+
+    private async Task RegisterTareAsync(WeighingListItem ticket)
+    {
+        var registration =
+            _weighingDialogService.ShowRegisterTareDialog(ticket);
+
+        if (registration is null)
+            return;
+
+        _notifications.ShowSuccess(
+            $"Tara registrada en el folio {registration.TicketNumber}. " +
+            $"Peso neto: {registration.NetWeight:N0} kg.");
+
+        if (registration.PrintWarning is not null)
+        {
+            _notifications.ShowWarning(
+                $"No se imprimió el folio {registration.TicketNumber}. " +
+                registration.PrintWarning);
+        }
+
+        // El ticket sale de "En planta": pasa a pendiente de importe
+        await ReloadAfterActionAsync(
+            CurrentPage,
+            "La tara se registró correctamente, " +
+            "pero no fue posible actualizar el listado.");
     }
 
     private async Task NewWeighingAsync()

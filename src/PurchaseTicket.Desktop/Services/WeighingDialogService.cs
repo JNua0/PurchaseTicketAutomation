@@ -35,4 +35,22 @@ public class WeighingDialogService : IWeighingDialogService
             ? viewModel.Registration
             : null;
     }
+
+    public TareRegistration? ShowRegisterTareDialog(WeighingListItem ticket)
+    {
+        using var scope = _scopeFactory.CreateScope();
+
+        var window = scope.ServiceProvider
+            .GetRequiredService<RegisterTareWindow>();
+
+        var viewModel = (RegisterTareViewModel)window.DataContext;
+
+        viewModel.Initialize(ticket);
+
+        window.Owner = System.Windows.Application.Current.MainWindow;
+
+        return window.ShowDialog() == true
+            ? viewModel.Registration
+            : null;
+    }
 }

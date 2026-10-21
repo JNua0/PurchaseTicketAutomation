@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Forms.DetailList"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <!-- Datos de solo lectura en dos columnas, como los de entrada de un ticket -->
+    <Border Background="{StaticResource SurfaceBrush}"
+            BorderBrush="{StaticResource BorderBrushLight}"
+            BorderThickness="1"
+            CornerRadius="12"
+            Padding="18,14,18,2">
+
+        <ItemsControl ItemsSource="{Binding Items, ElementName=Root}"
+                      Focusable="False">
+
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="2"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+
+                    <!-- El margen inferior separa las filas; el del borde compensa la ultima -->
+                    <StackPanel Margin="0,0,20,12">
+
+                        <TextBlock Text="{Binding Label}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource SecondaryTextBrush}"/>
+
+                        <TextBlock Text="{Binding Value}"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryTextBrush}"
+                                   TextTrimming="CharacterEllipsis"
+                                   Margin="0,3,0,0"/>
+
+                    </StackPanel>
+
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+
+        </ItemsControl>
+
+    </Border>
+
+</UserControl>

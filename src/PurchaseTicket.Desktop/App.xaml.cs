@@ -153,6 +153,10 @@ public partial class App : System.Windows.Application
                 services.AddTransient<CreateWeighingViewModel>();
                 services.AddTransient<CreateWeighingWindow>();
 
+                // Registro de tara
+                services.AddTransient<RegisterTareViewModel>();
+                services.AddTransient<RegisterTareWindow>();
+
                 // Weighing dialogs
                 services.AddTransient<IWeighingDialogService, WeighingDialogService>();
 
