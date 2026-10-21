@@ -474,8 +474,17 @@ public class PurchaseTicket
 
     private void ValidateCanModifyGeneralData()
     {
-        if (Status != TicketStatus.WeighingPending && Status != TicketStatus.Completed)
-            throw new BusinessRuleException("El ticket no permite modificar este campo en su estado actual.");
+        // El pesaje unico nace pendiente de importe, asi que ese es el
+        // momento en que pesaje puede corregir sus datos generales
+        bool canModify =
+            Status == TicketStatus.WeighingPending ||
+            Status == TicketStatus.Completed ||
+            (Status == TicketStatus.AmountPending &&
+             WeighingType == WeighingType.Single);
+
+        if (!canModify)
+            throw new BusinessRuleException(
+                "El ticket no permite modificar este campo en su estado actual.");
     }
 
     private void ValidateCanModifyTareWeight()

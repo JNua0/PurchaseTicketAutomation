@@ -1130,16 +1130,18 @@ public class PurchaseTicketTests
     }
 
     [Fact]
-    public void ChangeSupplier_ShouldThrowWhenTicketIsAmountPending()
+    public void ChangeSupplier_ShouldThrowWhenConventionalTicketIsAmountPending()
     {
         // Arrange
-        var ticket = Ticket.CreateSingle(
+        var ticket = Ticket.CreateConventional(
             "T-000002",
             1,
             1,
-            null,
+            "XYZ789",
             "Juan Perez",
-            500m);
+            25000m);
+
+        ticket.RegisterTare(8000m);
 
         // Act
         Action act = () =>
@@ -1263,16 +1265,18 @@ public class PurchaseTicketTests
     }
 
     [Fact]
-    public void ChangeMaterial_ShouldThrowWhenTicketIsAmountPending()
+    public void ChangeMaterial_ShouldThrowWhenConventionalTicketIsAmountPending()
     {
         // Arrange
-        var ticket = Ticket.CreateSingle(
+        var ticket = Ticket.CreateConventional(
             "T-000002",
             1,
             1,
-            null,
+            "XYZ789",
             "Juan Perez",
-            500m);
+            25000m);
+
+        ticket.RegisterTare(8000m);
 
         // Act
         Action act = () =>
@@ -1457,16 +1461,18 @@ public class PurchaseTicketTests
     }
 
     [Fact]
-    public void ChangeLicensePlate_ShouldThrowWhenTicketIsAmountPending()
+    public void ChangeLicensePlate_ShouldThrowWhenConventionalTicketIsAmountPending()
     {
         // Arrange
-        var ticket = Ticket.CreateSingle(
+        var ticket = Ticket.CreateConventional(
             "T-000002",
             1,
             1,
-            null,
+            "XYZ789",
             "Juan Perez",
-            500m);
+            25000m);
+
+        ticket.RegisterTare(8000m);
 
         // Act
         Action act = () =>
@@ -1475,7 +1481,7 @@ public class PurchaseTicketTests
         // Assert
         Assert.Throws<BusinessRuleException>(act);
 
-        Assert.Null(ticket.LicensePlate);
+        Assert.Equal("XYZ789", ticket.LicensePlate);
     }
 
     [Fact]
@@ -1545,16 +1551,18 @@ public class PurchaseTicketTests
     }
 
     [Fact]
-    public void ChangeTransporter_ShouldThrowWhenTicketIsAmountPending()
+    public void ChangeTransporter_ShouldThrowWhenConventionalTicketIsAmountPending()
     {
         // Arrange
-        var ticket = Ticket.CreateSingle(
+        var ticket = Ticket.CreateConventional(
             "T-000002",
             1,
             1,
-            null,
+            "XYZ789",
             "Juan Perez",
-            500m);
+            25000m);
+
+        ticket.RegisterTare(8000m);
 
         // Act
         Action act = () =>
@@ -2363,5 +2371,85 @@ public class PurchaseTicketTests
         Assert.Equal(15000m, ticket.NetWeight);
         Assert.Equal(73500m, ticket.Amount);
         Assert.Null(ticket.UpdatedAt);
+    }
+
+    [Fact]
+    public void ChangeSupplier_ShouldUpdateSupplierWhenSingleTicketIsAmountPending()
+    {
+        // Arrange
+        var ticket = Ticket.CreateSingle(
+            "T-000002",
+            1,
+            1,
+            null,
+            "Juan Perez",
+            500m);
+
+        // Act
+        ticket.ChangeSupplier(2);
+
+        // Assert
+        Assert.Equal(2, ticket.SupplierId);
+        Assert.NotNull(ticket.UpdatedAt);
+    }
+
+    [Fact]
+    public void ChangeMaterial_ShouldUpdateMaterialWhenSingleTicketIsAmountPending()
+    {
+        // Arrange
+        var ticket = Ticket.CreateSingle(
+            "T-000002",
+            1,
+            1,
+            null,
+            "Juan Perez",
+            500m);
+
+        // Act
+        ticket.ChangeMaterial(2);
+
+        // Assert
+        Assert.Equal(2, ticket.MaterialId);
+        Assert.NotNull(ticket.UpdatedAt);
+    }
+
+    [Fact]
+    public void ChangeLicensePlate_ShouldUpdateLicensePlateWhenSingleTicketIsAmountPending()
+    {
+        // Arrange
+        var ticket = Ticket.CreateSingle(
+            "T-000002",
+            1,
+            1,
+            null,
+            "Juan Perez",
+            500m);
+
+        // Act
+        ticket.ChangeLicensePlate("abc1234");
+
+        // Assert
+        Assert.Equal("ABC1234", ticket.LicensePlate);
+        Assert.NotNull(ticket.UpdatedAt);
+    }
+
+    [Fact]
+    public void ChangeTransporter_ShouldUpdateTransporterWhenSingleTicketIsAmountPending()
+    {
+        // Arrange
+        var ticket = Ticket.CreateSingle(
+            "T-000002",
+            1,
+            1,
+            null,
+            "Juan Perez",
+            500m);
+
+        // Act
+        ticket.ChangeTransporter("pedro lopez");
+
+        // Assert
+        Assert.Equal("Pedro Lopez", ticket.Transporter);
+        Assert.NotNull(ticket.UpdatedAt);
     }
 }
