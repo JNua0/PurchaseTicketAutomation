@@ -1,0 +1,15 @@
+﻿<Project>
+
+  <!-- Se aplica a todos los proyectos dentro de src. Las pruebas quedan fuera
+       por ahora: sus repositorios falsos anidados siguen otro orden -->
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers"
+                      Version="1.2.0-beta.556"
+                      PrivateAssets="all"
+                      IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json"
+                     Link="stylecop.json" />
+  </ItemGroup>
+
+</Project>

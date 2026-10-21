@@ -1,0 +1,48 @@
+﻿root = true
+
+[*]
+charset = utf-8-bom
+end_of_line = crlf
+indent_style = space
+
+[*.cs]
+indent_size = 4
+
+# StyleCop: reglas que este proyecto no sigue, con su motivo
+
+# Documentacion XML obligatoria: los comentarios explican el porque, no cada miembro
+dotnet_diagnostic.SA1600.severity = none
+dotnet_diagnostic.SA1601.severity = none
+dotnet_diagnostic.SA1602.severity = none
+
+# Encabezado de licencia en cada archivo
+dotnet_diagnostic.SA1633.severity = none
+
+# Prefijo this. en cada miembro: el guion bajo ya distingue los campos
+dotnet_diagnostic.SA1101.severity = none
+dotnet_diagnostic.SA1309.severity = none
+
+# if de una sola linea sin llaves, usado en todas las validaciones
+dotnet_diagnostic.SA1503.severity = none
+
+# Comentarios de seccion como "// Campos" seguidos de una linea en blanco
+dotnet_diagnostic.SA1512.severity = none
+
+# Coma despues del ultimo elemento de una lista de varias lineas
+dotnet_diagnostic.SA1413.severity = none
+
+# Llaves en un if cuyo cuerpo ocupa varias lineas, como un throw con su mensaje
+# en la linea siguiente: mismo criterio que SA1503
+dotnet_diagnostic.SA1519.severity = none
+
+# Argumento en varias lineas, como un mensaje armado con + en dos renglones
+dotnet_diagnostic.SA1118.severity = none
+
+# Aviso de que la documentacion XML esta apagada: es a proposito
+dotnet_diagnostic.SA0001.severity = none
+
+[*.xaml]
+indent_size = 4
+
+[*.{csproj,props,json}]
+indent_size = 2
