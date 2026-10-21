@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:forms="clr-namespace:PurchaseTicket.Desktop.Components.Forms"
         xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
-        Title="Nuevo pesaje"
+        Title="{Binding Title}"
         Width="720"
         SizeToContent="Height"
         MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
@@ -13,8 +13,8 @@
         Loaded="Window_Loaded"
         Closing="Window_Closing">
 
-    <forms:DialogLayout Title="Nuevo pesaje"
-                        Description="Registra la entrada de un vehículo o un pesaje único">
+    <forms:DialogLayout Title="{Binding Title}"
+                        Description="{Binding Description}">
 
         <!-- Campos del formulario -->
         <forms:DialogLayout.BodyContent>
@@ -47,7 +47,9 @@
                                Foreground="{StaticResource PrimaryTextBrush}"
                                Margin="0,0,0,7"/>
 
+                    <!-- Al editar queda fijo, pero visible para saber que se corrige -->
                     <ListBox Style="{StaticResource SegmentedSelectorStyle}"
+                             IsEnabled="{Binding CanChangeWeighingType}"
                              ItemsSource="{Binding WeighingTypeOptions}"
                              SelectedValuePath="Value"
                              SelectedValue="{Binding SelectedWeighingType, Mode=TwoWay}">
@@ -159,6 +161,8 @@
 
             <CheckBox Content="Imprimir ticket al registrar"
                       IsChecked="{Binding PrintOnSave}"
+                      Visibility="{Binding ShowsPrintOption,
+                                           Converter={StaticResource BoolToVisibility}}"
                       FontSize="14"
                       VerticalContentAlignment="Center"
                       Foreground="{StaticResource PrimaryTextBrush}"/>
@@ -168,7 +172,7 @@
         <!-- Cancelar y registrar -->
         <forms:DialogLayout.Actions>
 
-            <forms:FormActions SaveButtonText="Registrar pesaje"
+            <forms:FormActions SaveButtonText="{Binding SaveButtonText}"
                                SaveCommand="{Binding SaveCommand}"
                                CancelCommand="{Binding CancelCommand,
                                                        RelativeSource={RelativeSource AncestorType=Window}}"

@@ -36,6 +36,23 @@ public class WeighingDialogService : IWeighingDialogService
             : null;
     }
 
+    // Misma ventana que Nuevo pesaje, con los datos de la fila
+    public bool ShowEditDialog(WeighingListItem ticket)
+    {
+        using var scope = _scopeFactory.CreateScope();
+
+        var window = scope.ServiceProvider
+            .GetRequiredService<CreateWeighingWindow>();
+
+        var viewModel = (CreateWeighingViewModel)window.DataContext;
+
+        viewModel.InitializeForEdit(ticket);
+
+        window.Owner = System.Windows.Application.Current.MainWindow;
+
+        return window.ShowDialog() == true;
+    }
+
     public TareRegistration? ShowRegisterTareDialog(WeighingListItem ticket)
     {
         using var scope = _scopeFactory.CreateScope();

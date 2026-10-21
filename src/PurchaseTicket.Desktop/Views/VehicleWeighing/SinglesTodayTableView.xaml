@@ -123,8 +123,8 @@
             <!-- Acciones del pesaje unico -->
             <DataGridTemplateColumn Header="Acciones"
                                     HeaderStyle="{StaticResource CenteredColumnHeaderStyle}"
-                                    Width="140"
-                                    MinWidth="140"
+                                    Width="182"
+                                    MinWidth="182"
                                     CanUserResize="False">
 
                 <DataGridTemplateColumn.CellTemplate>
@@ -132,6 +132,15 @@
 
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Center">
+
+                            <!-- Editar ticket -->
+                            <actions:RowActionButton Icon="{StaticResource EditIcon}"
+                                                     Variant="Edit"
+                                                     ToolTip="Editar ticket"
+                                                     Command="{Binding DataContext.EditTicketCommand,
+                                                                       RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                     CommandParameter="{Binding}"
+                                                     Margin="0,0,8,0"/>
 
                             <!-- Reimprimir ticket -->
                             <actions:RowActionButton Icon="{StaticResource PrintIcon}"

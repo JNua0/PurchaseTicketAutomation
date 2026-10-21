@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Materials.GetActive;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.Correct;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateConventional;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateSingle;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Results;
@@ -17,8 +18,10 @@ using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
 namespace PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 
-// Formulario de Nuevo pesaje: registra la entrada de un convencional o un
-// pesaje unico. La lectura del peso la resuelve WeightCaptureViewModel
+// Formulario de pesaje: registra la entrada de un convencional o un pesaje
+// unico, o corrige uno pendiente desde la lista. Es el mismo formulario para
+// que crear y editar usen las mismas reglas y se vean igual.
+// La lectura del peso la resuelve WeightCaptureViewModel
 public class CreateWeighingViewModel : ValidatableObject
 {
     // Campos
@@ -36,6 +39,9 @@ public class CreateWeighingViewModel : ValidatableObject
     private string _errorMessage = string.Empty;
     private bool _isLoadingCatalogs;
     private bool _isSaving;
+
+    // Null al registrar; la fila que se corrige al editar
+    private WeighingListItem? _editingTicket;
 
     // Se activa tras el primer intento de registrar; desde ahi se valida al escribir
     private bool _validateOnChange;
@@ -62,7 +68,7 @@ public class CreateWeighingViewModel : ValidatableObject
 
     // Eventos
 
-    // Avisa a la ventana que el ticket se registro para que se cierre
+    // Avisa a la ventana que el ticket se registro o corrigio para que se cierre
     public event EventHandler? Registered;
 
     // Propiedades
@@ -100,6 +106,25 @@ public class CreateWeighingViewModel : ValidatableObject
                 ValidateLicensePlate();
         }
     }
+
+    public bool IsEditMode => _editingTicket is not null;
+
+    public string Title =>
+        IsEditMode ? "Editar pesaje" : "Nuevo pesaje";
+
+    public string Description =>
+        IsEditMode
+            ? $"Corrige los datos del ticket folio {_editingTicket!.TicketNumber}"
+            : "Registra la entrada de un vehículo o un pesaje único";
+
+    public string SaveButtonText =>
+        IsEditMode ? "Guardar cambios" : "Registrar pesaje";
+
+    // Un ticket no cambia de modalidad: bruto y neto no son intercambiables
+    public bool CanChangeWeighingType => !IsEditMode;
+
+    // Al editar no se imprime; para eso esta Reimprimir en la lista
+    public bool ShowsPrintOption => !IsEditMode;
 
     public bool IsConventional =>
         SelectedWeighingType == WeighingType.Conventional;
@@ -195,6 +220,33 @@ public class CreateWeighingViewModel : ValidatableObject
 
     // Metodos publicos
 
+    // Carga los datos de la fila; proveedor y material se seleccionan al
+    // terminar de cargar los catalogos, cuando ya existen sus opciones
+    public void InitializeForEdit(WeighingListItem ticket)
+    {
+        // Primero la modalidad: cambiarla reinicia el peso
+        SelectedWeighingType = ticket.WeighingType;
+
+        _editingTicket = ticket;
+
+        LicensePlate = ticket.LicensePlate ?? string.Empty;
+        Transporter = ticket.Transporter;
+
+        decimal? weight = IsConventional
+            ? ticket.GrossWeight
+            : ticket.NetWeight;
+
+        if (weight is decimal value)
+            Weight.SetManualWeight(value);
+
+        OnPropertyChanged(nameof(IsEditMode));
+        OnPropertyChanged(nameof(Title));
+        OnPropertyChanged(nameof(Description));
+        OnPropertyChanged(nameof(SaveButtonText));
+        OnPropertyChanged(nameof(CanChangeWeighingType));
+        OnPropertyChanged(nameof(ShowsPrintOption));
+    }
+
     public async Task LoadCatalogsAsync()
     {
         IsLoadingCatalogs = true;
@@ -220,6 +272,8 @@ public class CreateWeighingViewModel : ValidatableObject
 
             foreach (var material in materials)
                 Materials.Add(material);
+
+            SelectEditingCatalogs();
         }
         catch (Exception ex)
         {
@@ -255,6 +309,12 @@ public class CreateWeighingViewModel : ValidatableObject
         if (!ValidateAll(out decimal weight))
             return;
 
+        if (IsEditMode)
+        {
+            await SaveChangesAsync(weight);
+            return;
+        }
+
         IsSaving = true;
 
         try
@@ -283,6 +343,139 @@ public class CreateWeighingViewModel : ValidatableObject
         // Fuera del try: un error al cerrar la ventana no debe
         // mostrarse como error al registrar
         Registered?.Invoke(this, EventArgs.Empty);
+    }
+
+    // Si el proveedor o el material del ticket se desactivaron, no vienen en
+    // los catalogos activos; se agregan para que el ticket se vea tal como esta.
+    // Mientras no se cambien, no se envian y el dominio no los vuelve a validar
+    private void SelectEditingCatalogs()
+    {
+        if (_editingTicket is not { } ticket)
+            return;
+
+        if (Suppliers.All(supplier => supplier.Id != ticket.SupplierId))
+            Suppliers.Add(new SupplierOptionDto(ticket.SupplierId, ticket.SupplierName));
+
+        if (Materials.All(material => material.Id != ticket.MaterialId))
+            Materials.Add(new MaterialOptionDto(ticket.MaterialId, ticket.MaterialName));
+
+        SelectedSupplierId = ticket.SupplierId;
+        SelectedMaterialId = ticket.MaterialId;
+    }
+
+    // Solo se envian los campos que cambiaron: el resto ni se toca ni se revalida
+    private async Task SaveChangesAsync(decimal weight)
+    {
+        var ticket = _editingTicket!;
+        var command = BuildCorrection(ticket, weight);
+
+        if (command is null)
+        {
+            ErrorMessage = "No hay cambios por guardar.";
+            return;
+        }
+
+        IsSaving = true;
+
+        bool saved = false;
+
+        try
+        {
+            await using var scope = _scopeFactory.CreateAsyncScope();
+
+            await scope.ServiceProvider
+                .GetRequiredService<CorrectPurchaseTicket>()
+                .ExecuteAsync(command);
+
+            saved = true;
+        }
+        catch (Exception ex)
+            when (ex is BusinessRuleException or NotFoundException)
+        {
+            // Por ejemplo, otro equipo ya registro la tara de este ticket
+            ErrorMessage = ex.Message;
+        }
+        catch (ArgumentException ex)
+        {
+            // Placas y transportista ya se validaron; lo que queda es el rango del peso
+            Weight.SetError(GetUserMessage(ex));
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage =
+                "No fue posible guardar los cambios. El ticket quedó sin cambios.";
+
+            _logger.LogError(
+                ex,
+                "No fue posible corregir el ticket {TicketId}.",
+                ticket.Id);
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+
+        if (!saved)
+            return;
+
+        Registration = new WeighingRegistration(
+            ticket.TicketNumber,
+            ticket.WeighingType,
+            PrintWarning: null);
+
+        Registered?.Invoke(this, EventArgs.Empty);
+    }
+
+    // Null si nada cambio. Placas y transportista se comparan ya normalizados:
+    // "abc123" y "ABC123" son el mismo valor guardado
+    private CorrectPurchaseTicketCommand? BuildCorrection(
+        WeighingListItem ticket,
+        decimal weight)
+    {
+        int? supplierId = SelectedSupplierId != ticket.SupplierId
+            ? SelectedSupplierId
+            : null;
+
+        int? materialId = SelectedMaterialId != ticket.MaterialId
+            ? SelectedMaterialId
+            : null;
+
+        string? licensePlate = IsConventional
+            ? Ticket.NormalizeLicensePlate(LicensePlate)
+            : Ticket.NormalizeOptionalLicensePlate(LicensePlate);
+
+        bool changeLicensePlate = licensePlate != ticket.LicensePlate;
+
+        string? transporter =
+            Ticket.NormalizeTransporter(Transporter) != ticket.Transporter
+                ? Transporter
+                : null;
+
+        decimal? originalWeight = IsConventional
+            ? ticket.GrossWeight
+            : ticket.NetWeight;
+
+        bool changeWeight = weight != originalWeight;
+
+        bool hasChanges =
+            supplierId is not null
+            || materialId is not null
+            || changeLicensePlate
+            || transporter is not null
+            || changeWeight;
+
+        if (!hasChanges)
+            return null;
+
+        return new CorrectPurchaseTicketCommand(
+            TicketId: ticket.Id,
+            SupplierId: supplierId,
+            MaterialId: materialId,
+            Transporter: transporter,
+            ChangeLicensePlate: changeLicensePlate,
+            LicensePlate: changeLicensePlate ? licensePlate : null,
+            GrossWeight: changeWeight && IsConventional ? weight : null,
+            NetWeight: changeWeight && !IsConventional ? weight : null);
     }
 
     // Devuelve null si no se registro; el motivo ya queda en pantalla

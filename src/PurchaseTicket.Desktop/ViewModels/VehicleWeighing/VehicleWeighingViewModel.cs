@@ -52,6 +52,10 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
             RegisterTareAsync,
             CanRegisterTare);
 
+        EditTicketCommand = new AsyncRelayCommand<WeighingListItem>(
+            EditTicketAsync,
+            CanActOn);
+
         ReprintCommand = new AsyncRelayCommand<WeighingListItem>(
             ReprintAsync,
             CanActOn);
@@ -116,6 +120,8 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
 
     public AsyncRelayCommand<WeighingListItem> RegisterTareCommand { get; }
 
+    public AsyncRelayCommand<WeighingListItem> EditTicketCommand { get; }
+
     public AsyncRelayCommand<WeighingListItem> ReprintCommand { get; }
 
     public AsyncRelayCommand<WeighingListItem> CancelTicketCommand { get; }
@@ -165,6 +171,7 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
 
         NewWeighingCommand?.NotifyCanExecuteChanged();
         RegisterTareCommand?.NotifyCanExecuteChanged();
+        EditTicketCommand?.NotifyCanExecuteChanged();
         ReprintCommand?.NotifyCanExecuteChanged();
         CancelTicketCommand?.NotifyCanExecuteChanged();
     }
@@ -224,6 +231,20 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
     private bool CanActOn(WeighingListItem ticket)
     {
         return ticket is not null && CanInteract();
+    }
+
+    private async Task EditTicketAsync(WeighingListItem ticket)
+    {
+        if (!_weighingDialogService.ShowEditDialog(ticket))
+            return;
+
+        _notifications.ShowSuccess(
+            $"Ticket folio {ticket.TicketNumber} actualizado.");
+
+        await ReloadAfterActionAsync(
+            CurrentPage,
+            "El ticket se actualizó correctamente, " +
+            "pero no fue posible actualizar el listado.");
     }
 
     private async Task ReprintAsync(WeighingListItem ticket)
