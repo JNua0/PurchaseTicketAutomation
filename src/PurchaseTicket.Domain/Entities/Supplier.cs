@@ -4,10 +4,7 @@ namespace PurchaseTicket.Domain.Entities;
 
 public class Supplier
 {
-    public int Id { get; private set; }
-    public string Name { get; private set; } = string.Empty;
-    public string? PhoneNumber { get; private set; }
-    public bool IsActive { get; private set; }
+    // Constructor
 
     public Supplier(string name, string? phoneNumber = null)
     {
@@ -16,15 +13,17 @@ public class Supplier
         IsActive = true;
     }
 
-    public void UpdateName(string name)
-    {
-        Name = NormalizeName(name);
-    }
+    // Propiedades
 
-    public void UpdatePhoneNumber(string? phoneNumber)
-    {
-        PhoneNumber = NormalizePhoneNumber(phoneNumber);
-    }
+    public int Id { get; private set; }
+
+    public string Name { get; private set; } = string.Empty;
+
+    public string? PhoneNumber { get; private set; }
+
+    public bool IsActive { get; private set; }
+
+    // Metodos publicos
 
     public static string NormalizeName(string name)
     {
@@ -50,16 +49,6 @@ public class Supplier
 
         return textInfo.ToTitleCase(name.ToLower(
             CultureInfo.GetCultureInfo("es-MX")));
-    }
-
-    public void Deactivate()
-    {
-        IsActive = false;
-    }
-
-    public void Activate()
-    {
-        IsActive = true;
     }
 
     public static string? NormalizePhoneNumber(string? phoneNumber)
@@ -95,5 +84,25 @@ public class Supplier
         return hasPlusSign
             ? "+" + digits
             : digits;
+    }
+
+    public void UpdateName(string name)
+    {
+        Name = NormalizeName(name);
+    }
+
+    public void UpdatePhoneNumber(string? phoneNumber)
+    {
+        PhoneNumber = NormalizePhoneNumber(phoneNumber);
+    }
+
+    public void Deactivate()
+    {
+        IsActive = false;
+    }
+
+    public void Activate()
+    {
+        IsActive = true;
     }
 }

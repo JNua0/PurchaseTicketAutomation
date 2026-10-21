@@ -8,35 +8,63 @@ namespace PurchaseTicket.Domain.Entities;
 
 public class PurchaseTicket
 {
+    // Campos
+
     // Palabras de letras, unidas opcionalmente por guion o apostrofo,
     // separadas por un solo espacio. Ej.: "Juan Perez-Lopez", "O'Neil".
     private static readonly Regex TransporterPattern = new(
         @"^\p{L}+(?:['-]\p{L}+)*(?: \p{L}+(?:['-]\p{L}+)*)*$",
         RegexOptions.Compiled);
-    // Attributes
-    public int Id { get; private set; }
-    public string TicketNumber { get; private set; } = string.Empty;
-    public int SupplierId { get; private set; }
-    public int MaterialId { get; private set; }
-    public string? LicensePlate { get; private set; }
-    public string Transporter { get; private set; } = string.Empty;
-    public DateTime CheckInAt { get; private set; }
-    public DateTime? DepartureAt { get; private set; }
-    public decimal? GrossWeight { get; private set; }
-    public decimal? TareWeight { get; private set; }
-    public decimal? NetWeight { get; private set; }
-    public int? Discount { get; private set; }
-    public decimal? DiscountWeight { get; private set; }
-    public decimal? NetWeightAfterDiscount { get; private set; }
-    public decimal? PricePerKg { get; private set; }
-    public decimal? Amount { get; private set; }
-    public TicketStatus Status { get; private set; }
-    public WeighingType WeighingType { get; private set; }
-    public DateTime CreatedAt { get; private set; }
-    public DateTime? UpdatedAt { get; private set; }
-    
+
     // Constructor
-    private PurchaseTicket() {}
+
+    private PurchaseTicket()
+    {
+    }
+
+    // Propiedades
+
+    public int Id { get; private set; }
+
+    public string TicketNumber { get; private set; } = string.Empty;
+
+    public int SupplierId { get; private set; }
+
+    public int MaterialId { get; private set; }
+
+    public string? LicensePlate { get; private set; }
+
+    public string Transporter { get; private set; } = string.Empty;
+
+    public DateTime CheckInAt { get; private set; }
+
+    public DateTime? DepartureAt { get; private set; }
+
+    public decimal? GrossWeight { get; private set; }
+
+    public decimal? TareWeight { get; private set; }
+
+    public decimal? NetWeight { get; private set; }
+
+    public int? Discount { get; private set; }
+
+    public decimal? DiscountWeight { get; private set; }
+
+    public decimal? NetWeightAfterDiscount { get; private set; }
+
+    public decimal? PricePerKg { get; private set; }
+
+    public decimal? Amount { get; private set; }
+
+    public TicketStatus Status { get; private set; }
+
+    public WeighingType WeighingType { get; private set; }
+
+    public DateTime CreatedAt { get; private set; }
+
+    public DateTime? UpdatedAt { get; private set; }
+
+    // Metodos publicos
 
     // Methods
     public static PurchaseTicket CreateConventional(
@@ -114,6 +142,56 @@ public class PurchaseTicket
         };
     }
 
+    // Publicos para que la interfaz valide cada campo con las mismas reglas,
+    // igual que Supplier.NormalizeName
+    public static string NormalizeTransporter(string transporter)
+    {
+        if (string.IsNullOrWhiteSpace(transporter))
+            throw new ArgumentException("El transportista es obligatorio.");
+
+        transporter = string.Join(
+            " ",
+            transporter
+                .Trim()
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries));
+
+        if (!TransporterPattern.IsMatch(transporter))
+            throw new ArgumentException(
+                "El transportista solo puede contener letras, espacios, guiones y apóstrofos.");
+
+        TextInfo textInfo =
+            CultureInfo
+                .GetCultureInfo("es-MX")
+                .TextInfo;
+
+        transporter = textInfo.ToTitleCase(
+            transporter.ToLower(
+                CultureInfo.GetCultureInfo("es-MX")));
+
+        if (transporter.Length > 50)
+            throw new ArgumentException("El transportista no puede exceder los 50 caracteres.");
+
+        return transporter;
+    }
+
+    public static string? NormalizeOptionalLicensePlate(string? licensePlate)
+    {
+        if (string.IsNullOrWhiteSpace(licensePlate))
+            return null;
+
+        return NormalizeLicensePlateValue(
+            licensePlate);
+    }
+
+    public static string NormalizeLicensePlate(string licensePlate)
+    {
+        if (string.IsNullOrWhiteSpace(licensePlate))
+            throw new ArgumentException("Las placas son obligatorias.");
+
+        return NormalizeLicensePlateValue(
+            licensePlate);
+    }
+
     public void Cancel()
     {
         if (Status == TicketStatus.Cancelled)
@@ -166,41 +244,6 @@ public class PurchaseTicket
         Status = TicketStatus.Completed;
     }
 
-    private void RecalculateAmount()
-    {
-        decimal netWeight = NetWeight
-            ?? throw new InvalidOperationException(
-                "El ticket debe tener un peso neto.");
-
-        int discount = Discount
-            ?? throw new InvalidOperationException(
-                "El ticket debe tener un descuento.");
-
-        decimal pricePerKg = PricePerKg
-            ?? throw new InvalidOperationException(
-                "El ticket debe tener un precio por kilogramo.");
-
-        decimal discountWeight =
-            CalculateDiscountWeight(
-                netWeight,
-                discount);
-
-        decimal netWeightAfterDiscount =
-            CalculateNetWeightAfterDiscount(
-                netWeight,
-                discountWeight);
-
-        decimal amount =
-            CalculateAmount(
-                netWeightAfterDiscount,
-                pricePerKg);
-
-        DiscountWeight = discountWeight;
-        NetWeightAfterDiscount = netWeightAfterDiscount;
-        Amount = amount;
-    }
-
-    // Modifiers
     public void ChangeSupplier(int supplierId)
     {
         ValidateCanModifyGeneralData();
@@ -335,221 +378,6 @@ public class PurchaseTicket
         UpdatedAt = DateTime.UtcNow;
     }
 
-    // Normalize Functions
-    // Publicos para que la interfaz valide cada campo con las mismas reglas,
-    // igual que Supplier.NormalizeName
-    public static string NormalizeTransporter(string transporter)
-    {
-        if (string.IsNullOrWhiteSpace(transporter))
-            throw new ArgumentException("El transportista es obligatorio.");
-
-        transporter = string.Join(
-            " ",
-            transporter
-                .Trim()
-                .Split(' ', StringSplitOptions.RemoveEmptyEntries));
-
-        if (!TransporterPattern.IsMatch(transporter))
-            throw new ArgumentException(
-                "El transportista solo puede contener letras, espacios, guiones y apóstrofos.");
-
-        TextInfo textInfo =
-            CultureInfo
-                .GetCultureInfo("es-MX")
-                .TextInfo;
-
-        transporter = textInfo.ToTitleCase(
-            transporter.ToLower(
-                CultureInfo.GetCultureInfo("es-MX")));
-
-        if (transporter.Length > 50)
-            throw new ArgumentException("El transportista no puede exceder los 50 caracteres.");
-
-        return transporter;
-    }
-
-    private static string NormalizeLicensePlateValue(string licensePlate)
-    {
-        licensePlate =
-            licensePlate.Trim().ToUpperInvariant();
-
-        if (licensePlate.Length > 7)
-            throw new ArgumentException("Las placas no pueden exceder los 7 caracteres.");
-
-        if (!licensePlate.All(char.IsLetterOrDigit))
-            throw new ArgumentException("Las placas solo pueden contener caracteres alfanuméricos.");
-
-        return licensePlate;
-    }
-
-    public static string? NormalizeOptionalLicensePlate(string? licensePlate)
-    {
-        if (string.IsNullOrWhiteSpace(licensePlate))
-            return null;
-
-        return NormalizeLicensePlateValue(
-            licensePlate);
-    }
-
-    public static string NormalizeLicensePlate(string licensePlate)
-    {
-        if (string.IsNullOrWhiteSpace(licensePlate))
-            throw new ArgumentException("Las placas son obligatorias.");
-
-        return NormalizeLicensePlateValue(
-            licensePlate);
-    }
-
-    // Validate Functions
-    private void ValidateConventionalWeighing()
-    {
-        if (WeighingType != WeighingType.Conventional)
-            throw new BusinessRuleException("Esta operación solo aplica a un pesaje convencional.");
-    }
-
-    private static void ValidateTareWeight(decimal tareWeight, decimal grossWeight)
-    {
-        if (tareWeight <= 0)
-            throw new ArgumentException("La tara debe ser mayor a cero.");
-
-        if (tareWeight >= grossWeight)
-            throw new ArgumentException("La tara debe ser menor al peso bruto.");
-    }
-
-    private void ValidateWeighingPendingStatus()
-    {
-        if (Status != TicketStatus.WeighingPending)
-        {
-            throw new BusinessRuleException(
-                "El ticket debe estar pendiente de pesaje.");
-        }
-    }
-
-    private void ValidateAmountPendingStatus()
-    {
-        if (Status != TicketStatus.AmountPending)
-            throw new BusinessRuleException("El ticket debe estar pendiente de importe.");
-    }
-
-    private static void ValidatePricePerKg(decimal pricePerKg)
-    {
-        if (pricePerKg <= 0)
-            throw new ArgumentException("El precio por kilogramo debe ser mayor a cero.");
-    }
-
-    private static void ValidateTicketNumber(string ticketNumber)
-    {
-        if (string.IsNullOrWhiteSpace(ticketNumber))
-            throw new ArgumentException("El folio es obligatorio.");
-
-        if (ticketNumber.Trim().Length > 20)
-            throw new ArgumentException("El folio no puede exceder los 20 caracteres.");
-    }
-
-    private static void ValidateSupplierId(int supplierId)
-    {
-        if (supplierId <= 0)
-            throw new ArgumentOutOfRangeException(
-                nameof(supplierId),
-                "El identificador del proveedor debe ser mayor a cero.");
-    }
-
-    private static void ValidateMaterialId(int materialId)
-    {
-        if (materialId <= 0)
-            throw new ArgumentOutOfRangeException(
-                nameof(materialId),
-                "El identificador del material debe ser mayor a cero.");
-    }
-
-    private static void ValidateGrossWeight(decimal grossWeight)
-    {
-        if (grossWeight <= 0)
-            throw new ArgumentException("El peso bruto debe ser mayor a cero.");
-    }
-
-    private static void ValidateNetWeight(decimal netWeight)
-    {
-        if (netWeight <= 0)
-            throw new ArgumentException("El peso neto debe ser mayor a cero.");
-    }
-
-    private void ValidateCanModifyGeneralData()
-    {
-        // El pesaje unico nace pendiente de importe, asi que ese es el
-        // momento en que pesaje puede corregir sus datos generales
-        bool canModify =
-            Status == TicketStatus.WeighingPending ||
-            Status == TicketStatus.Completed ||
-            (Status == TicketStatus.AmountPending &&
-             WeighingType == WeighingType.Single);
-
-        if (!canModify)
-            throw new BusinessRuleException(
-                "El ticket no permite modificar este campo en su estado actual.");
-    }
-
-    private void ValidateCanModifyTareWeight()
-    {
-        if (Status != TicketStatus.AmountPending && Status != TicketStatus.Completed)
-            throw new BusinessRuleException("La tara no puede modificarse en el estado actual del ticket.");
-    }
-
-    private void ValidateCanModifyGrossWeight()
-    {
-        if (Status != TicketStatus.WeighingPending && Status != TicketStatus.Completed)
-            throw new BusinessRuleException("El peso bruto no puede modificarse en el estado actual del ticket.");
-    }
-    
-    private void ValidateCompletedStatus()
-    {
-        if (Status != TicketStatus.Completed)
-            throw new BusinessRuleException("El ticket debe estar completado.");
-    }
-
-    private static void ValidateDiscount(int discount)
-    {
-        if (discount < 0 || discount > 99)
-            throw new ArgumentException(
-                "El descuento debe ser un número entero entre 0 y 99.",
-                nameof(discount));
-    }
-
-    private void ValidateSingleWeighing()
-    {
-        if (WeighingType != WeighingType.Single)
-            throw new BusinessRuleException(
-                "El peso neto solo puede modificarse directamente en un pesaje único.");
-    }
-
-    private void ValidateCanModifyNetWeight()
-    {
-        if (Status != TicketStatus.AmountPending && Status != TicketStatus.Completed)
-            throw new BusinessRuleException(
-                "El peso neto no puede modificarse en el estado actual del ticket.");
-    }
-
-    // Functions
-    private static decimal CalculateNetWeight(decimal grossWeight, decimal tareWeight)
-    {
-        return grossWeight - tareWeight;
-    }
-
-    private static decimal CalculateDiscountWeight(decimal netWeight, int discount)
-    {
-        return netWeight * discount / 100;
-    }
-
-    private static decimal CalculateNetWeightAfterDiscount(decimal netWeight, decimal discountWeight)
-    {
-        return netWeight - discountWeight;
-    }
-
-    private static decimal CalculateAmount(decimal netWeightAfterDiscount, decimal pricePerKg)
-    {
-        return netWeightAfterDiscount * pricePerKg;
-    }
-
     public void Correct(PurchaseTicketCorrection correction)
     {
         bool hasGeneralDataChanges =
@@ -675,7 +503,7 @@ public class PurchaseTicket
                 resultingTareWeight
                 ?? throw new InvalidOperationException("El pesaje convencional debe tener una tara.");
 
-            ValidateTareWeight(tareWeight,grossWeight);
+            ValidateTareWeight(tareWeight, grossWeight);
         }
 
         // 7. Apply conventional weight changes
@@ -700,7 +528,7 @@ public class PurchaseTicket
                 resultingTareWeight
                 ?? throw new InvalidOperationException("El pesaje convencional debe tener una tara.");
 
-            NetWeight = CalculateNetWeight(grossWeight,tareWeight);
+            NetWeight = CalculateNetWeight(grossWeight, tareWeight);
         }
 
         // 9. Apply single net weight change
@@ -725,8 +553,7 @@ public class PurchaseTicket
                 hasConventionalWeightChanges ||
                 hasNetWeightChange ||
                 hasDiscountChange ||
-                hasPricePerKgChange
-            );
+                hasPricePerKgChange);
 
         if (mustRecalculateAmount)
             RecalculateAmount();
@@ -746,5 +573,203 @@ public class PurchaseTicket
             LicensePlate = normalizedLicensePlate;
 
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    // Metodos privados
+
+    private static string NormalizeLicensePlateValue(string licensePlate)
+    {
+        licensePlate =
+            licensePlate.Trim().ToUpperInvariant();
+
+        if (licensePlate.Length > 7)
+            throw new ArgumentException("Las placas no pueden exceder los 7 caracteres.");
+
+        if (!licensePlate.All(char.IsLetterOrDigit))
+            throw new ArgumentException("Las placas solo pueden contener caracteres alfanuméricos.");
+
+        return licensePlate;
+    }
+
+    private static void ValidateTareWeight(decimal tareWeight, decimal grossWeight)
+    {
+        if (tareWeight <= 0)
+            throw new ArgumentException("La tara debe ser mayor a cero.");
+
+        if (tareWeight >= grossWeight)
+            throw new ArgumentException("La tara debe ser menor al peso bruto.");
+    }
+
+    private static void ValidatePricePerKg(decimal pricePerKg)
+    {
+        if (pricePerKg <= 0)
+            throw new ArgumentException("El precio por kilogramo debe ser mayor a cero.");
+    }
+
+    private static void ValidateTicketNumber(string ticketNumber)
+    {
+        if (string.IsNullOrWhiteSpace(ticketNumber))
+            throw new ArgumentException("El folio es obligatorio.");
+
+        if (ticketNumber.Trim().Length > 20)
+            throw new ArgumentException("El folio no puede exceder los 20 caracteres.");
+    }
+
+    private static void ValidateSupplierId(int supplierId)
+    {
+        if (supplierId <= 0)
+            throw new ArgumentOutOfRangeException(
+                nameof(supplierId),
+                "El identificador del proveedor debe ser mayor a cero.");
+    }
+
+    private static void ValidateMaterialId(int materialId)
+    {
+        if (materialId <= 0)
+            throw new ArgumentOutOfRangeException(
+                nameof(materialId),
+                "El identificador del material debe ser mayor a cero.");
+    }
+
+    private static void ValidateGrossWeight(decimal grossWeight)
+    {
+        if (grossWeight <= 0)
+            throw new ArgumentException("El peso bruto debe ser mayor a cero.");
+    }
+
+    private static void ValidateNetWeight(decimal netWeight)
+    {
+        if (netWeight <= 0)
+            throw new ArgumentException("El peso neto debe ser mayor a cero.");
+    }
+
+    private static void ValidateDiscount(int discount)
+    {
+        if (discount < 0 || discount > 99)
+            throw new ArgumentException(
+                "El descuento debe ser un número entero entre 0 y 99.",
+                nameof(discount));
+    }
+
+    private static decimal CalculateNetWeight(decimal grossWeight, decimal tareWeight)
+    {
+        return grossWeight - tareWeight;
+    }
+
+    private static decimal CalculateDiscountWeight(decimal netWeight, int discount)
+    {
+        return netWeight * discount / 100;
+    }
+
+    private static decimal CalculateNetWeightAfterDiscount(decimal netWeight, decimal discountWeight)
+    {
+        return netWeight - discountWeight;
+    }
+
+    private static decimal CalculateAmount(decimal netWeightAfterDiscount, decimal pricePerKg)
+    {
+        return netWeightAfterDiscount * pricePerKg;
+    }
+
+    private void RecalculateAmount()
+    {
+        decimal netWeight = NetWeight
+            ?? throw new InvalidOperationException(
+                "El ticket debe tener un peso neto.");
+
+        int discount = Discount
+            ?? throw new InvalidOperationException(
+                "El ticket debe tener un descuento.");
+
+        decimal pricePerKg = PricePerKg
+            ?? throw new InvalidOperationException(
+                "El ticket debe tener un precio por kilogramo.");
+
+        decimal discountWeight =
+            CalculateDiscountWeight(
+                netWeight,
+                discount);
+
+        decimal netWeightAfterDiscount =
+            CalculateNetWeightAfterDiscount(
+                netWeight,
+                discountWeight);
+
+        decimal amount =
+            CalculateAmount(
+                netWeightAfterDiscount,
+                pricePerKg);
+
+        DiscountWeight = discountWeight;
+        NetWeightAfterDiscount = netWeightAfterDiscount;
+        Amount = amount;
+    }
+
+    private void ValidateConventionalWeighing()
+    {
+        if (WeighingType != WeighingType.Conventional)
+            throw new BusinessRuleException("Esta operación solo aplica a un pesaje convencional.");
+    }
+
+    private void ValidateWeighingPendingStatus()
+    {
+        if (Status != TicketStatus.WeighingPending)
+        {
+            throw new BusinessRuleException(
+                "El ticket debe estar pendiente de pesaje.");
+        }
+    }
+
+    private void ValidateAmountPendingStatus()
+    {
+        if (Status != TicketStatus.AmountPending)
+            throw new BusinessRuleException("El ticket debe estar pendiente de importe.");
+    }
+
+    private void ValidateCanModifyGeneralData()
+    {
+        // El pesaje unico nace pendiente de importe, asi que ese es el
+        // momento en que pesaje puede corregir sus datos generales
+        bool canModify =
+            Status == TicketStatus.WeighingPending ||
+            Status == TicketStatus.Completed ||
+            (Status == TicketStatus.AmountPending &&
+             WeighingType == WeighingType.Single);
+
+        if (!canModify)
+            throw new BusinessRuleException(
+                "El ticket no permite modificar este campo en su estado actual.");
+    }
+
+    private void ValidateCanModifyTareWeight()
+    {
+        if (Status != TicketStatus.AmountPending && Status != TicketStatus.Completed)
+            throw new BusinessRuleException("La tara no puede modificarse en el estado actual del ticket.");
+    }
+
+    private void ValidateCanModifyGrossWeight()
+    {
+        if (Status != TicketStatus.WeighingPending && Status != TicketStatus.Completed)
+            throw new BusinessRuleException("El peso bruto no puede modificarse en el estado actual del ticket.");
+    }
+
+    private void ValidateCompletedStatus()
+    {
+        if (Status != TicketStatus.Completed)
+            throw new BusinessRuleException("El ticket debe estar completado.");
+    }
+
+    private void ValidateSingleWeighing()
+    {
+        if (WeighingType != WeighingType.Single)
+            throw new BusinessRuleException(
+                "El peso neto solo puede modificarse directamente en un pesaje único.");
+    }
+
+    private void ValidateCanModifyNetWeight()
+    {
+        if (Status != TicketStatus.AmountPending && Status != TicketStatus.Completed)
+            throw new BusinessRuleException(
+                "El peso neto no puede modificarse en el estado actual del ticket.");
     }
 }
