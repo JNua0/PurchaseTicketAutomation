@@ -40,7 +40,8 @@ public partial class FormTextField : UserControl
             typeof(FormTextField),
             new FrameworkPropertyMetadata(
                 string.Empty,
-                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+                OnCounterInputChanged));
 
     // Longitud maxima del texto
     public static readonly DependencyProperty MaxLengthProperty =
@@ -57,6 +58,31 @@ public partial class FormTextField : UserControl
             typeof(CharacterCasing),
             typeof(FormTextField),
             new PropertyMetadata(CharacterCasing.Normal));
+
+    // Limite que muestra el contador "18 / 35"; 0 no muestra contador. A
+    // diferencia de MaxLength no corta el texto: al pegar, el operador ve
+    // que sobra en lugar de perder el final sin darse cuenta
+    public static readonly DependencyProperty CounterLimitProperty =
+        DependencyProperty.Register(
+            nameof(CounterLimit),
+            typeof(int),
+            typeof(FormTextField),
+            new PropertyMetadata(0, OnCounterInputChanged));
+
+    // Las calcula el propio control a partir de Text y CounterLimit
+    public static readonly DependencyProperty CounterTextProperty =
+        DependencyProperty.Register(
+            nameof(CounterText),
+            typeof(string),
+            typeof(FormTextField),
+            new PropertyMetadata(string.Empty));
+
+    public static readonly DependencyProperty IsOverLimitProperty =
+        DependencyProperty.Register(
+            nameof(IsOverLimit),
+            typeof(bool),
+            typeof(FormTextField),
+            new PropertyMetadata(false));
 
     // Constructor
 
@@ -105,7 +131,36 @@ public partial class FormTextField : UserControl
         set => SetValue(CharacterCasingProperty, value);
     }
 
+    public int CounterLimit
+    {
+        get => (int)GetValue(CounterLimitProperty);
+        set => SetValue(CounterLimitProperty, value);
+    }
+
+    public string CounterText => (string)GetValue(CounterTextProperty);
+
+    public bool IsOverLimit => (bool)GetValue(IsOverLimitProperty);
+
     // Metodos privados
+
+    private static void OnCounterInputChanged(
+        DependencyObject sender,
+        DependencyPropertyChangedEventArgs e)
+    {
+        var field = (FormTextField)sender;
+        int limit = field.CounterLimit;
+
+        // Se cuenta sin los espacios de los extremos: no se imprimen
+        int length = field.Text?.Trim().Length ?? 0;
+
+        field.SetValue(
+            CounterTextProperty,
+            limit > 0 ? $"{length} / {limit}" : string.Empty);
+
+        field.SetValue(
+            IsOverLimitProperty,
+            limit > 0 && length > limit);
+    }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {

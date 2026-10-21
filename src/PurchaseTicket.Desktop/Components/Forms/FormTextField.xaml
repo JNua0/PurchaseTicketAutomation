@@ -8,10 +8,55 @@
     <!-- Campo de texto reutilizable -->
     <StackPanel>
 
-        <!-- Etiqueta del campo -->
-        <forms:FormFieldLabel Text="{Binding Label, ElementName=Root}"
-                              IsRequired="{Binding IsRequired, ElementName=Root}"
-                              Margin="0,0,0,7"/>
+        <!-- Etiqueta del campo y, si hay limite, el contador de caracteres -->
+        <Grid Margin="0,0,0,7">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <forms:FormFieldLabel Grid.Column="0"
+                                  Text="{Binding Label, ElementName=Root}"
+                                  IsRequired="{Binding IsRequired, ElementName=Root}"/>
+
+            <TextBlock Grid.Column="1"
+                       Text="{Binding CounterText, ElementName=Root}"
+                       FontSize="12"
+                       VerticalAlignment="Bottom"
+                       Margin="12,0,0,0">
+
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+
+                        <Setter Property="Foreground"
+                                Value="{StaticResource SecondaryTextBrush}"/>
+
+                        <Style.Triggers>
+
+                            <DataTrigger Binding="{Binding CounterText, ElementName=Root}"
+                                         Value="">
+                                <Setter Property="Visibility"
+                                        Value="Collapsed"/>
+                            </DataTrigger>
+
+                            <!-- Pasado el limite el contador avisa antes de guardar -->
+                            <DataTrigger Binding="{Binding IsOverLimit, ElementName=Root}"
+                                         Value="True">
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource ErrorBrush}"/>
+                                <Setter Property="FontWeight"
+                                        Value="SemiBold"/>
+                            </DataTrigger>
+
+                        </Style.Triggers>
+
+                    </Style>
+                </TextBlock.Style>
+
+            </TextBlock>
+
+        </Grid>
 
         <!-- Entrada de texto -->
         <TextBox x:Name="InputTextBox"
