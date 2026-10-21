@@ -9,7 +9,6 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
 {
     // Campos
 
-    private const int LineWidth = 35;
     private readonly ISerialPortFactory _serialPortFactory;
     private readonly TicketPrinterOptions _options;
     private readonly TimeProvider _timeProvider;
@@ -147,7 +146,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
                 word.Length + (isFirstWord ? 0 : 1);
 
             if (currentLine.Length + requiredLength
-                <= LineWidth)
+                <= TicketFormat.LineWidth)
             {
                 if (!isFirstWord)
                     currentLine.Append(' ');
@@ -169,6 +168,31 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
             currentLine.ToString());
     }
 
+    private static void AppendHeaderLine(
+        StringBuilder builder,
+        string value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+            builder.AppendLine(value.Trim());
+    }
+
+    // Los campos vacios del encabezado no se imprimen: un campo opcional sin
+    // valor dejaria un renglon en blanco o un "TEL." sin numero
+    private void AppendHeader(StringBuilder builder)
+    {
+        AppendHeaderLine(builder, _options.CompanyName);
+        AppendHeaderLine(builder, _options.Address);
+        AppendHeaderLine(builder, _options.Neighborhood);
+
+        if (!string.IsNullOrWhiteSpace(_options.PhoneNumber))
+            builder.AppendLine($"TEL. {_options.PhoneNumber.Trim()}");
+
+        AppendHeaderLine(builder, _options.Email);
+
+        builder.AppendLine(
+            new string('=', TicketFormat.LineWidth));
+    }
+
     private string BuildInitialTicket(TicketPrintData data)
     {
         var ticket = data.Ticket;
@@ -178,15 +202,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
 
         var builder = new StringBuilder();
 
-        builder.AppendLine(_options.CompanyName);
-        builder.AppendLine(_options.Address);
-        builder.AppendLine(_options.Neighborhood);
-        builder.AppendLine(
-            $"TEL. {_options.PhoneNumber}");
-        builder.AppendLine(_options.Email);
-
-        builder.AppendLine(
-            new string('=', LineWidth));
+        AppendHeader(builder);
 
         AppendField(
             builder,
@@ -214,7 +230,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
             data.MaterialName);
 
         builder.AppendLine(
-            new string('-', LineWidth));
+            new string('-', TicketFormat.LineWidth));
 
         builder.AppendLine("ENTRADA");
 
@@ -250,7 +266,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         var builder = new StringBuilder();
 
         builder.AppendLine(
-            new string('-', LineWidth));
+            new string('-', TicketFormat.LineWidth));
 
         builder.AppendLine("SALIDA");
 
@@ -265,7 +281,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
             $"{FormatWeight(ticket.TareWeight.Value)} kg");
 
         builder.AppendLine(
-            new string('-', LineWidth));
+            new string('-', TicketFormat.LineWidth));
 
         AppendField(
             builder,
@@ -273,7 +289,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
             $"{FormatWeight(ticket.NetWeight.Value)} kg");
 
         builder.AppendLine(
-            new string('=', LineWidth));
+            new string('=', TicketFormat.LineWidth));
 
         return builder.ToString()
             .Replace(
@@ -290,13 +306,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
 
         var builder = new StringBuilder();
 
-        builder.AppendLine(_options.CompanyName);
-        builder.AppendLine(_options.Address);
-        builder.AppendLine(_options.Neighborhood);
-        builder.AppendLine($"TEL. {_options.PhoneNumber}");
-        builder.AppendLine(_options.Email);
-
-        builder.AppendLine(new string('=', LineWidth));
+        AppendHeader(builder);
 
         AppendField(
             builder,
@@ -323,7 +333,7 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
             "PRODUCTO",
             data.MaterialName);
 
-        builder.AppendLine(new string('-', LineWidth));
+        builder.AppendLine(new string('-', TicketFormat.LineWidth));
 
         builder.AppendLine("PESAJE UNICO");
 

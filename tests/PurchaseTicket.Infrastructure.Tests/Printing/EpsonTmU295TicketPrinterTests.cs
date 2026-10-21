@@ -615,6 +615,52 @@ public class EpsonTmU295TicketPrinterTests
     }
 
     [Fact]
+    public async Task PrintSingleAsync_ShouldSkipEmptyHeaderLines()
+    {
+        var serialPort =
+            new FakeSerialPort();
+
+        var serialPortFactory =
+            new FakeSerialPortFactory(serialPort);
+
+        // Solo el nombre es obligatorio; los demas campos pueden ir vacios
+        var options =
+            new TicketPrinterOptions
+            {
+                CompanyName = "NOMBRE EMPRESA",
+                Address = string.Empty,
+                Neighborhood = "COLONIA",
+                PhoneNumber = "  ",
+                Email = string.Empty
+            };
+
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                serialPortFactory,
+                options,
+                TestTimeProvider);
+
+        var printData =
+            new TicketPrintData(
+                CreateSingleTicket(),
+                "Proveedor Uno",
+                "Acero");
+
+        await printer.PrintSingleAsync(
+            printData);
+
+        Assert.StartsWith(
+            "NOMBRE EMPRESA\r\n" +
+            "COLONIA\r\n" +
+            "===================================\r\n",
+            serialPort.WrittenText);
+
+        Assert.DoesNotContain(
+            "TEL.",
+            serialPort.WrittenText);
+    }
+
+    [Fact]
     public async Task PrintSingleAsync_ShouldPrintDateInLocalTime()
     {
         var serialPort =
