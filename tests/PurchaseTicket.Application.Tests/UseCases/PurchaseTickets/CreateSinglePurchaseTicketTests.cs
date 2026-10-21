@@ -4,6 +4,7 @@ using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateConventional;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateSingle;
 using PurchaseTicket.Domain.Entities;
 using PurchaseTicket.Domain.Enums;
+using PurchaseTicket.Domain.Exceptions;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
 namespace PurchaseTicket.Application.Tests.UseCases.PurchaseTickets;
@@ -321,7 +322,7 @@ public class CreateSinglePurchaseTicketTests
 
         // Assert
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(Act);
+            await Assert.ThrowsAsync<BusinessRuleException>(Act);
 
         Assert.Equal(
             "El proveedor seleccionado está inactivo.",
@@ -366,7 +367,7 @@ public class CreateSinglePurchaseTicketTests
 
         // Assert
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(Act);
+            await Assert.ThrowsAsync<BusinessRuleException>(Act);
 
         Assert.Equal(
             "El material seleccionado está inactivo.",

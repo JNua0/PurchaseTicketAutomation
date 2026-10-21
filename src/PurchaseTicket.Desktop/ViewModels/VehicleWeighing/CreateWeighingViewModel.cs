@@ -3,7 +3,10 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
+using PurchaseTicket.Domain.Enums;
+using PurchaseTicket.Domain.Exceptions;
 using PurchaseTicket.Application.Abstractions.Printing;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Materials.GetActive;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Correct;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateConventional;
@@ -12,7 +15,6 @@ using PurchaseTicket.Application.UseCases.PurchaseTickets.Print;
 using PurchaseTicket.Application.UseCases.Suppliers.GetActive;
 using PurchaseTicket.Application.UseCases.Weighing.ReadWeight;
 using PurchaseTicket.Desktop.Commands;
-using PurchaseTicket.Domain.Enums;
 
 namespace PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 
@@ -447,7 +449,8 @@ public class CreateWeighingViewModel : INotifyPropertyChanged
             IsRegistered = true;
             SuccessMessage = $"El ticket {ticketNumber} se registró correctamente.";
         }
-        catch (ArgumentException ex)
+        catch (Exception ex)
+            when (ex is BusinessRuleException or NotFoundException)
         {
             ErrorMessage = ex.Message;
         }
@@ -541,7 +544,8 @@ public class CreateWeighingViewModel : INotifyPropertyChanged
             IsEditing = false;
             SuccessMessage = $"Los cambios del ticket {TicketNumber} se guardaron correctamente.";
         }
-        catch (ArgumentException ex)
+        catch (Exception ex)
+            when (ex is BusinessRuleException or NotFoundException)
         {
             ErrorMessage = ex.Message;
         }

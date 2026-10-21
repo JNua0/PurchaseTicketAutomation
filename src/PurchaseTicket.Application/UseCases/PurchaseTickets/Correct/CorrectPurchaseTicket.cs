@@ -1,4 +1,6 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Common;
+using PurchaseTicket.Domain.Exceptions;
 using PurchaseTicket.Domain.ValueObjects;
 
 namespace PurchaseTicket.Application.UseCases.PurchaseTickets.Correct;
@@ -25,7 +27,7 @@ public class CorrectPurchaseTicket
         var ticket = await _repository.GetByIdAsync(command.TicketId);
 
         if (ticket is null)
-            throw new InvalidOperationException("No se encontró el ticket.");
+            throw new NotFoundException("No se encontró el ticket.");
 
         bool hasCorrections =
             command.SupplierId.HasValue ||
@@ -39,7 +41,7 @@ public class CorrectPurchaseTicket
             command.PricePerKg.HasValue;
 
         if (!hasCorrections)
-            throw new InvalidOperationException("No se indicó ningún cambio para corregir.");
+            throw new BusinessRuleException("No se indicó ningún cambio para corregir.");
 
         // 1. Validate external references
 
@@ -48,10 +50,10 @@ public class CorrectPurchaseTicket
             var supplier = await _supplierRepository.GetByIdAsync(command.SupplierId.Value);
 
             if (supplier is null)
-                throw new InvalidOperationException("No se encontró el proveedor.");
+                throw new NotFoundException("No se encontró el proveedor.");
 
             if (!supplier.IsActive)
-                throw new InvalidOperationException("El proveedor seleccionado está inactivo.");
+                throw new BusinessRuleException("El proveedor seleccionado está inactivo.");
         }
 
         if (command.MaterialId.HasValue)
@@ -59,10 +61,10 @@ public class CorrectPurchaseTicket
             var material = await _materialRepository.GetByIdAsync(command.MaterialId.Value);
 
             if (material is null)
-                throw new InvalidOperationException("No se encontró el material.");
+                throw new NotFoundException("No se encontró el material.");
 
             if (!material.IsActive)
-                throw new InvalidOperationException("El material seleccionado está inactivo.");
+                throw new BusinessRuleException("El material seleccionado está inactivo.");
         }
 
         // 2. Apply correction

@@ -2,7 +2,9 @@
 using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.Printing;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Domain.Enums;
+using PurchaseTicket.Domain.Exceptions;
 
 namespace PurchaseTicket.Application.UseCases.PurchaseTickets.Print;
 
@@ -33,17 +35,17 @@ public class PrintPurchaseTicket
         var ticket = await _repository.GetByIdAsync(command.TicketId);
 
         if (ticket is null)
-            throw new InvalidOperationException("No se encontró el ticket.");
+            throw new NotFoundException("No se encontró el ticket.");
 
         var supplier = await _supplierRepository.GetByIdAsync(ticket.SupplierId);
 
         if (supplier is null)
-            throw new InvalidOperationException("No se encontró el proveedor.");
+            throw new NotFoundException("No se encontró el proveedor.");
 
         var material = await _materialRepository.GetByIdAsync(ticket.MaterialId);
 
         if (material is null)
-            throw new InvalidOperationException("No se encontró el material.");
+            throw new NotFoundException("No se encontró el material.");
 
         var printData = new TicketPrintData(
             ticket,
@@ -84,7 +86,7 @@ public class PrintPurchaseTicket
         }
         else
         {
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 "El ticket no puede imprimirse en su estado actual.");
         }
 

@@ -1,8 +1,10 @@
 using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.TicketNumbers;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateConventional;
 using PurchaseTicket.Domain.Entities;
 using PurchaseTicket.Domain.Enums;
+using PurchaseTicket.Domain.Exceptions;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
 namespace PurchaseTicket.Application.Tests.UseCases.PurchaseTickets;
@@ -251,7 +253,7 @@ public class CreateConventionalPurchaseTicketTests
 
         // Assert
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(Act);
+            await Assert.ThrowsAsync<NotFoundException>(Act);
 
         Assert.Equal(
             "No se encontró el proveedor.",
@@ -296,7 +298,7 @@ public class CreateConventionalPurchaseTicketTests
 
         // Assert
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(Act);
+            await Assert.ThrowsAsync<NotFoundException>(Act);
 
         Assert.Equal(
             "No se encontró el material.",
@@ -341,7 +343,7 @@ public class CreateConventionalPurchaseTicketTests
 
         // Assert
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(Act);
+            await Assert.ThrowsAsync<BusinessRuleException>(Act);
 
         Assert.Equal(
             "El proveedor seleccionado está inactivo.",
@@ -386,7 +388,7 @@ public class CreateConventionalPurchaseTicketTests
 
         // Assert
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(Act);
+            await Assert.ThrowsAsync<BusinessRuleException>(Act);
 
         Assert.Equal(
             "El material seleccionado está inactivo.",

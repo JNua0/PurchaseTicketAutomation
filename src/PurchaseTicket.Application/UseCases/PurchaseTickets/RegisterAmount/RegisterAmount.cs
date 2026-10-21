@@ -1,4 +1,5 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Common;
 
 namespace PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterAmount;
 
@@ -20,7 +21,7 @@ public class RegisterAmount
                 command.TicketId);
 
         if (ticket is null)
-            throw new InvalidOperationException(
+            throw new NotFoundException(
                 "No se encontró el ticket.");
 
         ticket.RegisterAmount(

@@ -1,4 +1,5 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterDepartureWeight;
 using PurchaseTicket.Domain.Entities;
 using PurchaseTicket.Domain.Enums;
@@ -105,7 +106,7 @@ public class RegisterDepartureWeightTests
 
         // Assert
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(Act);
+            await Assert.ThrowsAsync<NotFoundException>(Act);
 
         Assert.Equal(
             "No se encontró el ticket.",

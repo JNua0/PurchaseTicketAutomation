@@ -1,6 +1,8 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.TicketNumbers;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Results;
+using PurchaseTicket.Domain.Exceptions;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
 namespace PurchaseTicket.Application.UseCases.PurchaseTickets.CreateConventional;
@@ -32,11 +34,11 @@ public class CreateConventionalPurchaseTicket
                 command.SupplierId);
 
         if (supplier is null)
-            throw new InvalidOperationException(
+            throw new NotFoundException(
                 "No se encontró el proveedor.");
 
         if (!supplier.IsActive)
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 "El proveedor seleccionado está inactivo.");
 
         var material =
@@ -44,11 +46,11 @@ public class CreateConventionalPurchaseTicket
                 command.MaterialId);
 
         if (material is null)
-            throw new InvalidOperationException(
+            throw new NotFoundException(
                 "No se encontró el material.");
 
         if (!material.IsActive)
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 "El material seleccionado está inactivo.");
 
         string ticketNumber =

@@ -1,4 +1,5 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Correct;
 using PurchaseTicket.Domain.Entities;
 using PurchaseTicket.Domain.Enums;
@@ -104,7 +105,7 @@ public class CorrectPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<NotFoundException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -148,7 +149,7 @@ public class CorrectPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<NotFoundException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -202,7 +203,7 @@ public class CorrectPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<BusinessRuleException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -395,7 +396,7 @@ public class CorrectPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<NotFoundException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -462,7 +463,7 @@ public class CorrectPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<BusinessRuleException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -1232,7 +1233,7 @@ public class CorrectPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<BusinessRuleException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert

@@ -2,8 +2,10 @@
 using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.Printing;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Print;
 using PurchaseTicket.Domain.Entities;
+using PurchaseTicket.Domain.Exceptions;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
 namespace PurchaseTicket.Application.Tests.UseCases.PurchaseTickets;
@@ -168,7 +170,7 @@ public class PrintPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<NotFoundException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -219,7 +221,7 @@ public class PrintPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<NotFoundException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -275,7 +277,7 @@ public class PrintPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<NotFoundException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -758,7 +760,7 @@ public class PrintPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<BusinessRuleException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
