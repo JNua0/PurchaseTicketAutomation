@@ -99,6 +99,7 @@
 
                                     <DataGridTemplateColumn
                                         Header="Acciones"
+                                        HeaderStyle="{StaticResource CenteredColumnHeaderStyle}"
                                         Width="145"
                                         CanUserResize="False">
 

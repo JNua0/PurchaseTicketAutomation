@@ -36,6 +36,16 @@
 
     </Style>
 
+    <!-- Encabezado centrado: columnas cuyo contenido va centrado, como Acciones -->
+    <Style x:Key="CenteredColumnHeaderStyle"
+           TargetType="DataGridColumnHeader"
+           BasedOn="{StaticResource AppDataGridColumnHeaderStyle}">
+
+        <Setter Property="HorizontalContentAlignment"
+                Value="Center"/>
+
+    </Style>
+
     <!-- Filas de la tabla -->
     <Style x:Key="AppDataGridRowStyle"
            TargetType="DataGridRow">
@@ -88,6 +98,10 @@
 
         <Setter Property="VerticalContentAlignment"
                 Value="Center"/>
+
+        <!-- El contenido ocupa todo el ancho y cada columna decide su alineacion -->
+        <Setter Property="HorizontalContentAlignment"
+                Value="Stretch"/>
 
         <Setter Property="BorderThickness"
                 Value="0"/>

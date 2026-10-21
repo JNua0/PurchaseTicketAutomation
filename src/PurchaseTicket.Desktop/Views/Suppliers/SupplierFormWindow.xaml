@@ -79,7 +79,7 @@
                     Text="{Binding PhoneNumber,
                                    Mode=TwoWay,
                                    UpdateSourceTrigger=PropertyChanged}"
-                    MaxLength="13"
+                    MaxLength="20"
                     Margin="0,0,0,15"/>
 
             </StackPanel>
