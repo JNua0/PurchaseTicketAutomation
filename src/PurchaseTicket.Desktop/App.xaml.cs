@@ -47,7 +47,8 @@ namespace PurchaseTicket.Desktop;
 public partial class App : System.Windows.Application
 {
     private readonly IHost _host;
-
+    // Evita abrir un mensaje de error dentro de otro
+    private bool _isShowingErrorMessage;
 
     public App()
     {
@@ -212,17 +213,38 @@ public partial class App : System.Windows.Application
         object sender,
         DispatcherUnhandledExceptionEventArgs e)
     {
+        // Si el error se repite mientras se muestra el mensaje, por ejemplo
+        // al dibujar una vista, la interfaz no puede recuperarse: se deja
+        // que la aplicacion se cierre en lugar de abrir mensajes sin fin
+        if (_isShowingErrorMessage)
+        {
+            Log.Fatal(
+                e.Exception,
+                "Error repetido en la interfaz. La aplicación se cerrará.");
+
+            return;
+        }
+
         Log.Error(
             e.Exception,
             "Error no controlado en la interfaz.");
 
-        MessageBox.Show(
-            "Ocurrió un error inesperado y la operación no se completó.\n\n" +
-            "El detalle quedó registrado en:\n" +
-            LoggingConfiguration.LogDirectory,
-            "Error",
-            MessageBoxButton.OK,
-            MessageBoxImage.Error);
+        _isShowingErrorMessage = true;
+
+        try
+        {
+            MessageBox.Show(
+                "Ocurrió un error inesperado y la operación no se completó.\n\n" +
+                "El detalle quedó registrado en:\n" +
+                LoggingConfiguration.LogDirectory,
+                "Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        finally
+        {
+            _isShowingErrorMessage = false;
+        }
 
         // Evita que la aplicacion se cierre
         e.Handled = true;
