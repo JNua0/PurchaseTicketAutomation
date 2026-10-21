@@ -559,6 +559,63 @@
 
     </Style>
 
+    <!-- Boton con apariencia de enlace: accion secundaria junto a otro boton,
+         como "Capturar manualmente". Se subraya al pasar el cursor o con el foco -->
+    <Style x:Key="LinkButtonStyle"
+           TargetType="Button">
+
+        <Setter Property="Foreground"
+                Value="{StaticResource EcoBlueDarkBrush}"/>
+
+        <Setter Property="FontSize"
+                Value="14"/>
+
+        <Setter Property="Cursor"
+                Value="Hand"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+
+                    <!-- Fondo transparente: sin el, solo el texto recibiria el clic -->
+                    <TextBlock x:Name="LinkText"
+                               Text="{Binding Content,
+                                              RelativeSource={RelativeSource TemplatedParent}}"
+                               Background="Transparent"
+                               VerticalAlignment="Center"/>
+
+                    <ControlTemplate.Triggers>
+
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="LinkText"
+                                    Property="TextDecorations"
+                                    Value="Underline"/>
+                        </Trigger>
+
+                        <Trigger Property="IsKeyboardFocused"
+                                 Value="True">
+                            <Setter TargetName="LinkText"
+                                    Property="TextDecorations"
+                                    Value="Underline"/>
+                        </Trigger>
+
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter Property="Opacity"
+                                    Value="0.45"/>
+                            <Setter Property="Cursor"
+                                    Value="Arrow"/>
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
     <!-- Selector segmentado: ListBox horizontal donde cada opcion es un segmento.
          El ListBox ya resuelve la seleccion unica y el teclado; el estilo solo
          cambia su apariencia. El contenido de cada opcion lo define ItemTemplate -->

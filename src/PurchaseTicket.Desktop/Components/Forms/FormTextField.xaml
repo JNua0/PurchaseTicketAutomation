@@ -1,6 +1,7 @@
 ﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Forms.FormTextField"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:forms="clr-namespace:PurchaseTicket.Desktop.Components.Forms"
              Validation.ErrorTemplate="{x:Null}"
              x:Name="Root">
 
@@ -8,73 +9,9 @@
     <StackPanel>
 
         <!-- Etiqueta del campo -->
-        <StackPanel Orientation="Horizontal"
-                    Margin="0,0,0,7">
-
-            <!-- Nombre del campo -->
-            <TextBlock Text="{Binding Label, ElementName=Root}"
-                       FontSize="13"
-                       FontWeight="Medium"
-                       Foreground="{StaticResource PrimaryTextBrush}"/>
-
-            <!-- Indicador de campo obligatorio -->
-            <TextBlock Text=" *"
-                       FontSize="13"
-                       FontWeight="Medium"
-                       Foreground="{StaticResource PrimaryTextBrush}">
-
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-
-                        <Setter Property="Visibility"
-                                Value="Collapsed"/>
-
-                        <Style.Triggers>
-
-                            <DataTrigger Binding="{Binding IsRequired, ElementName=Root}"
-                                         Value="True">
-
-                                <Setter Property="Visibility"
-                                        Value="Visible"/>
-
-                            </DataTrigger>
-
-                        </Style.Triggers>
-
-                    </Style>
-                </TextBlock.Style>
-
-            </TextBlock>
-
-            <!-- Indicador de campo opcional -->
-            <TextBlock Text=" (opcional)"
-                       FontSize="13"
-                       Foreground="{StaticResource PrimaryTextBrush}">
-
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-
-                        <Setter Property="Visibility"
-                                Value="Visible"/>
-
-                        <Style.Triggers>
-
-                            <DataTrigger Binding="{Binding IsRequired, ElementName=Root}"
-                                         Value="True">
-
-                                <Setter Property="Visibility"
-                                        Value="Collapsed"/>
-
-                            </DataTrigger>
-
-                        </Style.Triggers>
-
-                    </Style>
-                </TextBlock.Style>
-
-            </TextBlock>
-
-        </StackPanel>
+        <forms:FormFieldLabel Text="{Binding Label, ElementName=Root}"
+                              IsRequired="{Binding IsRequired, ElementName=Root}"
+                              Margin="0,0,0,7"/>
 
         <!-- Entrada de texto -->
         <TextBox x:Name="InputTextBox"

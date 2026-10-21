@@ -1,0 +1,166 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Forms.WeightCaptureField"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:forms="clr-namespace:PurchaseTicket.Desktop.Components.Forms"
+             xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
+             x:Name="Root">
+
+    <!-- Captura de un peso: lectura del indicador o captura manual en un solo control.
+         El estado y sus textos los decide WeightCaptureViewModel; aqui solo se muestran -->
+    <StackPanel>
+
+        <Border Background="{StaticResource SurfaceBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="18,16">
+
+            <Border.Style>
+                <Style TargetType="Border">
+
+                    <Setter Property="BorderBrush"
+                            Value="{StaticResource BorderBrushLight}"/>
+
+                    <Style.Triggers>
+
+                        <!-- Borde rojo cuando el campo tiene un error -->
+                        <DataTrigger Binding="{Binding Capture.HasValidationError, ElementName=Root}"
+                                     Value="True">
+                            <Setter Property="BorderBrush"
+                                    Value="{StaticResource ErrorBrush}"/>
+                        </DataTrigger>
+
+                    </Style.Triggers>
+
+                </Style>
+            </Border.Style>
+
+            <StackPanel>
+
+                <!-- Etiqueta y origen del peso -->
+                <Grid>
+
+                    <forms:FormFieldLabel Text="{Binding Label, ElementName=Root}"
+                                          IsRequired="{Binding IsRequired, ElementName=Root}"
+                                          VerticalAlignment="Center"/>
+
+                    <feedback:StatusBadge HorizontalAlignment="Right"
+                                          Kind="Success"
+                                          Text="Lectura del indicador"
+                                          Visibility="{Binding Capture.HasReading,
+                                                               ElementName=Root,
+                                                               Converter={StaticResource BoolToVisibility}}"/>
+
+                    <feedback:StatusBadge HorizontalAlignment="Right"
+                                          Kind="Neutral"
+                                          Text="Captura manual"
+                                          Visibility="{Binding Capture.IsManual,
+                                                               ElementName=Root,
+                                                               Converter={StaticResource BoolToVisibility}}"/>
+
+                </Grid>
+
+                <!-- Peso: grande para leerlo de un vistazo -->
+                <Grid Margin="0,12,0,0">
+
+                    <!-- Peso leido, o una raya si aun no hay -->
+                    <StackPanel Orientation="Horizontal"
+                                Visibility="{Binding Capture.ShowsWeightText,
+                                                     ElementName=Root,
+                                                     Converter={StaticResource BoolToVisibility}}">
+
+                        <TextBlock Text="{Binding Capture.WeightDisplay, ElementName=Root}"
+                                   FontSize="40"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                        <TextBlock Text="kg"
+                                   FontSize="18"
+                                   Foreground="{StaticResource SecondaryTextBrush}"
+                                   VerticalAlignment="Bottom"
+                                   Margin="8,0,0,8"/>
+
+                    </StackPanel>
+
+                    <!-- Peso escrito por el operador -->
+                    <StackPanel Orientation="Horizontal"
+                                Visibility="{Binding Capture.IsManual,
+                                                     ElementName=Root,
+                                                     Converter={StaticResource BoolToVisibility}}">
+
+                        <TextBox x:Name="ManualTextBox"
+                                 Style="{StaticResource TextBoxStyle}"
+                                 Text="{Binding Capture.ManualText,
+                                                ElementName=Root,
+                                                Mode=TwoWay,
+                                                UpdateSourceTrigger=PropertyChanged}"
+                                 Width="200"
+                                 Height="56"
+                                 FontSize="32"
+                                 FontWeight="SemiBold"
+                                 MaxLength="9"
+                                 IsVisibleChanged="ManualTextBox_IsVisibleChanged"/>
+
+                        <TextBlock Text="kg"
+                                   FontSize="18"
+                                   Foreground="{StaticResource SecondaryTextBrush}"
+                                   VerticalAlignment="Bottom"
+                                   Margin="8,0,0,8"/>
+
+                    </StackPanel>
+
+                </Grid>
+
+                <!-- Lectura en curso -->
+                <TextBlock Text="Esperando peso estable del indicador…"
+                           FontSize="13"
+                           Foreground="{StaticResource SecondaryTextBrush}"
+                           Margin="0,8,0,0"
+                           Visibility="{Binding Capture.IsReading,
+                                                ElementName=Root,
+                                                Converter={StaticResource BoolToVisibility}}"/>
+
+                <!-- Lectura fallida: el motivo queda dentro del campo, no como error del formulario -->
+                <TextBlock Text="{Binding Capture.ReadErrorMessage, ElementName=Root}"
+                           FontSize="13"
+                           Foreground="{StaticResource ErrorBrush}"
+                           TextWrapping="Wrap"
+                           Margin="0,8,0,0"
+                           Visibility="{Binding Capture.HasReadError,
+                                                ElementName=Root,
+                                                Converter={StaticResource BoolToVisibility}}"/>
+
+                <!-- Acciones -->
+                <StackPanel Orientation="Horizontal"
+                            Margin="0,14,0,0">
+
+                    <Button Content="{Binding Capture.ReadButtonText, ElementName=Root}"
+                            Command="{Binding Capture.ReadCommand, ElementName=Root}"
+                            Style="{StaticResource SecondaryButtonStyle}"/>
+
+                    <Button Content="Capturar manualmente"
+                            Command="{Binding Capture.CaptureManuallyCommand, ElementName=Root}"
+                            Style="{StaticResource LinkButtonStyle}"
+                            Margin="16,0,0,0"
+                            Visibility="{Binding Capture.ShowsCaptureManually,
+                                                 ElementName=Root,
+                                                 Converter={StaticResource BoolToVisibility}}"/>
+
+                </StackPanel>
+
+            </StackPanel>
+
+        </Border>
+
+        <!-- Error del campo -->
+        <TextBlock Text="{Binding Capture.ValidationError, ElementName=Root}"
+                   FontSize="12"
+                   Foreground="{StaticResource ErrorBrush}"
+                   TextWrapping="Wrap"
+                   Margin="0,5,0,0"
+                   Visibility="{Binding Capture.HasValidationError,
+                                        ElementName=Root,
+                                        Converter={StaticResource BoolToVisibility}}"/>
+
+    </StackPanel>
+
+</UserControl>

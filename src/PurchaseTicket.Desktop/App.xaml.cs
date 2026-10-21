@@ -149,6 +149,7 @@ public partial class App : System.Windows.Application
                 services.AddScoped<ReadWeightUseCase>();
 
                 // Weighing form
+                services.AddTransient<WeightCaptureViewModel>();
                 services.AddTransient<CreateWeighingViewModel>();
                 services.AddTransient<CreateWeighingWindow>();
 
