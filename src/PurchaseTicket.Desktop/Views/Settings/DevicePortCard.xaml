@@ -1,0 +1,173 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Views.Settings.DevicePortCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:forms="clr-namespace:PurchaseTicket.Desktop.Components.Forms"
+             xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
+             xmlns:settings="clr-namespace:PurchaseTicket.Desktop.Views.Settings">
+
+    <!-- Tarjeta de un dispositivo; su DataContext es un DevicePortViewModel.
+         La impresora y el indicador usan la misma tarjeta -->
+    <Border Background="{StaticResource SurfaceBrush}"
+            BorderBrush="{StaticResource BorderBrushLight}"
+            BorderThickness="1"
+            CornerRadius="12"
+            Padding="22,20">
+
+        <StackPanel>
+
+            <!-- Nombre, modelo y estado del puerto -->
+            <Grid>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+
+                    <TextBlock Text="{Binding Title}"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                    <TextBlock Text="{Binding Description}"
+                               FontSize="13"
+                               Foreground="{StaticResource SecondaryTextBrush}"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,0"/>
+
+                </StackPanel>
+
+                <feedback:StatusBadge Grid.Column="1"
+                                      VerticalAlignment="Top"
+                                      Margin="12,0,0,0"
+                                      Text="{Binding StatusText}"
+                                      Kind="{Binding StatusKind}"/>
+
+            </Grid>
+
+            <!-- Las opciones son de la pantalla, no de cada dispositivo -->
+            <forms:FormComboField Label="Puerto"
+                                  IsRequired="True"
+                                  Placeholder="{Binding DataContext.PortPlaceholder,
+                                                        RelativeSource={RelativeSource AncestorType=settings:SettingsView}}"
+                                  IsEnabled="{Binding DataContext.HasAvailablePorts,
+                                                      RelativeSource={RelativeSource AncestorType=settings:SettingsView}}"
+                                  ItemsSource="{Binding DataContext.AvailablePorts,
+                                                        RelativeSource={RelativeSource AncestorType=settings:SettingsView}}"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedValuePath="Name"
+                                  SelectedValue="{Binding SelectedPort, Mode=TwoWay}"
+                                  Margin="0,18,0,0"/>
+
+            <!-- Ayuda o resultado de la prueba, y el boton de prueba -->
+            <Border BorderBrush="{StaticResource BorderBrushLight}"
+                    BorderThickness="0,1,0,0"
+                    Margin="0,18,0,0"
+                    Padding="0,14,0,0">
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding HelpText}"
+                               FontSize="13"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center">
+
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource SecondaryTextBrush}"/>
+
+                                <Style.Triggers>
+
+                                    <DataTrigger Binding="{Binding HelpKind}"
+                                                 Value="{x:Static feedback:StatusKind.Success}">
+                                        <Setter Property="Foreground"
+                                                Value="{StaticResource SuccessBrush}"/>
+                                        <Setter Property="FontWeight"
+                                                Value="SemiBold"/>
+                                    </DataTrigger>
+
+                                    <!-- WarningBrush no contrasta sobre blanco -->
+                                    <DataTrigger Binding="{Binding HelpKind}"
+                                                 Value="{x:Static feedback:StatusKind.Warning}">
+                                        <Setter Property="Foreground"
+                                                Value="{StaticResource WarningTextBrush}"/>
+                                    </DataTrigger>
+
+                                    <DataTrigger Binding="{Binding HelpKind}"
+                                                 Value="{x:Static feedback:StatusKind.Error}">
+                                        <Setter Property="Foreground"
+                                                Value="{StaticResource ErrorBrush}"/>
+                                    </DataTrigger>
+
+                                </Style.Triggers>
+
+                            </Style>
+                        </TextBlock.Style>
+
+                    </TextBlock>
+
+                    <Button Grid.Column="1"
+                            Margin="16,0,0,0"
+                            Command="{Binding TestCommand}"
+                            Style="{StaticResource OutlinePrimaryButtonStyle}">
+
+                        <StackPanel Orientation="Horizontal">
+
+                            <!-- Impresora para la prueba de impresion, bascula para leer el peso -->
+                            <Path Width="15"
+                                  Height="15"
+                                  Margin="0,0,8,0"
+                                  Stretch="Uniform"
+                                  Stroke="{StaticResource EcoBlueDarkBrush}"
+                                  StrokeThickness="2"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round"
+                                  VerticalAlignment="Center">
+
+                                <Path.Style>
+                                    <Style TargetType="Path">
+
+                                        <Setter Property="Data"
+                                                Value="{StaticResource ScaleIcon}"/>
+
+                                        <Style.Triggers>
+
+                                            <DataTrigger Binding="{Binding IsPrinter}"
+                                                         Value="True">
+                                                <Setter Property="Data"
+                                                        Value="{StaticResource PrintIcon}"/>
+                                            </DataTrigger>
+
+                                        </Style.Triggers>
+
+                                    </Style>
+                                </Path.Style>
+
+                            </Path>
+
+                            <TextBlock Text="{Binding TestButtonText}"
+                                       VerticalAlignment="Center"/>
+
+                        </StackPanel>
+
+                    </Button>
+
+                </Grid>
+
+            </Border>
+
+        </StackPanel>
+
+    </Border>
+
+</UserControl>
