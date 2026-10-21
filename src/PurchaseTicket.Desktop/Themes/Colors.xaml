@@ -68,4 +68,7 @@
     <SolidColorBrush x:Key="NeutralSoftBrush"
                      Color="#F1F5F9"/>
 
+    <SolidColorBrush x:Key="FilterSurfaceBrush"
+                     Color="#F1F5F9"/>
+
 </ResourceDictionary>

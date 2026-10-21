@@ -4,7 +4,7 @@
              x:Name="Root">
 
     <!-- Contenedor de filtros -->
-    <Border Background="{StaticResource SurfaceBrush}"
+    <Border Background="{StaticResource FilterSurfaceBrush}"
             BorderBrush="{StaticResource BorderBrushLight}"
             BorderThickness="1"
             CornerRadius="12"
