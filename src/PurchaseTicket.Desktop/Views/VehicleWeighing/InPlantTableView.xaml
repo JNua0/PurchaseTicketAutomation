@@ -95,13 +95,34 @@
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
 
-                        <Button Content="Registrar tara"
-                                Command="{Binding DataContext.RegisterTareCommand,
+                        <Button Command="{Binding DataContext.RegisterTareCommand,
                                                   RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                 CommandParameter="{Binding}"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 Height="34"
-                                HorizontalAlignment="Center"/>
+                                Padding="12,0"
+                                HorizontalAlignment="Center">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Data="{StaticResource ScaleIcon}"
+                                      Width="15"
+                                      Height="15"
+                                      Margin="0,0,6,0"
+                                      Stretch="Uniform"
+                                      Stroke="White"
+                                      StrokeThickness="2"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      StrokeLineJoin="Round"
+                                      VerticalAlignment="Center"/>
+
+                                <TextBlock Text="Registrar tara"
+                                           VerticalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
 
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>

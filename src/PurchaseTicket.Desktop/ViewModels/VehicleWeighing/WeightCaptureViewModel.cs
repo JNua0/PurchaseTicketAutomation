@@ -54,6 +54,8 @@ public sealed class WeightCaptureViewModel : ObservableObject
             OnPropertyChanged(nameof(HasReadError));
             OnPropertyChanged(nameof(ShowsWeightText));
             OnPropertyChanged(nameof(ShowsCaptureManually));
+            OnPropertyChanged(nameof(IsReadPrimary));
+            OnPropertyChanged(nameof(IsReadSecondary));
             OnPropertyChanged(nameof(ReadButtonText));
             OnPropertyChanged(nameof(Weight));
             OnPropertyChanged(nameof(WeightDisplay));
@@ -126,6 +128,16 @@ public sealed class WeightCaptureViewModel : ObservableObject
         State is WeightCaptureState.Empty
             or WeightCaptureState.Read
             or WeightCaptureState.Error;
+
+    // Sin peso valido, leer el indicador es el siguiente paso del operador y
+    // el boton va relleno. Con un peso, el siguiente paso es registrar, asi
+    // que el boton baja a contorno para no competir con el del formulario
+    public bool IsReadPrimary =>
+        State is WeightCaptureState.Empty
+            or WeightCaptureState.Reading
+            or WeightCaptureState.Error;
+
+    public bool IsReadSecondary => !IsReadPrimary;
 
     public string ReadButtonText =>
         State switch

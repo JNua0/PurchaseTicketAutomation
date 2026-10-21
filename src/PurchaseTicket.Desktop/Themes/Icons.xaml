@@ -204,6 +204,22 @@
         M 18,6 L 6,18
     </Geometry>
 
+    <!-- Bascula de dos platos: registrar un pesaje -->
+    <Geometry x:Key="ScaleIcon">
+        M 12,3 V 6
+        M 5,6 H 19
+        M 7,6 L 4,13 A 3,3 0 0 0 10,13 Z
+        M 17,6 L 14,13 A 3,3 0 0 0 20,13 Z
+        M 12,6 V 20
+        M 8,20 H 16
+    </Geometry>
+
+    <!-- Leer de nuevo: flecha circular -->
+    <Geometry x:Key="RefreshIcon">
+        M 21,12 A 9,9 0 1 1 18,5.3
+        M 21,4 V 9 H 16
+    </Geometry>
+
     <!-- Bandeja vacia: tabla sin registros -->
     <Geometry x:Key="EmptyIcon">
         M 22,12 H 16 L 14,15 H 10 L 8,12 H 2

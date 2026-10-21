@@ -95,6 +95,27 @@
     </Style>
 
 
+    <!-- Boton secundario con el azul de la marca: destaca una accion dentro de
+         un campo, como leer el indicador, sin competir con el boton principal
+         del formulario, que va relleno -->
+    <Style x:Key="OutlinePrimaryButtonStyle"
+           TargetType="Button"
+           BasedOn="{StaticResource SecondaryButtonStyle}">
+
+        <Setter Property="Foreground"
+                Value="{StaticResource EcoBlueDarkBrush}"/>
+
+        <Setter Property="BorderBrush"
+                Value="{StaticResource EcoBlueBrush}"/>
+
+        <Setter Property="FontWeight"
+                Value="SemiBold"/>
+
+        <Setter Property="Height"
+                Value="38"/>
+
+    </Style>
+
     <!-- Selector reutilizable -->
     <Style x:Key="ComboBoxStyle"
        TargetType="ComboBox">
