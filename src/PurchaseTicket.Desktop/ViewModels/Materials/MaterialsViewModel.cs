@@ -120,6 +120,8 @@ public class MaterialsViewModel : INotifyPropertyChanged
 
             _isActiveFilter = value;
             OnPropertyChanged(nameof(IsActiveFilter));
+
+            SearchMaterialsCommand.Execute(null);
         }
     }
 

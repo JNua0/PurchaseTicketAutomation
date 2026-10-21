@@ -19,7 +19,6 @@
                 <ColumnDefinition Width="*"
                                   MinWidth="150"/>
                 <ColumnDefinition Width="190"/>
-                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <!-- Busqueda por nombre -->
@@ -28,23 +27,15 @@
                 Margin="0,0,15,0"
                 Label="Buscar proveedor"
                 SearchText="{Binding SearchText, Mode=TwoWay}"
+                SearchCommand="{Binding SearchSuppliersCommand}"
                 IsLoading="{Binding IsLoading}"/>
 
-            <!-- Filtro de estado -->
+            <!-- Filtro de estado: recarga al cambiar -->
             <filters:StatusFilter
                 Grid.Column="1"
-                Margin="0,0,15,0"
                 Label="Estado"
                 SelectedStatus="{Binding IsActiveFilter, Mode=TwoWay}"
                 IsLoading="{Binding IsLoading}"/>
-
-            <!-- Accion de busqueda -->
-            <Button Grid.Column="2"
-                    Content="Buscar"
-                    Command="{Binding SearchSuppliersCommand}"
-                    Style="{StaticResource PrimaryButtonStyle}"
-                    Width="110"
-                    VerticalAlignment="Bottom"/>
 
         </Grid>
 

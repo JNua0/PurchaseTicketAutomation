@@ -1,17 +1,13 @@
-﻿
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace PurchaseTicket.Desktop.Components.Filters;
 
 public partial class SearchBox : UserControl
 {
-    public SearchBox()
-    {
-        InitializeComponent();
-    }
+    // Propiedades de dependencia
 
-    // Etiqueta del campo
     public static readonly DependencyProperty LabelProperty =
         DependencyProperty.Register(
             nameof(Label),
@@ -19,13 +15,6 @@ public partial class SearchBox : UserControl
             typeof(SearchBox),
             new PropertyMetadata("Buscar"));
 
-    public string Label
-    {
-        get => (string)GetValue(LabelProperty);
-        set => SetValue(LabelProperty, value);
-    }
-
-    // Texto de busqueda
     public static readonly DependencyProperty SearchTextProperty =
         DependencyProperty.Register(
             nameof(SearchText),
@@ -35,13 +24,6 @@ public partial class SearchBox : UserControl
                 string.Empty,
                 FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-    public string SearchText
-    {
-        get => (string)GetValue(SearchTextProperty);
-        set => SetValue(SearchTextProperty, value);
-    }
-
-    // Estado de carga
     public static readonly DependencyProperty IsLoadingProperty =
         DependencyProperty.Register(
             nameof(IsLoading),
@@ -49,9 +31,69 @@ public partial class SearchBox : UserControl
             typeof(SearchBox),
             new PropertyMetadata(false));
 
+    public static readonly DependencyProperty SearchCommandProperty =
+        DependencyProperty.Register(
+            nameof(SearchCommand),
+            typeof(ICommand),
+            typeof(SearchBox),
+            new PropertyMetadata(null));
+
+    // Constructor
+
+    public SearchBox()
+    {
+        InitializeComponent();
+    }
+
+    // Propiedades
+
+    public string Label
+    {
+        get => (string)GetValue(LabelProperty);
+        set => SetValue(LabelProperty, value);
+    }
+
+    public string SearchText
+    {
+        get => (string)GetValue(SearchTextProperty);
+        set => SetValue(SearchTextProperty, value);
+    }
+
     public bool IsLoading
     {
         get => (bool)GetValue(IsLoadingProperty);
         set => SetValue(IsLoadingProperty, value);
+    }
+
+    // Comando que se ejecuta al presionar Enter o al limpiar con Esc
+    public ICommand? SearchCommand
+    {
+        get => (ICommand?)GetValue(SearchCommandProperty);
+        set => SetValue(SearchCommandProperty, value);
+    }
+
+    // Metodos privados
+
+    private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            ExecuteSearch();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape
+                 && !string.IsNullOrEmpty(SearchText))
+        {
+            // Limpiar y volver a mostrar todos los registros
+            SearchText = string.Empty;
+            ExecuteSearch();
+            e.Handled = true;
+        }
+    }
+
+    private void ExecuteSearch()
+    {
+        if (SearchCommand?.CanExecute(null) == true)
+            SearchCommand.Execute(null);
     }
 }

@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:layout="clr-namespace:PurchaseTicket.Desktop.Components.Layout"
              xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions"
-             xmlns:pagination="clr-namespace:PurchaseTicket.Desktop.Components.Pagination">
+             xmlns:pagination="clr-namespace:PurchaseTicket.Desktop.Components.Pagination"
+             xmlns:filters="clr-namespace:PurchaseTicket.Desktop.Components.Filters">
 
     <!-- Estructura principal -->
     <layout:PageLayout>
@@ -41,28 +42,11 @@
 
                     <layout:FilterCard.FilterContent>
 
-                        <Grid>
-
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"
-                                                  MinWidth="150"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <TextBox Grid.Column="0"
-                                     Text="{Binding SearchText,
-                                            Mode=TwoWay,
-                                            UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0,0,15,0"
-                                     VerticalContentAlignment="Center"/>
-
-                            <Button Grid.Column="1"
-                                    Content="Buscar"
-                                    Command="{Binding SearchTicketsCommand}"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    Width="110"/>
-
-                        </Grid>
+                        <filters:SearchBox
+                            Label="Buscar ticket"
+                            SearchText="{Binding SearchText, Mode=TwoWay}"
+                            SearchCommand="{Binding SearchTicketsCommand}"
+                            IsLoading="{Binding IsLoading}"/>
 
                     </layout:FilterCard.FilterContent>
 

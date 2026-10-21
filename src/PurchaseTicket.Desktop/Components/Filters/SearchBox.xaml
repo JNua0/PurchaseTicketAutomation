@@ -3,21 +3,31 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Name="Root">
 
-    <!-- Campo de busqueda reutilizable -->
+    <!-- Campo de busqueda reutilizable: Enter busca y Esc limpia -->
     <StackPanel>
 
-        <!-- Etiqueta del campo -->
-        <TextBlock Text="{Binding Label, ElementName=Root}"
-                   FontSize="14"
-                   FontWeight="SemiBold"
-                   Foreground="{StaticResource PrimaryTextBrush}"
-                   Margin="0,0,0,7"/>
+        <!-- Etiqueta y ayuda de teclado -->
+        <Grid Margin="0,0,0,7">
+
+            <TextBlock Text="{Binding Label, ElementName=Root}"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource PrimaryTextBrush}"/>
+
+            <TextBlock Text="Enter para buscar · Esc para limpiar"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Bottom"
+                       FontSize="12"
+                       Foreground="{StaticResource SecondaryTextBrush}"/>
+
+        </Grid>
 
         <!-- Entrada de texto -->
         <TextBox Text="{Binding SearchText,
                                 ElementName=Root,
                                 Mode=TwoWay,
-                                UpdateSourceTrigger=PropertyChanged}">
+                                UpdateSourceTrigger=PropertyChanged}"
+                 KeyDown="SearchTextBox_KeyDown">
 
             <TextBox.Style>
                 <Style TargetType="TextBox"
@@ -25,12 +35,12 @@
 
                     <Style.Triggers>
 
-                        <!-- Deshabilitar durante la carga -->
+                        <!-- Solo lectura durante la carga para no perder el foco -->
                         <DataTrigger Binding="{Binding IsLoading, ElementName=Root}"
                                      Value="True">
 
-                            <Setter Property="IsEnabled"
-                                    Value="False"/>
+                            <Setter Property="IsReadOnly"
+                                    Value="True"/>
 
                         </DataTrigger>
 

@@ -120,6 +120,9 @@ public class SuppliersViewModel : INotifyPropertyChanged
 
             _isActiveFilter = value;
             OnPropertyChanged(nameof(IsActiveFilter));
+
+            // Elegir un filtro es una accion deliberada: recargar de inmediato
+            SearchSuppliersCommand.Execute(null);
         }
     }
 
