@@ -12,6 +12,7 @@ using PurchaseTicket.Application.UseCases.Materials.Deactivate;
 using PurchaseTicket.Application.UseCases.Materials.Get;
 using PurchaseTicket.Application.UseCases.Materials.GetActive;
 using PurchaseTicket.Application.UseCases.Materials.Update;
+using PurchaseTicket.Application.UseCases.Printing.PrintTest;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Cancel;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Correct;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateConventional;
@@ -176,6 +177,7 @@ public partial class App : System.Windows.Application
                 // Servicios de impresion
                 services.AddTicketPrinter(configuration);
                 services.AddScoped<PrintPurchaseTicket>();
+                services.AddScoped<PrintTestTicket>();
                 services.AddSingleton<ITicketPrintService, TicketPrintService>();
 
                 // Correccion de tickets

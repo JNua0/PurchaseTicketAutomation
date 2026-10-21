@@ -29,89 +29,27 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
 
     public Task PrintConventionalInitialAsync(TicketPrintData data)
     {
-        using var serialPort = _serialPortFactory.Create();
-
-        try
-        {
-            serialPort.Open();
-
-            string text = BuildInitialTicket(data);
-
-            serialPort.Write(text);
-
-            return Task.CompletedTask;
-        }
-        finally
-        {
-            if (serialPort.IsOpen)
-                serialPort.Close();
-        }
+        return SendAsync(BuildInitialTicket(data));
     }
 
     public Task PrintConventionalFinalAsync(TicketPrintData data)
     {
-        using var serialPort = _serialPortFactory.Create();
-
-        try
-        {
-            serialPort.Open();
-
-            string content = BuildFinalTicket(data);
-
-            serialPort.Write(content);
-
-            return Task.CompletedTask;
-        }
-        finally
-        {
-            if (serialPort.IsOpen)
-                serialPort.Close();
-        }
+        return SendAsync(BuildFinalTicket(data));
     }
 
     public Task PrintConventionalCompletedAsync(TicketPrintData data)
     {
-        using var serialPort = _serialPortFactory.Create();
-
-        try
-        {
-            serialPort.Open();
-
-            string content =
-                BuildInitialTicket(data) +
-                BuildFinalTicket(data);
-
-            serialPort.Write(content);
-
-            return Task.CompletedTask;
-        }
-        finally
-        {
-            if (serialPort.IsOpen)
-                serialPort.Close();
-        }
+        return SendAsync(BuildInitialTicket(data) + BuildFinalTicket(data));
     }
 
     public Task PrintSingleAsync(TicketPrintData data)
     {
-        using var serialPort = _serialPortFactory.Create();
+        return SendAsync(BuildSingleTicket(data));
+    }
 
-        try
-        {
-            serialPort.Open();
-
-            string content =
-                BuildSingleTicket(data);
-
-            serialPort.Write(content);
-
-            return Task.CompletedTask;
-        }
-        finally
-        {
-            if (serialPort.IsOpen)
-                serialPort.Close();
-        }
+    public Task PrintTestAsync()
+    {
+        return SendAsync(BuildTestTicket());
     }
 
     // Metodos privados
@@ -351,6 +289,52 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
             .Replace(
                 Environment.NewLine,
                 "\r\n");
+    }
+
+    // El encabezado real y la fecha: si sale bien, el puerto y el
+    // encabezado ya estan listos para los tickets de compra
+    private string BuildTestTicket()
+    {
+        var builder = new StringBuilder();
+
+        AppendHeader(builder);
+
+        builder.AppendLine("PRUEBA DE IMPRESION");
+
+        AppendField(
+            builder,
+            "FECHA",
+            FormatLocalDate(_timeProvider.GetUtcNow().UtcDateTime));
+
+        builder.AppendLine(
+            new string('-', TicketFormat.LineWidth));
+
+        builder.AppendLine("La impresora esta lista para");
+        builder.AppendLine("imprimir tickets.");
+
+        return builder.ToString()
+            .Replace(
+                Environment.NewLine,
+                "\r\n");
+    }
+
+    // Abre el puerto, envia el ticket y lo cierra aunque la escritura falle
+    private Task SendAsync(string content)
+    {
+        using var serialPort = _serialPortFactory.Create();
+
+        try
+        {
+            serialPort.Open();
+            serialPort.Write(content);
+
+            return Task.CompletedTask;
+        }
+        finally
+        {
+            if (serialPort.IsOpen)
+                serialPort.Close();
+        }
     }
 
     // Las fechas se guardan en UTC y se imprimen en la hora local del equipo

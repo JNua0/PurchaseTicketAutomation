@@ -9,4 +9,7 @@ public interface ITicketPrinter
     Task PrintConventionalCompletedAsync(TicketPrintData data);
 
     Task PrintSingleAsync(TicketPrintData data);
+
+    // Ticket sin datos de compra para comprobar el puerto desde Configuracion
+    Task PrintTestAsync();
 }

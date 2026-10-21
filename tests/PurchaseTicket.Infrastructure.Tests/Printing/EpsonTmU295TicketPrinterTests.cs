@@ -661,6 +661,41 @@ public class EpsonTmU295TicketPrinterTests
     }
 
     [Fact]
+    public async Task PrintTestAsync_ShouldWriteHeaderAndTestMessage()
+    {
+        var serialPort =
+            new FakeSerialPort();
+
+        var printer =
+            new EpsonTmU295TicketPrinter(
+                new FakeSerialPortFactory(serialPort),
+                CreateOptions(),
+                TestTimeProvider);
+
+        await printer.PrintTestAsync();
+
+        Assert.True(serialPort.WasClosed);
+
+        // El encabezado es el mismo de los tickets de compra
+        Assert.StartsWith(
+            "NOMBRE EMPRESA\r\n" +
+            "DIRECCION CALLE\r\n" +
+            "COLONIA\r\n" +
+            "TEL. 55 0000 0000\r\n" +
+            "correo@empresa.com\r\n" +
+            "===================================\r\n" +
+            "PRUEBA DE IMPRESION\r\n" +
+            "FECHA    : ",
+            serialPort.WrittenText);
+
+        var lines = serialPort.WrittenText!.Split(
+            "\r\n",
+            StringSplitOptions.RemoveEmptyEntries);
+
+        Assert.All(lines, line => Assert.True(line.Length <= 35, line));
+    }
+
+    [Fact]
     public async Task PrintSingleAsync_ShouldPrintDateInLocalTime()
     {
         var serialPort =

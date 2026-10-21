@@ -112,6 +112,9 @@ public class PrintPurchaseTicketTests
             SingleData = data;
             return Task.CompletedTask;
         }
+
+        public Task PrintTestAsync()
+            => throw new NotImplementedException();
     }
 
     private sealed class FakeLogger<T> : ILogger<T>
