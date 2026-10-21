@@ -35,7 +35,9 @@
               Height="19">
 
             <!-- Icono para desactivar -->
-            <Path Data="{StaticResource DeactivateUserIcon}"
+            <Path Data="{Binding DeactivateIcon,
+                                 ElementName=Root,
+                                 TargetNullValue={StaticResource DeactivateIcon}}"
                   Fill="Transparent"
                   Stroke="{StaticResource ErrorBrush}"
                   StrokeThickness="1.8"
@@ -68,7 +70,9 @@
             </Path>
 
             <!-- Icono para activar -->
-            <Path Data="{StaticResource ActivateUserIcon}"
+            <Path Data="{Binding ActivateIcon,
+                                 ElementName=Root,
+                                 TargetNullValue={StaticResource ActivateIcon}}"
                   Fill="Transparent"
                   Stroke="{StaticResource SuccessBrush}"
                   StrokeThickness="1.8"

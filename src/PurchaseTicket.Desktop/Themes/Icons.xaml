@@ -110,6 +110,27 @@
         L 15,17
     </Geometry>
 
+    <!-- Activar registro generico: circulo con palomita -->
+    <Geometry x:Key="ActivateIcon">
+        M 12,3
+        A 9,9 0 1 0 12,21
+        A 9,9 0 1 0 12,3
+        Z
+        M 8,12
+        L 11,15
+        L 16,9
+    </Geometry>
+
+    <!-- Desactivar registro generico: circulo tachado -->
+    <Geometry x:Key="DeactivateIcon">
+        M 12,3
+        A 9,9 0 1 0 12,21
+        A 9,9 0 1 0 12,3
+        Z
+        M 5.6,5.6
+        L 18.4,18.4
+    </Geometry>
+
     <!-- Icono para agregar nuevos registros -->
     <Geometry x:Key="PlusIcon">
         M 12,5

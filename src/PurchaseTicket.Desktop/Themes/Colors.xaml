@@ -55,4 +55,17 @@
     <SolidColorBrush x:Key="ErrorBrush"
                      Color="#DC2626"/>
 
+    <!-- Fondos suaves de estado -->
+    <SolidColorBrush x:Key="SuccessSoftBrush"
+                     Color="#EDF8E7"/>
+
+    <SolidColorBrush x:Key="WarningSoftBrush"
+                     Color="#FEF3C7"/>
+
+    <SolidColorBrush x:Key="ErrorSoftBrush"
+                     Color="#FEECEC"/>
+
+    <SolidColorBrush x:Key="NeutralSoftBrush"
+                     Color="#F1F5F9"/>
+
 </ResourceDictionary>

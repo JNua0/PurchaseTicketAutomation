@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback">
 
     <!-- Encabezados de columnas -->
     <Style x:Key="AppDataGridColumnHeaderStyle"
@@ -94,6 +95,30 @@
         <Setter Property="FocusVisualStyle"
                 Value="{x:Null}"/>
 
+        <Setter Property="Background"
+                Value="Transparent"/>
+
+        <!-- Plantilla propia: la de WPF ignora Padding y VerticalContentAlignment -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridCell">
+
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+
+                        <ContentPresenter
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+
+                    </Border>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
         <Style.Triggers>
 
             <!-- Conservar los colores del texto al seleccionar -->
@@ -102,6 +127,9 @@
 
                 <Setter Property="Foreground"
                         Value="{StaticResource PrimaryTextBrush}"/>
+
+                <Setter Property="Background"
+                        Value="Transparent"/>
 
             </Trigger>
 
@@ -176,6 +204,33 @@
 
         <Setter Property="CellStyle"
                 Value="{StaticResource AppDataGridCellStyle}"/>
+
+    </Style>
+
+    <!-- Estado de registros de catalogo: Activo en verde, Inactivo en rojo -->
+    <Style x:Key="ActiveStatusBadgeStyle"
+           TargetType="feedback:StatusBadge">
+
+        <Setter Property="Text"
+                Value="Activo"/>
+
+        <Setter Property="Kind"
+                Value="Success"/>
+
+        <Style.Triggers>
+
+            <DataTrigger Binding="{Binding IsActive}"
+                         Value="False">
+
+                <Setter Property="Text"
+                        Value="Inactivo"/>
+
+                <Setter Property="Kind"
+                        Value="Error"/>
+
+            </DataTrigger>
+
+        </Style.Triggers>
 
     </Style>
 

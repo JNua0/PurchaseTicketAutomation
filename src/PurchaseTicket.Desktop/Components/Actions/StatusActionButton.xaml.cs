@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace PurchaseTicket.Desktop.Components.Actions;
 
@@ -51,5 +52,33 @@ public partial class StatusActionButton : UserControl
     {
         get => GetValue(CommandParameterProperty);
         set => SetValue(CommandParameterProperty, value);
+    }
+
+    // Icono para activar; si no se indica, se usa el generico
+    public static readonly DependencyProperty ActivateIconProperty =
+        DependencyProperty.Register(
+            nameof(ActivateIcon),
+            typeof(Geometry),
+            typeof(StatusActionButton),
+            new PropertyMetadata(null));
+
+    public Geometry? ActivateIcon
+    {
+        get => (Geometry?)GetValue(ActivateIconProperty);
+        set => SetValue(ActivateIconProperty, value);
+    }
+
+    // Icono para desactivar; si no se indica, se usa el generico
+    public static readonly DependencyProperty DeactivateIconProperty =
+        DependencyProperty.Register(
+            nameof(DeactivateIcon),
+            typeof(Geometry),
+            typeof(StatusActionButton),
+            new PropertyMetadata(null));
+
+    public Geometry? DeactivateIcon
+    {
+        get => (Geometry?)GetValue(DeactivateIconProperty);
+        set => SetValue(DeactivateIconProperty, value);
     }
 }
