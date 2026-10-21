@@ -604,6 +604,11 @@ public class PurchaseTicket
     {
         if (pricePerKg <= 0)
             throw new ArgumentException("El precio por kilogramo debe ser mayor a cero.");
+
+        // La base de datos guarda dos decimales: con mas, el importe calculado
+        // no coincidiria con el precio guardado
+        if (decimal.Round(pricePerKg, 2) != pricePerKg)
+            throw new ArgumentException("El precio por kilogramo no puede tener más de dos decimales.");
     }
 
     private static void ValidateTicketNumber(string ticketNumber)
@@ -671,6 +676,13 @@ public class PurchaseTicket
         return netWeightAfterDiscount * pricePerKg;
     }
 
+    // Igual que REDONDEAR de Excel y que PostgreSQL: el 5 se aleja de cero
+    // (2.345 -> 2.35). El redondeo por defecto de .NET daria 2.34
+    private static decimal RoundToTwoDecimals(decimal value)
+    {
+        return Math.Round(value, 2, MidpointRounding.AwayFromZero);
+    }
+
     private void RecalculateAmount()
     {
         decimal netWeight = NetWeight
@@ -700,9 +712,13 @@ public class PurchaseTicket
                 netWeightAfterDiscount,
                 pricePerKg);
 
-        DiscountWeight = discountWeight;
-        NetWeightAfterDiscount = netWeightAfterDiscount;
-        Amount = amount;
+        // Se calcula con precision completa y solo se redondea lo que se guarda
+        // (RN-41). Con pesos enteros coincide con redondear cada paso; con un
+        // peso con decimales el importe puede diferir un centavo de multiplicar
+        // las cifras guardadas, a cambio de ser el valor exacto
+        DiscountWeight = RoundToTwoDecimals(discountWeight);
+        NetWeightAfterDiscount = RoundToTwoDecimals(netWeightAfterDiscount);
+        Amount = RoundToTwoDecimals(amount);
     }
 
     private void ValidateConventionalWeighing()

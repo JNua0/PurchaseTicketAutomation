@@ -1,4 +1,4 @@
-using PurchaseTicket.Domain.Enums;
+﻿using PurchaseTicket.Domain.Enums;
 using PurchaseTicket.Domain.Exceptions;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
@@ -922,6 +922,118 @@ public class PurchaseTicketTests
         Assert.Equal(
             "El precio por kilogramo debe ser mayor a cero.",
             exception.Message);
+    }
+
+    [Fact]
+    public void RegisterAmount_ShouldRoundStoredValuesToTwoDecimals()
+    {
+        // Arrange: el ejemplo del documento de requerimientos (RN-41)
+        var ticket = Ticket.CreateSingle(
+            "T-000002",
+            1,
+            1,
+            null,
+            "Juan Perez",
+            1237m);
+
+        // Act
+        ticket.RegisterAmount(3, 3.33m);
+
+        // Assert: 1,199.89 x 3.33 = 3,995.6337
+        Assert.Equal(37.11m, ticket.DiscountWeight);
+        Assert.Equal(1199.89m, ticket.NetWeightAfterDiscount);
+        Assert.Equal(3995.63m, ticket.Amount);
+    }
+
+    [Fact]
+    public void RegisterAmount_ShouldRoundMidpointAwayFromZero()
+    {
+        // Arrange
+        var ticket = Ticket.CreateSingle(
+            "T-000002",
+            1,
+            1,
+            null,
+            "Juan Perez",
+            1001m);
+
+        // Act
+        ticket.RegisterAmount(50, 3.33m);
+
+        // Assert: 500.50 x 3.33 = 1,666.665; el redondeo bancario daria 1,666.66
+        Assert.Equal(500.50m, ticket.DiscountWeight);
+        Assert.Equal(500.50m, ticket.NetWeightAfterDiscount);
+        Assert.Equal(1666.67m, ticket.Amount);
+    }
+
+    [Fact]
+    public void RegisterAmount_ShouldCalculateAmountWithFullPrecision()
+    {
+        // Arrange
+        var ticket = Ticket.CreateSingle(
+            "T-000002",
+            1,
+            1,
+            null,
+            "Juan Perez",
+            1234.56m);
+
+        // Act
+        ticket.RegisterAmount(3, 3.33m);
+
+        // Assert: el importe sale de 1,197.5232 x 3.33 = 3,987.752256, no de
+        // los 1,197.52 guardados (que darian 3,987.74)
+        Assert.Equal(37.04m, ticket.DiscountWeight);
+        Assert.Equal(1197.52m, ticket.NetWeightAfterDiscount);
+        Assert.Equal(3987.75m, ticket.Amount);
+    }
+
+    [Theory]
+    [InlineData(3.335)]
+    [InlineData(0.001)]
+    public void RegisterAmount_ShouldThrowWhenPricePerKgHasMoreThanTwoDecimals(decimal pricePerKg)
+    {
+        // Arrange
+        var ticket = Ticket.CreateSingle(
+            "T-000002",
+            1,
+            1,
+            null,
+            "Juan Perez",
+            500m);
+
+        // Act
+        Action act = () => ticket.RegisterAmount(2, pricePerKg);
+
+        // Assert
+        var exception = Assert.Throws<ArgumentException>(act);
+
+        Assert.Equal(
+            "El precio por kilogramo no puede tener más de dos decimales.",
+            exception.Message);
+
+        Assert.Equal(TicketStatus.AmountPending, ticket.Status);
+    }
+
+    [Fact]
+    public void ChangePricePerKg_ShouldRoundRecalculatedAmount()
+    {
+        // Arrange
+        var ticket = Ticket.CreateSingle(
+            "T-000002",
+            1,
+            1,
+            null,
+            "Juan Perez",
+            1237m);
+
+        ticket.RegisterAmount(3, 5m);
+
+        // Act: las correcciones usan el mismo recalculo que el registro
+        ticket.ChangePricePerKg(3.33m);
+
+        // Assert
+        Assert.Equal(3995.63m, ticket.Amount);
     }
 
     [Fact]
