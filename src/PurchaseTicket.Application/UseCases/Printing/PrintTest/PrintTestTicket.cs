@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Microsoft.Extensions.Logging;
+using PurchaseTicket.Application.Abstractions.Devices;
 using PurchaseTicket.Application.Abstractions.Printing;
 
 namespace PurchaseTicket.Application.UseCases.Printing.PrintTest;
@@ -33,6 +34,13 @@ public class PrintTestTicket
             await _ticketPrinter.PrintTestAsync();
 
             return PrinterErrorCode.None;
+        }
+        catch (DeviceNotConfiguredException ex)
+        {
+            // Falta configurar el puerto: no es una falla de la impresora
+            _logger.LogWarning(ex, "Ticket de prueba sin puerto de impresora configurado.");
+
+            return PrinterErrorCode.NotConfigured;
         }
         catch (Exception ex)
         {

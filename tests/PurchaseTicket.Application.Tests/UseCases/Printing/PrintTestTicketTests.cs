@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using PurchaseTicket.Application.Abstractions.Devices;
 using PurchaseTicket.Application.Abstractions.Printing;
 using PurchaseTicket.Application.UseCases.Printing.PrintTest;
 
@@ -106,6 +107,30 @@ public class PrintTestTicketTests
         var entry = Assert.Single(logger.Entries);
 
         Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Same(exception, entry.Exception);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldReturnNotConfiguredAndWarn_WhenPortIsMissing()
+    {
+        // Arrange
+        var exception = new DeviceNotConfiguredException("Sin puerto.");
+
+        var printer = new FakeTicketPrinter { Failure = exception };
+        var logger = new FakeLogger<PrintTestTicket>();
+
+        var useCase = new PrintTestTicket(printer, logger);
+
+        // Act
+        var result = await useCase.ExecuteAsync();
+
+        // Assert
+        Assert.Equal(PrinterErrorCode.NotConfigured, result);
+
+        // Un puerto sin configurar no es un error de la aplicacion
+        var entry = Assert.Single(logger.Entries);
+
+        Assert.Equal(LogLevel.Warning, entry.Level);
         Assert.Same(exception, entry.Exception);
     }
 }

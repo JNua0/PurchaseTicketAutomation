@@ -3,6 +3,7 @@
 public enum PrinterErrorCode
 {
     None,
+    NotConfigured,
     PortNotFound,
     PortAccessDenied,
     CommunicationError,

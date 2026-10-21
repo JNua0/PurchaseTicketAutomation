@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Microsoft.Extensions.Logging;
+using PurchaseTicket.Application.Abstractions.Devices;
 using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.Printing;
 using PurchaseTicket.Application.Common;
@@ -97,6 +98,19 @@ public class PrintPurchaseTicket
             return new PrintPurchaseTicketResult(
                 ticket.TicketNumber,
                 Printed: true);
+        }
+        catch (DeviceNotConfiguredException ex)
+        {
+            // Falta elegir el puerto en Configuracion: no es una falla de la impresora
+            _logger.LogWarning(
+                ex,
+                "No hay puerto de impresora configurado al imprimir el ticket {TicketNumber}.",
+                ticket.TicketNumber);
+
+            return new PrintPurchaseTicketResult(
+                ticket.TicketNumber,
+                Printed: false,
+                ErrorCode: PrinterErrorCode.NotConfigured);
         }
         catch (FileNotFoundException ex)
         {

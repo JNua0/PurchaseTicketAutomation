@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
+using PurchaseTicket.Application.Abstractions.Devices;
 using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.Printing;
 using PurchaseTicket.Application.Common;
@@ -84,9 +85,13 @@ public class PrintPurchaseTicketTests
         public TicketPrintData? ConventionalCompletedData { get; private set; }
         public TicketPrintData? SingleData { get; private set; }
         public bool ThrowOnConventionalInitial { get; init; }
+        public Exception? Failure { get; init; }
 
         public Task PrintConventionalInitialAsync(TicketPrintData data)
         {
+            if (Failure is not null)
+                throw Failure;
+
             if (ThrowOnConventionalInitial)
                 throw new InvalidOperationException("Printer error.");
 
@@ -853,6 +858,77 @@ public class PrintPurchaseTicketTests
 
         Assert.IsType<InvalidOperationException>(
             entry.Exception);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldReturnNotConfiguredWhenPrinterHasNoPort()
+    {
+        // Arrange
+        var ticket =
+            Ticket.CreateConventional(
+                ticketNumber: "T-000001",
+                supplierId: 1,
+                materialId: 2,
+                licensePlate: "ABC123",
+                transporter: "Juan Perez",
+                grossWeight: 25000m);
+
+        var repository =
+            new FakePurchaseTicketRepository
+            {
+                Ticket = ticket
+            };
+
+        var supplierRepository =
+            new FakeSupplierRepository
+            {
+                Supplier = new Supplier(
+                    name: "Proveedor Uno",
+                    phoneNumber: null)
+            };
+
+        var materialRepository =
+            new FakeMaterialRepository
+            {
+                Material = new Material(
+                    name: "Material Uno")
+            };
+
+        var printer =
+            new FakeTicketPrinter
+            {
+                Failure = new DeviceNotConfiguredException("Sin puerto.")
+            };
+
+        var logger = new FakeLogger<PrintPurchaseTicket>();
+
+        var useCase =
+            new PrintPurchaseTicket(
+                repository,
+                supplierRepository,
+                materialRepository,
+                printer,
+                logger);
+
+        // Act
+        var result =
+            await useCase.ExecuteAsync(
+                new PrintPurchaseTicketCommand(
+                    TicketId: 1));
+
+        // Assert
+        Assert.False(result.Printed);
+
+        Assert.Equal(
+            PrinterErrorCode.NotConfigured,
+            result.ErrorCode);
+
+        // Falta configurar, no es un error de la aplicacion
+        var entry = Assert.Single(logger.Entries);
+
+        Assert.Equal(
+            LogLevel.Warning,
+            entry.Level);
     }
 
     [Fact]
