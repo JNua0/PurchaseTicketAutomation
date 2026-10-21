@@ -181,6 +181,29 @@
         H 13
     </Geometry>
 
+    <!-- Advertencia: triangulo con signo de exclamacion -->
+    <Geometry x:Key="WarningIcon">
+        M 12,3 L 22,20 H 2 Z
+        M 12,9 V 13
+        M 12,16.5 V 16.6
+    </Geometry>
+
+    <!-- Informacion: circulo con letra i -->
+    <Geometry x:Key="InfoIcon">
+        M 12,3
+        A 9,9 0 1 0 12,21
+        A 9,9 0 1 0 12,3
+        Z
+        M 12,11 V 16
+        M 12,7.5 V 7.6
+    </Geometry>
+
+    <!-- Cerrar: equis -->
+    <Geometry x:Key="CloseIcon">
+        M 6,6 L 18,18
+        M 18,6 L 6,18
+    </Geometry>
+
     <!-- Bandeja vacia: tabla sin registros -->
     <Geometry x:Key="EmptyIcon">
         M 22,12 H 16 L 14,15 H 10 L 8,12 H 2

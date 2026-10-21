@@ -68,16 +68,27 @@
 
             <ContentControl Content="{Binding CurrentViewModel}"/>
 
-            <!-- Aviso breve de acciones completadas -->
-            <feedback:Toast x:Name="NotificationToast"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Bottom"
-                            Margin="0,0,0,40"
-                            IsHitTestVisible="False"
-                            Message="{Binding Message}"
-                            Kind="{Binding Kind}"
-                            Visibility="{Binding IsVisible,
-                                                 Converter={StaticResource BoolToVisibility}}"/>
+            <!-- Pila de avisos: los nuevos aparecen abajo. Fuera de los avisos
+                 el fondo es nulo, asi que los clics pasan a la pantalla -->
+            <ItemsControl x:Name="NotificationHost"
+                          ItemsSource="{Binding Toasts}"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Bottom"
+                          Margin="0,0,0,40"
+                          Focusable="False">
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+
+                        <feedback:Toast Message="{Binding Message}"
+                                        Kind="{Binding Kind}"
+                                        CloseCommand="{Binding CloseCommand}"
+                                        Margin="0,8,0,0"/>
+
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+
+            </ItemsControl>
 
         </Grid>
 

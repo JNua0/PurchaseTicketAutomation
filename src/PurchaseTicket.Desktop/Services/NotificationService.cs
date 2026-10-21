@@ -1,61 +1,40 @@
-﻿using System.Windows.Threading;
+﻿using System.Collections.ObjectModel;
+using System.Windows.Threading;
 using PurchaseTicket.Desktop.Components.Feedback;
-using PurchaseTicket.Desktop.ViewModels.Base;
 
 namespace PurchaseTicket.Desktop.Services;
 
-// Aviso en la ventana principal que desaparece solo.
-// Se registra como singleton: todas las pantallas comparten el mismo aviso.
-public sealed class NotificationService : ObservableObject, INotificationService
+// Avisos apilados en la ventana principal.
+// Se registra como singleton: todas las pantallas comparten la misma pila
+public sealed class NotificationService : INotificationService
 {
     // Campos
 
-    private static readonly TimeSpan DisplayDuration = TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan DisplayDuration = TimeSpan.FromSeconds(4);
 
-    private readonly DispatcherTimer _hideTimer;
-
-    private string _message = string.Empty;
-    private StatusKind _kind = StatusKind.Success;
-    private bool _isVisible;
-
-    // Constructor
-
-    public NotificationService()
-    {
-        // DispatcherTimer ejecuta Tick en el hilo de la interfaz
-        _hideTimer = new DispatcherTimer
-        {
-            Interval = DisplayDuration
-        };
-
-        _hideTimer.Tick += OnHideTimerTick;
-    }
+    // Mas avisos taparian la pantalla; al pasar el limite se quita el mas antiguo
+    private const int MaxVisible = 4;
 
     // Propiedades
 
-    public string Message
-    {
-        get => _message;
-        private set => SetProperty(ref _message, value);
-    }
-
-    public StatusKind Kind
-    {
-        get => _kind;
-        private set => SetProperty(ref _kind, value);
-    }
-
-    public bool IsVisible
-    {
-        get => _isVisible;
-        private set => SetProperty(ref _isVisible, value);
-    }
+    // Los nuevos se agregan al final y se muestran abajo
+    public ObservableCollection<ToastMessage> Toasts { get; } = new();
 
     // Metodos publicos
 
     public void ShowSuccess(string message)
     {
         Show(message, StatusKind.Success);
+    }
+
+    public void ShowInfo(string message)
+    {
+        Show(message, StatusKind.Info);
+    }
+
+    public void ShowWarning(string message)
+    {
+        Show(message, StatusKind.Warning);
     }
 
     public void ShowError(string message)
@@ -67,19 +46,35 @@ public sealed class NotificationService : ObservableObject, INotificationService
 
     private void Show(string message, StatusKind kind)
     {
-        Message = message;
-        Kind = kind;
-        IsVisible = true;
+        var toast = new ToastMessage(message, kind, Close);
 
-        // Si llega un aviso nuevo antes de ocultar el anterior, se reinicia el conteo
-        _hideTimer.Stop();
-        _hideTimer.Start();
+        Toasts.Add(toast);
+
+        while (Toasts.Count > MaxVisible)
+            Toasts.RemoveAt(0);
+
+        if (!toast.ClosesAutomatically)
+            return;
+
+        // Un temporizador por aviso: cada uno dura lo mismo desde que aparece.
+        // DispatcherTimer ejecuta Tick en el hilo de la interfaz
+        var timer = new DispatcherTimer
+        {
+            Interval = DisplayDuration
+        };
+
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            Close(toast);
+        };
+
+        timer.Start();
     }
 
-    private void OnHideTimerTick(object? sender, EventArgs e)
+    // Si el operador ya lo cerro, Remove no hace nada
+    private void Close(ToastMessage toast)
     {
-        _hideTimer.Stop();
-
-        IsVisible = false;
+        Toasts.Remove(toast);
     }
 }

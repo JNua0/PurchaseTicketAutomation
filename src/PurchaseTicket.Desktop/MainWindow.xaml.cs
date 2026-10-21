@@ -14,7 +14,7 @@ public partial class MainWindow : Window
 
         DataContext = mainViewModel;
 
-        // El aviso se enlaza al servicio, no a MainViewModel
-        NotificationToast.DataContext = notifications;
+        // Los avisos se enlazan al servicio, no a MainViewModel
+        NotificationHost.DataContext = notifications;
     }
 }

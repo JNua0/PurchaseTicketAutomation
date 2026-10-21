@@ -4,12 +4,12 @@
              xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
              x:Name="Root">
 
-    <!-- Aviso breve con icono y mensaje -->
+    <!-- Aviso con icono, mensaje y boton para cerrarlo -->
     <Border CornerRadius="10"
-            Padding="16,12"
+            Padding="16,12,10,12"
             BorderThickness="1"
-            MinWidth="280"
-            MaxWidth="460">
+            MinWidth="300"
+            MaxWidth="520">
 
         <Border.Effect>
             <DropShadowEffect BlurRadius="16"
@@ -29,14 +29,27 @@
                 <Style.Triggers>
 
                     <DataTrigger Binding="{Binding Kind, ElementName=Root}"
-                                 Value="{x:Static feedback:StatusKind.Error}">
+                                 Value="{x:Static feedback:StatusKind.Info}">
+                        <Setter Property="Background"
+                                Value="{StaticResource InfoSoftBrush}"/>
+                        <Setter Property="BorderBrush"
+                                Value="{StaticResource InfoBrush}"/>
+                    </DataTrigger>
 
+                    <DataTrigger Binding="{Binding Kind, ElementName=Root}"
+                                 Value="{x:Static feedback:StatusKind.Warning}">
+                        <Setter Property="Background"
+                                Value="{StaticResource WarningSoftBrush}"/>
+                        <Setter Property="BorderBrush"
+                                Value="{StaticResource WarningBrush}"/>
+                    </DataTrigger>
+
+                    <DataTrigger Binding="{Binding Kind, ElementName=Root}"
+                                 Value="{x:Static feedback:StatusKind.Error}">
                         <Setter Property="Background"
                                 Value="{StaticResource ErrorSoftBrush}"/>
-
                         <Setter Property="BorderBrush"
                                 Value="{StaticResource ErrorBrush}"/>
-
                     </DataTrigger>
 
                 </Style.Triggers>
@@ -44,13 +57,22 @@
             </Style>
         </Border.Style>
 
-        <StackPanel Orientation="Horizontal">
+        <!-- Grid y no StackPanel horizontal: dentro de un StackPanel el texto
+             tiene ancho infinito, nunca salta de linea y se corta -->
+        <Grid>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
             <!-- El icono y su color cambian segun el tipo de aviso -->
-            <Path Width="20"
+            <Path Grid.Column="0"
+                  Width="20"
                   Height="20"
                   Margin="0,0,10,0"
-                  VerticalAlignment="Center"
+                  VerticalAlignment="Top"
                   Stretch="Uniform"
                   Fill="Transparent"
                   StrokeThickness="2"
@@ -70,14 +92,27 @@
                         <Style.Triggers>
 
                             <DataTrigger Binding="{Binding Kind, ElementName=Root}"
-                                         Value="{x:Static feedback:StatusKind.Error}">
+                                         Value="{x:Static feedback:StatusKind.Info}">
+                                <Setter Property="Data"
+                                        Value="{StaticResource InfoIcon}"/>
+                                <Setter Property="Stroke"
+                                        Value="{StaticResource InfoBrush}"/>
+                            </DataTrigger>
 
+                            <DataTrigger Binding="{Binding Kind, ElementName=Root}"
+                                         Value="{x:Static feedback:StatusKind.Warning}">
+                                <Setter Property="Data"
+                                        Value="{StaticResource WarningIcon}"/>
+                                <Setter Property="Stroke"
+                                        Value="{StaticResource WarningTextBrush}"/>
+                            </DataTrigger>
+
+                            <DataTrigger Binding="{Binding Kind, ElementName=Root}"
+                                         Value="{x:Static feedback:StatusKind.Error}">
                                 <Setter Property="Data"
                                         Value="{StaticResource DeactivateIcon}"/>
-
                                 <Setter Property="Stroke"
                                         Value="{StaticResource ErrorBrush}"/>
-
                             </DataTrigger>
 
                         </Style.Triggers>
@@ -87,14 +122,60 @@
 
             </Path>
 
-            <TextBlock Text="{Binding Message, ElementName=Root}"
+            <TextBlock Grid.Column="1"
+                       Text="{Binding Message, ElementName=Root}"
                        FontSize="14"
                        FontWeight="SemiBold"
                        Foreground="{StaticResource PrimaryTextBrush}"
                        TextWrapping="Wrap"
                        VerticalAlignment="Center"/>
 
-        </StackPanel>
+            <!-- Cerrar el aviso -->
+            <Button Grid.Column="2"
+                    Command="{Binding CloseCommand, ElementName=Root}"
+                    ToolTip="Cerrar aviso"
+                    Width="26"
+                    Height="26"
+                    Margin="10,-3,0,0"
+                    VerticalAlignment="Top"
+                    Cursor="Hand"
+                    Focusable="False">
+
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="CloseBackground"
+                                Background="Transparent"
+                                CornerRadius="6">
+
+                            <Path Data="{StaticResource CloseIcon}"
+                                  Width="10"
+                                  Height="10"
+                                  Stretch="Uniform"
+                                  Stroke="{StaticResource SecondaryTextBrush}"
+                                  StrokeThickness="2"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="CloseBackground"
+                                        Property="Background"
+                                        Value="#14000000"/>
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+                </Button.Template>
+
+            </Button>
+
+        </Grid>
 
     </Border>
 
