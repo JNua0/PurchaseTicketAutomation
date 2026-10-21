@@ -6,8 +6,8 @@
 
     <!-- Tabla de materiales -->
     <DataGrid Style="{StaticResource AppDataGridStyle}"
-              ItemsSource="{Binding Materials}"
-              SelectedItem="{Binding SelectedMaterial, Mode=TwoWay}">
+              ItemsSource="{Binding Items}"
+              SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
 
         <DataGrid.Columns>
 

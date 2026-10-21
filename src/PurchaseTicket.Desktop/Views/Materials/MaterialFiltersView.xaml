@@ -27,7 +27,7 @@
                 Margin="0,0,15,0"
                 Label="Buscar material"
                 SearchText="{Binding SearchText, Mode=TwoWay}"
-                SearchCommand="{Binding SearchMaterialsCommand}"
+                SearchCommand="{Binding SearchCommand}"
                 IsLoading="{Binding IsLoading}"/>
 
             <!-- Filtro de estado: recarga al cambiar -->

@@ -6,8 +6,8 @@
 
     <!-- Tabla de proveedores -->
     <DataGrid Style="{StaticResource AppDataGridStyle}"
-              ItemsSource="{Binding Suppliers}"
-              SelectedItem="{Binding SelectedSupplier, Mode=TwoWay}">
+              ItemsSource="{Binding Items}"
+              SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
 
         <DataGrid.Columns>
 

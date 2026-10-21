@@ -107,7 +107,7 @@ public class MainViewModel : INotifyPropertyChanged
             () => { },
             DispatcherPriority.ApplicationIdle);
 
-        await _suppliersViewModel.LoadSuppliersAsync();
+        await _suppliersViewModel.LoadAsync();
     }
 
     private void OnPropertyChanged(string propertyName)
@@ -131,7 +131,7 @@ public class MainViewModel : INotifyPropertyChanged
             () => { },
             DispatcherPriority.ApplicationIdle);
 
-        await _materialsViewModel.LoadMaterialsAsync();
+        await _materialsViewModel.LoadAsync();
     }
 
     // Mostrar el modulo de pesaje
