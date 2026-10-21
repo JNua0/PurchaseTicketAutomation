@@ -559,4 +559,149 @@
 
     </Style>
 
+    <!-- Selector segmentado: ListBox horizontal donde cada opcion es un segmento.
+         El ListBox ya resuelve la seleccion unica y el teclado; el estilo solo
+         cambia su apariencia. El contenido de cada opcion lo define ItemTemplate -->
+    <Style x:Key="SegmentedSelectorStyle"
+           TargetType="ListBox">
+
+        <Setter Property="Background"
+                Value="{StaticResource SegmentedTrackBrush}"/>
+
+        <Setter Property="BorderThickness"
+                Value="0"/>
+
+        <Setter Property="Padding"
+                Value="3"/>
+
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility"
+                Value="Disabled"/>
+
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility"
+                Value="Disabled"/>
+
+        <!-- Todas las opciones con el mismo ancho, en una sola fila -->
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="1"/>
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBox">
+
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="9"
+                            Padding="{TemplateBinding Padding}">
+
+                        <ItemsPresenter/>
+
+                    </Border>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="ListBoxItem">
+
+                    <Setter Property="Foreground"
+                            Value="{StaticResource PrimaryTextBrush}"/>
+
+                    <Setter Property="FontSize"
+                            Value="14"/>
+
+                    <Setter Property="FontWeight"
+                            Value="SemiBold"/>
+
+                    <Setter Property="MinHeight"
+                            Value="34"/>
+
+                    <Setter Property="Padding"
+                            Value="14,0"/>
+
+                    <Setter Property="Margin"
+                            Value="2,0"/>
+
+                    <Setter Property="HorizontalContentAlignment"
+                            Value="Center"/>
+
+                    <Setter Property="VerticalContentAlignment"
+                            Value="Center"/>
+
+                    <Setter Property="Cursor"
+                            Value="Hand"/>
+
+                    <!-- El borde azul de foco reemplaza al rectangulo punteado -->
+                    <Setter Property="FocusVisualStyle"
+                            Value="{x:Null}"/>
+
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+
+                                <Border x:Name="Segment"
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        BorderThickness="1"
+                                        CornerRadius="7"
+                                        Padding="{TemplateBinding Padding}">
+
+                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+
+                                </Border>
+
+                                <!-- El orden importa: el ultimo trigger que aplica gana,
+                                     asi la opcion seleccionada no se ve como hover -->
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver"
+                                             Value="True">
+                                        <Setter TargetName="Segment"
+                                                Property="Background"
+                                                Value="{StaticResource SegmentedHoverBrush}"/>
+                                    </Trigger>
+
+                                    <Trigger Property="IsSelected"
+                                             Value="True">
+                                        <Setter TargetName="Segment"
+                                                Property="Background"
+                                                Value="{StaticResource SurfaceBrush}"/>
+                                        <Setter TargetName="Segment"
+                                                Property="BorderBrush"
+                                                Value="{StaticResource BorderBrushLight}"/>
+                                        <Setter Property="Foreground"
+                                                Value="{StaticResource EcoBlueDarkBrush}"/>
+                                    </Trigger>
+
+                                    <Trigger Property="IsKeyboardFocused"
+                                             Value="True">
+                                        <Setter TargetName="Segment"
+                                                Property="BorderBrush"
+                                                Value="{StaticResource EcoBlueBrush}"/>
+                                    </Trigger>
+
+                                    <Trigger Property="IsEnabled"
+                                             Value="False">
+                                        <Setter Property="Opacity"
+                                                Value="0.5"/>
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+
+                </Style>
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
 </ResourceDictionary>

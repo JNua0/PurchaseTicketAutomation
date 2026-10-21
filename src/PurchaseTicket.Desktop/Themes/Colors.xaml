@@ -55,6 +55,9 @@
     <SolidColorBrush x:Key="ErrorBrush"
                      Color="#DC2626"/>
 
+    <SolidColorBrush x:Key="InfoBrush"
+                     Color="#0A63C9"/>
+
     <!-- Fondos suaves de estado -->
     <SolidColorBrush x:Key="SuccessSoftBrush"
                      Color="#EDF8E7"/>
@@ -64,11 +67,21 @@
 
     <SolidColorBrush x:Key="ErrorSoftBrush"
                      Color="#FEECEC"/>
+    
+    <SolidColorBrush x:Key="InfoSoftBrush"
+                     Color="#EAF3FF"/>
 
     <SolidColorBrush x:Key="NeutralSoftBrush"
                      Color="#F1F5F9"/>
 
     <SolidColorBrush x:Key="FilterSurfaceBrush"
                      Color="#F1F5F9"/>
+
+    <!-- Selector segmentado -->
+    <SolidColorBrush x:Key="SegmentedTrackBrush"
+                     Color="#E2E9EE"/>
+
+    <SolidColorBrush x:Key="SegmentedHoverBrush"
+                     Color="#EDF2F5"/>
 
 </ResourceDictionary>

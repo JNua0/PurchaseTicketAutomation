@@ -19,6 +19,12 @@
                 <Style.Triggers>
 
                     <DataTrigger Binding="{Binding Kind, ElementName=Root}"
+                                 Value="{x:Static feedback:StatusKind.Info}">
+                        <Setter Property="Background"
+                                Value="{StaticResource InfoSoftBrush}"/>
+                    </DataTrigger>
+
+                    <DataTrigger Binding="{Binding Kind, ElementName=Root}"
                                  Value="{x:Static feedback:StatusKind.Success}">
                         <Setter Property="Background"
                                 Value="{StaticResource SuccessSoftBrush}"/>
@@ -63,6 +69,12 @@
                                 Value="{StaticResource SecondaryTextBrush}"/>
 
                         <Style.Triggers>
+
+                            <DataTrigger Binding="{Binding Kind, ElementName=Root}"
+                                         Value="{x:Static feedback:StatusKind.Info}">
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource InfoBrush}"/>
+                            </DataTrigger>
 
                             <DataTrigger Binding="{Binding Kind, ElementName=Root}"
                                          Value="{x:Static feedback:StatusKind.Success}">
