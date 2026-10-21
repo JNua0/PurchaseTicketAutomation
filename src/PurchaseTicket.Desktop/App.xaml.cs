@@ -38,6 +38,7 @@ using PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 using PurchaseTicket.Desktop.Views.Materials;
 using PurchaseTicket.Desktop.Views.Suppliers;
 using PurchaseTicket.Desktop.Views.VehicleWeighing;
+using PurchaseTicket.Infrastructure.Communication.Serial;
 using PurchaseTicket.Infrastructure.Persistence;
 using PurchaseTicket.Infrastructure.Persistence.Repositories;
 using PurchaseTicket.Infrastructure.Printing;
@@ -168,6 +169,9 @@ public partial class App : System.Windows.Application
 
                 // Configuracion del indicador
                 services.AddWeightIndicator(configuration);
+
+                // Deteccion de puertos para la configuracion
+                services.AddSerialPortDiscovery();
 
                 // Servicios de impresion
                 services.AddTicketPrinter(configuration);
