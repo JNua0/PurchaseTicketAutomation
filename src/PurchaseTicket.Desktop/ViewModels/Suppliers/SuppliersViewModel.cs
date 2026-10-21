@@ -60,6 +60,15 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
     protected override string LoadErrorMessage =>
         "No fue posible cargar los proveedores.";
 
+    protected override string EmptyListMessage =>
+    "Aún no hay proveedores registrados.";
+
+    protected override string NoResultsMessage =>
+        "No se encontraron proveedores con los filtros aplicados.";
+
+    protected override bool HasExtraFilters =>
+        IsActiveFilter is not null;
+
     // Comandos
 
     public AsyncRelayCommand NewSupplierCommand { get; }

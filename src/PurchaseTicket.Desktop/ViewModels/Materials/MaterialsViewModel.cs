@@ -60,6 +60,15 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
     protected override string LoadErrorMessage =>
         "No fue posible cargar los materiales.";
 
+    protected override string EmptyListMessage =>
+        "Aún no hay materiales registrados.";
+
+    protected override string NoResultsMessage =>
+        "No se encontraron materiales con los filtros aplicados.";
+
+    protected override bool HasExtraFilters =>
+        IsActiveFilter is not null;
+
     // Comandos
 
     public AsyncRelayCommand NewMaterialCommand { get; }

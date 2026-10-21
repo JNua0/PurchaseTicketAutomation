@@ -20,6 +20,7 @@ public abstract class PagedListViewModel<TItem> : ObservableObject
     private bool _isLoading;
     private bool _isBusy;
     private TItem? _selectedItem;
+    private string? _appliedSearch;
 
     // Constructor
 
@@ -59,7 +60,11 @@ public abstract class PagedListViewModel<TItem> : ObservableObject
     public string QueryErrorMessage
     {
         get => _queryErrorMessage;
-        protected set => SetProperty(ref _queryErrorMessage, value);
+        protected set
+        {
+            if (SetProperty(ref _queryErrorMessage, value))
+                OnPropertyChanged(nameof(IsEmpty));
+        }
     }
 
     public int CurrentPage
@@ -108,8 +113,14 @@ public abstract class PagedListViewModel<TItem> : ObservableObject
         get => _isLoading;
         private set
         {
-            if (SetProperty(ref _isLoading, value))
-                NotifyCommandsCanExecuteChanged();
+            if (!SetProperty(ref _isLoading, value))
+                return;
+
+            NotifyCommandsCanExecuteChanged();
+
+            // Al terminar la carga se decide si mostrar el mensaje de vacio
+            OnPropertyChanged(nameof(IsEmpty));
+            OnPropertyChanged(nameof(EmptyMessage));
         }
     }
 
@@ -130,10 +141,33 @@ public abstract class PagedListViewModel<TItem> : ObservableObject
         set => SetProperty(ref _selectedItem, value);
     }
 
+    // Sin registros, sin carga en curso y sin error que ya lo explique
+    public bool IsEmpty =>
+        !IsLoading
+        && Items.Count == 0
+        && string.IsNullOrEmpty(QueryErrorMessage);
+
+    public string EmptyMessage =>
+        HasAppliedFilters
+            ? NoResultsMessage
+            : EmptyListMessage;
+
+    // La busqueda aplicada cuenta como filtro; cada pantalla agrega los suyos
+    protected bool HasAppliedFilters =>
+        _appliedSearch is not null || HasExtraFilters;
+
+    protected virtual bool HasExtraFilters => false;
+
     protected IServiceScopeFactory ScopeFactory { get; }
 
     // Mensaje que se muestra si la consulta falla
     protected abstract string LoadErrorMessage { get; }
+
+    // Mensaje cuando no existe ningun registro
+    protected abstract string EmptyListMessage { get; }
+
+    // Mensaje cuando los filtros no encontraron registros
+    protected abstract string NoResultsMessage { get; }
 
     // Comandos
 
@@ -191,6 +225,8 @@ public abstract class PagedListViewModel<TItem> : ObservableObject
             string? search = string.IsNullOrWhiteSpace(SearchText)
                 ? null
                 : SearchText.Trim();
+
+            _appliedSearch = search;
 
             page = Math.Max(1, page);
 

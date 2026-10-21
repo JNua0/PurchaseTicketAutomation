@@ -4,7 +4,8 @@
              xmlns:layout="clr-namespace:PurchaseTicket.Desktop.Components.Layout"
              xmlns:materials="clr-namespace:PurchaseTicket.Desktop.Views.Materials"
              xmlns:pagination="clr-namespace:PurchaseTicket.Desktop.Components.Pagination"
-             xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions">
+             xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions"
+             xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback">
 
     <!-- Estructura principal -->
     <layout:PageLayout>
@@ -61,6 +62,14 @@
 
                             <!-- Tabla de materiales -->
                             <materials:MaterialTableView Grid.Row="0"/>
+
+                            <!-- Mensaje de tabla vacia, debajo de los encabezados -->
+                            <feedback:EmptyState
+                                Grid.Row="0"
+                                Margin="0,42,0,0"
+                                Message="{Binding EmptyMessage}"
+                                Visibility="{Binding IsEmpty,
+                                                     Converter={StaticResource BoolToVisibility}}"/>
 
                             <!-- Controles de paginacion -->
                             <pagination:PaginationControl

@@ -18,6 +18,10 @@
                 <ResourceDictionary Source="Themes/SidebarStyles.xaml"/>
 
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Convierte true/false en Visible/Collapsed -->
+            <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+            
         </ResourceDictionary>
     </Application.Resources>
 
