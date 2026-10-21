@@ -336,7 +336,9 @@ public class PurchaseTicket
     }
 
     // Normalize Functions
-    private static string NormalizeTransporter(string transporter)
+    // Publicos para que la interfaz valide cada campo con las mismas reglas,
+    // igual que Supplier.NormalizeName
+    public static string NormalizeTransporter(string transporter)
     {
         if (string.IsNullOrWhiteSpace(transporter))
             throw new ArgumentException("El transportista es obligatorio.");
@@ -380,7 +382,7 @@ public class PurchaseTicket
         return licensePlate;
     }
 
-    private static string? NormalizeOptionalLicensePlate(string? licensePlate)
+    public static string? NormalizeOptionalLicensePlate(string? licensePlate)
     {
         if (string.IsNullOrWhiteSpace(licensePlate))
             return null;
@@ -389,7 +391,7 @@ public class PurchaseTicket
             licensePlate);
     }
 
-    private static string NormalizeLicensePlate(string licensePlate)
+    public static string NormalizeLicensePlate(string licensePlate)
     {
         if (string.IsNullOrWhiteSpace(licensePlate))
             throw new ArgumentException("Las placas son obligatorias.");
