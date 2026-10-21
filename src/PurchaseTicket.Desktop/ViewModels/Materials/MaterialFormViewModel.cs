@@ -1,13 +1,15 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Materials.Create;
 using PurchaseTicket.Application.UseCases.Materials.Update;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.ViewModels.Base;
+using PurchaseTicket.Domain.Entities;
 
 namespace PurchaseTicket.Desktop.ViewModels.Materials;
 
 // Formulario para registrar o editar un material
-public class MaterialFormViewModel : ObservableObject
+public class MaterialFormViewModel : ValidatableObject
 {
     // Campos
 
@@ -17,6 +19,9 @@ public class MaterialFormViewModel : ObservableObject
     private string _name = string.Empty;
     private string _errorMessage = string.Empty;
     private bool _isSaving;
+
+    // Se activa tras el primer intento de guardar; desde ahi se valida al escribir
+    private bool _validateOnChange;
 
     // Constructor
 
@@ -63,11 +68,17 @@ public class MaterialFormViewModel : ObservableObject
         get => _name;
         set
         {
-            if (SetProperty(ref _name, value))
-                SaveCommand.NotifyCanExecuteChanged();
+            if (!SetProperty(ref _name, value))
+                return;
+
+            SaveCommand.NotifyCanExecuteChanged();
+
+            if (_validateOnChange)
+                ValidateName();
         }
     }
 
+    // Errores que no pertenecen a un campo, como fallas de conexion
     public string ErrorMessage
     {
         get => _errorMessage;
@@ -94,7 +105,8 @@ public class MaterialFormViewModel : ObservableObject
     {
         MaterialId = null;
         Name = string.Empty;
-        ErrorMessage = string.Empty;
+
+        ResetValidation();
     }
 
     public void InitializeForEdit(int materialId, string name)
@@ -103,7 +115,8 @@ public class MaterialFormViewModel : ObservableObject
 
         MaterialId = materialId;
         Name = name;
-        ErrorMessage = string.Empty;
+
+        ResetValidation();
     }
 
     // Metodos privados
@@ -119,8 +132,14 @@ public class MaterialFormViewModel : ObservableObject
         if (!CanSave())
             return;
 
-        IsSaving = true;
         ErrorMessage = string.Empty;
+        _validateOnChange = true;
+
+        // Las reglas se revisan antes de ir a la base de datos
+        if (!ValidateName())
+            return;
+
+        IsSaving = true;
 
         bool saved = false;
 
@@ -135,9 +154,17 @@ public class MaterialFormViewModel : ObservableObject
 
             saved = true;
         }
-        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        catch (NameAlreadyExistsException ex)
         {
-            // Errores de validacion del dominio: el mensaje ya es para el usuario
+            // Solo la base de datos sabe si el nombre ya existe
+            SetError(nameof(Name), ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            ErrorMessage = GetUserMessage(ex);
+        }
+        catch (InvalidOperationException ex)
+        {
             ErrorMessage = ex.Message;
         }
         catch (Exception ex)
@@ -155,6 +182,25 @@ public class MaterialFormViewModel : ObservableObject
         // mostrarse como error al guardar
         if (saved)
             Saved?.Invoke(this, EventArgs.Empty);
+    }
+
+    // Se usa la misma regla del dominio; no se copia aqui
+    private bool ValidateName()
+    {
+        string? error = ValidateRule(
+            () => Material.NormalizeName(Name));
+
+        SetError(nameof(Name), error);
+
+        return error is null;
+    }
+
+    private void ResetValidation()
+    {
+        _validateOnChange = false;
+        ErrorMessage = string.Empty;
+
+        ClearErrors();
     }
 
     private async Task CreateAsync(IServiceProvider services)

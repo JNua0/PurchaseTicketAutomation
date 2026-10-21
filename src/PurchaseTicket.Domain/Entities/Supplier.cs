@@ -62,7 +62,7 @@ public class Supplier
         IsActive = true;
     }
 
-    private static string? NormalizePhoneNumber(string? phoneNumber)
+    public static string? NormalizePhoneNumber(string? phoneNumber)
     {
         if (string.IsNullOrWhiteSpace(phoneNumber))
             return null;

@@ -1,4 +1,5 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Domain.Entities;
 
 namespace PurchaseTicket.Application.UseCases.Suppliers.Update;
@@ -31,7 +32,7 @@ public class UpdateSupplier
             normalizedName,
             command.SupplierId))
         {
-            throw new InvalidOperationException(
+            throw new NameAlreadyExistsException(
                 "Ya existe un proveedor registrado con ese nombre.");
         }
 

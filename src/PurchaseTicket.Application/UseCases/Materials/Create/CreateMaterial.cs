@@ -1,4 +1,5 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Domain.Entities;
 
 namespace PurchaseTicket.Application.UseCases.Materials.Create;
@@ -18,7 +19,7 @@ public class CreateMaterial
 
         if (await _repository.ExistsByNameAsync(material.Name))
         {
-            throw new InvalidOperationException(
+            throw new NameAlreadyExistsException(
                 "Ya existe un material registrado con ese nombre.");
         }
 

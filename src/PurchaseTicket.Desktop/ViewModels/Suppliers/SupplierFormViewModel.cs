@@ -1,13 +1,15 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Suppliers.Create;
 using PurchaseTicket.Application.UseCases.Suppliers.Update;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.ViewModels.Base;
+using PurchaseTicket.Domain.Entities;
 
 namespace PurchaseTicket.Desktop.ViewModels.Suppliers;
 
 // Formulario para registrar o editar un proveedor
-public class SupplierFormViewModel : ObservableObject
+public class SupplierFormViewModel : ValidatableObject
 {
     // Campos
 
@@ -18,6 +20,9 @@ public class SupplierFormViewModel : ObservableObject
     private string _phoneNumber = string.Empty;
     private string _errorMessage = string.Empty;
     private bool _isSaving;
+
+    // Se activa tras el primer intento de guardar; desde ahi se valida al escribir
+    private bool _validateOnChange;
 
     // Constructor
 
@@ -64,17 +69,27 @@ public class SupplierFormViewModel : ObservableObject
         get => _name;
         set
         {
-            if (SetProperty(ref _name, value))
-                SaveCommand.NotifyCanExecuteChanged();
+            if (!SetProperty(ref _name, value))
+                return;
+
+            SaveCommand.NotifyCanExecuteChanged();
+
+            if (_validateOnChange)
+                ValidateName();
         }
     }
 
     public string PhoneNumber
     {
         get => _phoneNumber;
-        set => SetProperty(ref _phoneNumber, value);
+        set
+        {
+            if (SetProperty(ref _phoneNumber, value) && _validateOnChange)
+                ValidatePhoneNumber();
+        }
     }
 
+    // Errores que no pertenecen a un campo, como fallas de conexion
     public string ErrorMessage
     {
         get => _errorMessage;
@@ -108,7 +123,8 @@ public class SupplierFormViewModel : ObservableObject
         SupplierId = null;
         Name = string.Empty;
         PhoneNumber = string.Empty;
-        ErrorMessage = string.Empty;
+
+        ResetValidation();
     }
 
     public void InitializeForEdit(
@@ -121,7 +137,8 @@ public class SupplierFormViewModel : ObservableObject
         SupplierId = supplierId;
         Name = name;
         PhoneNumber = phoneNumber ?? string.Empty;
-        ErrorMessage = string.Empty;
+
+        ResetValidation();
     }
 
     // Metodos privados
@@ -137,8 +154,14 @@ public class SupplierFormViewModel : ObservableObject
         if (!CanSave())
             return;
 
-        IsSaving = true;
         ErrorMessage = string.Empty;
+        _validateOnChange = true;
+
+        // Las reglas se revisan antes de ir a la base de datos
+        if (!ValidateAll())
+            return;
+
+        IsSaving = true;
 
         bool saved = false;
 
@@ -153,9 +176,17 @@ public class SupplierFormViewModel : ObservableObject
 
             saved = true;
         }
-        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        catch (NameAlreadyExistsException ex)
         {
-            // Errores de validacion del dominio: el mensaje ya es para el usuario
+            // Solo la base de datos sabe si el nombre ya existe
+            SetError(nameof(Name), ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            ErrorMessage = GetUserMessage(ex);
+        }
+        catch (InvalidOperationException ex)
+        {
             ErrorMessage = ex.Message;
         }
         catch (Exception ex)
@@ -173,6 +204,43 @@ public class SupplierFormViewModel : ObservableObject
         // mostrarse como error al guardar
         if (saved)
             Saved?.Invoke(this, EventArgs.Empty);
+    }
+
+    // Se usan las mismas reglas del dominio; no se copian aqui
+    private bool ValidateAll()
+    {
+        bool isNameValid = ValidateName();
+        bool isPhoneNumberValid = ValidatePhoneNumber();
+
+        return isNameValid && isPhoneNumberValid;
+    }
+
+    private bool ValidateName()
+    {
+        string? error = ValidateRule(
+            () => Supplier.NormalizeName(Name));
+
+        SetError(nameof(Name), error);
+
+        return error is null;
+    }
+
+    private bool ValidatePhoneNumber()
+    {
+        string? error = ValidateRule(
+            () => Supplier.NormalizePhoneNumber(PhoneNumber));
+
+        SetError(nameof(PhoneNumber), error);
+
+        return error is null;
+    }
+
+    private void ResetValidation()
+    {
+        _validateOnChange = false;
+        ErrorMessage = string.Empty;
+
+        ClearErrors();
     }
 
     private async Task CreateAsync(IServiceProvider services)

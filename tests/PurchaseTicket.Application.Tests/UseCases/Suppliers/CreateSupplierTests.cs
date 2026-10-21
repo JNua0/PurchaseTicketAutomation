@@ -1,4 +1,5 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Suppliers.Create;
 using PurchaseTicket.Domain.Entities;
 
@@ -112,7 +113,7 @@ public class CreateSupplierTests
         async Task Act() => await useCase.ExecuteAsync(command);
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(Act);
+        await Assert.ThrowsAsync<NameAlreadyExistsException>(Act);
 
         Assert.Null(repository.AddedSupplier);
     }

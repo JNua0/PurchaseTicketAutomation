@@ -1,4 +1,5 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Domain.Entities;
 
 namespace PurchaseTicket.Application.UseCases.Suppliers.Create;
@@ -21,7 +22,7 @@ public class CreateSupplier
 
         if (await _repository.ExistsByNameAsync(supplier.Name))
         {
-            throw new InvalidOperationException(
+            throw new NameAlreadyExistsException(
                 "Ya existe un proveedor registrado con ese nombre.");
         }
 

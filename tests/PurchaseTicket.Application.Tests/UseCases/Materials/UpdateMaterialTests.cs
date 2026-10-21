@@ -1,4 +1,5 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Materials.Update;
 using PurchaseTicket.Domain.Entities;
 
@@ -121,7 +122,7 @@ public class UpdateMaterialTests
         async Task Act() => await useCase.ExecuteAsync(command);
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(Act);
+        await Assert.ThrowsAsync<NameAlreadyExistsException>(Act);
 
         Assert.Equal("Acero", material.Name);
         Assert.Null(repository.UpdatedMaterial);

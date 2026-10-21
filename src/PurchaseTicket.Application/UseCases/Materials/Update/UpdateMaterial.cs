@@ -1,4 +1,5 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Domain.Entities;
 
 namespace PurchaseTicket.Application.UseCases.Materials.Update;
@@ -30,7 +31,7 @@ public class UpdateMaterial
             normalizedName,
             command.MaterialId))
         {
-            throw new InvalidOperationException(
+            throw new NameAlreadyExistsException(
                 "Ya existe un material registrado con ese nombre.");
         }
 
