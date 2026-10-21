@@ -1,4 +1,5 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Materials.Activate;
 using PurchaseTicket.Application.UseCases.Materials.Deactivate;
 using PurchaseTicket.Domain.Entities;
@@ -82,7 +83,7 @@ public class ActivateMaterialTests
         async Task Act() => await useCase.ExecuteAsync(1);
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(Act);
+        await Assert.ThrowsAsync<NotFoundException>(Act);
 
         Assert.Null(repository.UpdatedMaterial);
     }

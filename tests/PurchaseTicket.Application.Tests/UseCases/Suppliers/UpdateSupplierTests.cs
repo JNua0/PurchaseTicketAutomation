@@ -107,7 +107,7 @@ public class UpdateSupplierTests
         async Task Act() => await useCase.ExecuteAsync(command);
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(Act);
+        await Assert.ThrowsAsync<NotFoundException>(Act);
 
         Assert.Null(repository.UpdatedSupplier);
     }

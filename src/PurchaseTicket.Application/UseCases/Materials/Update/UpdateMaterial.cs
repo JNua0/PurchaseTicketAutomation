@@ -20,7 +20,7 @@ public class UpdateMaterial
 
         if (material is null)
         {
-            throw new InvalidOperationException(
+            throw new NotFoundException(
                 "No se encontró el material.");
         }
 

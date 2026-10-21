@@ -1,4 +1,5 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Application.Common;
 
 namespace PurchaseTicket.Application.UseCases.Materials.Deactivate;
 
@@ -17,7 +18,7 @@ public class DeactivateMaterial
 
         if (material is null)
         {
-            throw new InvalidOperationException(
+            throw new NotFoundException(
                 "No se encontró el material.");
         }
 

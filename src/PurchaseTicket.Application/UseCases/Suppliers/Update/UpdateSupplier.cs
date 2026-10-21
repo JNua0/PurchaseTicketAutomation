@@ -21,7 +21,7 @@ public class UpdateSupplier
 
         if (supplier is null)
         {
-            throw new InvalidOperationException(
+            throw new NotFoundException(
                 "No se encontró el proveedor.");
         }
 
