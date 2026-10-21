@@ -1,0 +1,101 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Feedback.Toast"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
+             x:Name="Root">
+
+    <!-- Aviso breve con icono y mensaje -->
+    <Border CornerRadius="10"
+            Padding="16,12"
+            BorderThickness="1"
+            MinWidth="280"
+            MaxWidth="460">
+
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="16"
+                              ShadowDepth="2"
+                              Opacity="0.15"/>
+        </Border.Effect>
+
+        <Border.Style>
+            <Style TargetType="Border">
+
+                <Setter Property="Background"
+                        Value="{StaticResource SuccessSoftBrush}"/>
+
+                <Setter Property="BorderBrush"
+                        Value="{StaticResource SuccessBrush}"/>
+
+                <Style.Triggers>
+
+                    <DataTrigger Binding="{Binding Kind, ElementName=Root}"
+                                 Value="{x:Static feedback:StatusKind.Error}">
+
+                        <Setter Property="Background"
+                                Value="{StaticResource ErrorSoftBrush}"/>
+
+                        <Setter Property="BorderBrush"
+                                Value="{StaticResource ErrorBrush}"/>
+
+                    </DataTrigger>
+
+                </Style.Triggers>
+
+            </Style>
+        </Border.Style>
+
+        <StackPanel Orientation="Horizontal">
+
+            <!-- El icono y su color cambian segun el tipo de aviso -->
+            <Path Width="20"
+                  Height="20"
+                  Margin="0,0,10,0"
+                  VerticalAlignment="Center"
+                  Stretch="Uniform"
+                  Fill="Transparent"
+                  StrokeThickness="2"
+                  StrokeStartLineCap="Round"
+                  StrokeEndLineCap="Round"
+                  StrokeLineJoin="Round">
+
+                <Path.Style>
+                    <Style TargetType="Path">
+
+                        <Setter Property="Data"
+                                Value="{StaticResource ActivateIcon}"/>
+
+                        <Setter Property="Stroke"
+                                Value="{StaticResource SuccessBrush}"/>
+
+                        <Style.Triggers>
+
+                            <DataTrigger Binding="{Binding Kind, ElementName=Root}"
+                                         Value="{x:Static feedback:StatusKind.Error}">
+
+                                <Setter Property="Data"
+                                        Value="{StaticResource DeactivateIcon}"/>
+
+                                <Setter Property="Stroke"
+                                        Value="{StaticResource ErrorBrush}"/>
+
+                            </DataTrigger>
+
+                        </Style.Triggers>
+
+                    </Style>
+                </Path.Style>
+
+            </Path>
+
+            <TextBlock Text="{Binding Message, ElementName=Root}"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource PrimaryTextBrush}"
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Center"/>
+
+        </StackPanel>
+
+    </Border>
+
+</UserControl>

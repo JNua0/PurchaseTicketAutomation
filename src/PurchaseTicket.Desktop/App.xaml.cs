@@ -74,6 +74,11 @@ public partial class App : System.Windows.Application
                     IConfirmationDialogService,
                     ConfirmationDialogService>();
 
+                // Avisos breves: una sola instancia para toda la aplicacion
+                services.AddSingleton<NotificationService>();
+                services.AddSingleton<INotificationService>(
+                    provider => provider.GetRequiredService<NotificationService>());
+
                 // Main window and view models
                 services.AddTransient<MainWindow>();
                 services.AddTransient<MainViewModel>();

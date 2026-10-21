@@ -6,6 +6,7 @@ using PurchaseTicket.Application.UseCases.Materials.Get;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.Services;
 using PurchaseTicket.Desktop.ViewModels.Base;
+using PurchaseTicket.Domain.Entities;
 
 namespace PurchaseTicket.Desktop.ViewModels.Materials;
 
@@ -16,6 +17,7 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
 
     private readonly IMaterialDialogService _materialDialogService;
     private readonly IConfirmationDialogService _confirmationDialogService;
+    private readonly INotificationService _notifications;
 
     private bool? _isActiveFilter;
 
@@ -24,11 +26,13 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
     public MaterialsViewModel(
         IServiceScopeFactory scopeFactory,
         IMaterialDialogService materialDialogService,
-        IConfirmationDialogService confirmationDialogService)
+        IConfirmationDialogService confirmationDialogService,
+        INotificationService notifications)
         : base(scopeFactory)
     {
         _materialDialogService = materialDialogService;
         _confirmationDialogService = confirmationDialogService;
+        _notifications = notifications;
 
         NewMaterialCommand = new AsyncRelayCommand(
             NewMaterialAsync,
@@ -117,6 +121,8 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
         if (!_materialDialogService.ShowCreateDialog())
             return;
 
+        _notifications.ShowSuccess("Material registrado correctamente.");
+
         await ReloadAfterActionAsync(
             page: 1,
             "El material se registró correctamente, " +
@@ -131,6 +137,9 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
 
         if (!saved)
             return;
+
+        _notifications.ShowSuccess(
+            $"Material \"{material.Name}\" actualizado correctamente.");
 
         await ReloadAfterActionAsync(
             CurrentPage,
@@ -185,6 +194,13 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
         {
             IsBusy = false;
         }
+
+        string result = material.IsActive
+            ? "desactivado"
+            : "activado";
+
+        _notifications.ShowSuccess(
+            $"Material \"{material.Name}\" {result} correctamente.");
 
         await ReloadAfterActionAsync(
             CurrentPage,

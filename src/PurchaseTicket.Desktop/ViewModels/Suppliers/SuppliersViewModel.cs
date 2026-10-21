@@ -16,19 +16,21 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
 
     private readonly ISupplierDialogService _supplierDialogService;
     private readonly IConfirmationDialogService _confirmationDialogService;
+    private readonly INotificationService _notifications;
 
     private bool? _isActiveFilter;
 
     // Constructor
-
     public SuppliersViewModel(
         IServiceScopeFactory scopeFactory,
         ISupplierDialogService supplierDialogService,
-        IConfirmationDialogService confirmationDialogService)
+        IConfirmationDialogService confirmationDialogService,
+        INotificationService notifications)
         : base(scopeFactory)
     {
         _supplierDialogService = supplierDialogService;
         _confirmationDialogService = confirmationDialogService;
+        _notifications = notifications;
 
         NewSupplierCommand = new AsyncRelayCommand(
             NewSupplierAsync,
@@ -117,6 +119,8 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
         if (!_supplierDialogService.ShowCreateDialog())
             return;
 
+        _notifications.ShowSuccess("Proveedor registrado correctamente.");
+
         await ReloadAfterActionAsync(
             page: 1,
             "El proveedor se registró correctamente, " +
@@ -132,6 +136,9 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
 
         if (!saved)
             return;
+
+        _notifications.ShowSuccess(
+            $"Proveedor \"{supplier.Name}\" actualizado correctamente.");
 
         await ReloadAfterActionAsync(
             CurrentPage,
@@ -186,6 +193,13 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
         {
             IsBusy = false;
         }
+
+        string result = supplier.IsActive
+            ? "desactivado"
+            : "activado";
+
+        _notifications.ShowSuccess(
+            $"Proveedor \"{supplier.Name}\" {result} correctamente.");
 
         await ReloadAfterActionAsync(
             CurrentPage,
