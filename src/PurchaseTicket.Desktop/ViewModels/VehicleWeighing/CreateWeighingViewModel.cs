@@ -3,8 +3,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
-using PurchaseTicket.Domain.Enums;
-using PurchaseTicket.Domain.Exceptions;
 using PurchaseTicket.Application.Abstractions.Printing;
 using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Materials.GetActive;
@@ -14,6 +12,8 @@ using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateSingle;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Print;
 using PurchaseTicket.Application.UseCases.Suppliers.GetActive;
 using PurchaseTicket.Application.UseCases.Weighing.ReadWeight;
+using PurchaseTicket.Domain.Enums;
+using PurchaseTicket.Domain.Exceptions;
 using PurchaseTicket.Desktop.Commands;
 
 namespace PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
@@ -454,7 +454,7 @@ public class CreateWeighingViewModel : INotifyPropertyChanged
         {
             ErrorMessage = ex.Message;
         }
-        catch (InvalidOperationException ex)
+        catch (ArgumentException ex)
         {
             ErrorMessage = ex.Message;
         }
@@ -549,7 +549,7 @@ public class CreateWeighingViewModel : INotifyPropertyChanged
         {
             ErrorMessage = ex.Message;
         }
-        catch (InvalidOperationException ex)
+        catch (ArgumentException ex)
         {
             ErrorMessage = ex.Message;
         }
