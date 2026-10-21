@@ -4,14 +4,28 @@ namespace PurchaseTicket.Infrastructure.Communication.Serial;
 
 public sealed class SerialPortAdapter : ISerialPort
 {
+    // Campos
+
     private readonly SerialPort _serialPort;
+
+    // Constructor
 
     public SerialPortAdapter(SerialPort serialPort)
     {
         _serialPort = serialPort;
     }
 
+    // Propiedades
+
     public bool IsOpen => _serialPort.IsOpen;
+
+    public int ReadTimeout
+    {
+        get => _serialPort.ReadTimeout;
+        set => _serialPort.ReadTimeout = value;
+    }
+
+    // Metodos publicos
 
     public void Open()
     {
@@ -41,11 +55,5 @@ public sealed class SerialPortAdapter : ISerialPort
     public void Dispose()
     {
         _serialPort.Dispose();
-    }
-
-    public int ReadTimeout
-    {
-        get => _serialPort.ReadTimeout;
-        set => _serialPort.ReadTimeout = value;
     }
 }

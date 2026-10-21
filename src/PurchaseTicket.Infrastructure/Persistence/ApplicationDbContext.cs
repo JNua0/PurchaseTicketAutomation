@@ -13,7 +13,9 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Ticket> PurchaseTickets => Set<Ticket>();
+
     public DbSet<Supplier> Suppliers => Set<Supplier>();
+
     public DbSet<Material> Materials => Set<Material>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PurchaseTicket.Domain.Entities;
 using PurchaseTicket.Application.Abstractions.Persistence;
+using PurchaseTicket.Domain.Entities;
 
 namespace PurchaseTicket.Infrastructure.Persistence.Repositories;
 

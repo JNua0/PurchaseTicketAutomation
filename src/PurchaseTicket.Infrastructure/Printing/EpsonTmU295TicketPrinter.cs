@@ -7,10 +7,14 @@ namespace PurchaseTicket.Infrastructure.Printing;
 
 public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
 {
+    // Campos
+
     private const int LineWidth = 35;
     private readonly ISerialPortFactory _serialPortFactory;
     private readonly TicketPrinterOptions _options;
     private readonly TimeProvider _timeProvider;
+
+    // Constructor
 
     public EpsonTmU295TicketPrinter(
         ISerialPortFactory serialPortFactory,
@@ -21,6 +25,8 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         _options = options;
         _timeProvider = timeProvider;
     }
+
+    // Metodos publicos
 
     public Task PrintConventionalInitialAsync(TicketPrintData data)
     {
@@ -107,6 +113,60 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
             if (serialPort.IsOpen)
                 serialPort.Close();
         }
+    }
+
+    // Metodos privados
+
+    private static string FormatWeight(decimal weight)
+    {
+        return weight.ToString(
+            "#,##0",
+            CultureInfo.InvariantCulture);
+    }
+
+    private static void AppendField(
+        StringBuilder builder,
+        string label,
+        string value)
+    {
+        string prefix = $"{label.PadRight(9)}: ";
+        string indentation = new(' ', prefix.Length);
+
+        var words = value.Split(
+            ' ',
+            StringSplitOptions.RemoveEmptyEntries);
+
+        var currentLine = new StringBuilder(prefix);
+
+        foreach (var word in words)
+        {
+            bool isFirstWord =
+                currentLine.Length == prefix.Length;
+
+            int requiredLength =
+                word.Length + (isFirstWord ? 0 : 1);
+
+            if (currentLine.Length + requiredLength
+                <= LineWidth)
+            {
+                if (!isFirstWord)
+                    currentLine.Append(' ');
+
+                currentLine.Append(word);
+            }
+            else
+            {
+                builder.AppendLine(
+                    currentLine.ToString());
+
+                currentLine.Clear();
+                currentLine.Append(indentation);
+                currentLine.Append(word);
+            }
+        }
+
+        builder.AppendLine(
+            currentLine.ToString());
     }
 
     private string BuildInitialTicket(TicketPrintData data)
@@ -294,57 +354,5 @@ public sealed class EpsonTmU295TicketPrinter : ITicketPrinter
         return localDate.ToString(
             "dd/MM/yyyy HH:mm",
             CultureInfo.InvariantCulture);
-    }
-
-    private static string FormatWeight(decimal weight)
-    {
-        return weight.ToString(
-            "#,##0",
-            CultureInfo.InvariantCulture);
-    }
-
-    private static void AppendField(
-        StringBuilder builder,
-        string label,
-        string value)
-    {
-        string prefix = $"{label.PadRight(9)}: ";
-        string indentation = new(' ', prefix.Length);
-
-        var words = value.Split(
-            ' ',
-            StringSplitOptions.RemoveEmptyEntries);
-
-        var currentLine = new StringBuilder(prefix);
-
-        foreach (var word in words)
-        {
-            bool isFirstWord =
-                currentLine.Length == prefix.Length;
-
-            int requiredLength =
-                word.Length + (isFirstWord ? 0 : 1);
-
-            if (currentLine.Length + requiredLength
-                <= LineWidth)
-            {
-                if (!isFirstWord)
-                    currentLine.Append(' ');
-
-                currentLine.Append(word);
-            }
-            else
-            {
-                builder.AppendLine(
-                    currentLine.ToString());
-
-                currentLine.Clear();
-                currentLine.Append(indentation);
-                currentLine.Append(word);
-            }
-        }
-
-        builder.AppendLine(
-            currentLine.ToString());
     }
 }
