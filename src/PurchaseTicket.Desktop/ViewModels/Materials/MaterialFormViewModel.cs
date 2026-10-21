@@ -165,6 +165,11 @@ public class MaterialFormViewModel : ValidatableObject
             // Solo la base de datos sabe si el nombre ya existe
             SetError(nameof(Name), ex.Message);
         }
+        catch (NotFoundException ex)
+        {
+            // El material ya no existe, por ejemplo con la lista desactualizada
+            ErrorMessage = ex.Message;
+        }
         catch (ArgumentException ex)
         {
             ErrorMessage = GetUserMessage(ex);

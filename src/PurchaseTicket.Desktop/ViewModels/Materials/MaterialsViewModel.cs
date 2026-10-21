@@ -185,6 +185,19 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
                     .ExecuteAsync(material.Id);
             }
         }
+        catch (NotFoundException ex)
+        {
+            // La fila estaba desactualizada: se avisa y se recarga para quitarla.
+            // Va en un aviso porque la recarga limpia el mensaje de la lista
+            _notifications.ShowError(ex.Message);
+            IsBusy = false;
+
+            await ReloadAfterActionAsync(
+                CurrentPage,
+                "No fue posible actualizar el listado.");
+
+            return;
+        }
         catch (Exception ex)
         {
             QueryErrorMessage =
