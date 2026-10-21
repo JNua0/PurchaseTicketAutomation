@@ -10,6 +10,7 @@
         <!-- Cancelar operacion -->
         <Button Content="Cancelar"
                 Command="{Binding CancelCommand, ElementName=Root}"
+                IsCancel="True"
                 Width="110"
                 Height="38"
                 Margin="0,0,10,0">
@@ -39,6 +40,7 @@
         <!-- Guardar formulario -->
         <Button Content="{Binding SaveButtonText, ElementName=Root}"
                 Command="{Binding SaveCommand, ElementName=Root}"
+                IsDefault="True"
                 Style="{StaticResource PrimaryButtonStyle}"
                 Width="140"
                 Height="38"/>

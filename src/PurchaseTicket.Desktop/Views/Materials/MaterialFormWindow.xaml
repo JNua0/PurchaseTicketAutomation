@@ -63,6 +63,7 @@
                 <forms:FormTextField
                     Label="Nombre del material"
                     IsRequired="True"
+                    FocusOnLoad="True"
                     Text="{Binding Name,
                                    Mode=TwoWay,
                                    UpdateSourceTrigger=PropertyChanged}"

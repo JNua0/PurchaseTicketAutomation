@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace PurchaseTicket.Desktop.Components.Forms;
 
@@ -8,6 +9,8 @@ public partial class FormTextField : UserControl
     public FormTextField()
     {
         InitializeComponent();
+
+        Loaded += OnLoaded;
     }
 
     // Etiqueta del campo
@@ -38,6 +41,20 @@ public partial class FormTextField : UserControl
         set => SetValue(IsRequiredProperty, value);
     }
 
+    // Indica si el cursor debe colocarse en este campo al abrir el formulario
+    public static readonly DependencyProperty FocusOnLoadProperty =
+        DependencyProperty.Register(
+            nameof(FocusOnLoad),
+            typeof(bool),
+            typeof(FormTextField),
+            new PropertyMetadata(false));
+
+    public bool FocusOnLoad
+    {
+        get => (bool)GetValue(FocusOnLoadProperty);
+        set => SetValue(FocusOnLoadProperty, value);
+    }
+
     // Valor del campo
     public static readonly DependencyProperty TextProperty =
         DependencyProperty.Register(
@@ -66,5 +83,22 @@ public partial class FormTextField : UserControl
     {
         get => (int)GetValue(MaxLengthProperty);
         set => SetValue(MaxLengthProperty, value);
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        if (!FocusOnLoad)
+            return;
+
+        // Se espera a que la ventana termine de mostrarse; antes, el foco se pierde
+        Dispatcher.BeginInvoke(
+            () =>
+            {
+                InputTextBox.Focus();
+
+                // Al editar, el cursor queda al final del texto existente
+                InputTextBox.CaretIndex = InputTextBox.Text.Length;
+            },
+            DispatcherPriority.Input);
     }
 }

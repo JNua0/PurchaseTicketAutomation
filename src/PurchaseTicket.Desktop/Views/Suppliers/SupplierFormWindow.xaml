@@ -65,6 +65,7 @@
                 <forms:FormTextField
                     Label="Nombre del proveedor"
                     IsRequired="True"
+                    FocusOnLoad="True"
                     Text="{Binding Name,
                                    Mode=TwoWay,
                                    UpdateSourceTrigger=PropertyChanged}"

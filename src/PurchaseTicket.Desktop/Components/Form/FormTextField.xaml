@@ -76,7 +76,8 @@
         </StackPanel>
 
         <!-- Entrada de texto -->
-        <TextBox Style="{StaticResource TextBoxStyle}"
+        <TextBox x:Name="InputTextBox"
+                 Style="{StaticResource TextBoxStyle}"
                  Text="{Binding Text,
                                 ElementName=Root,
                                 Mode=TwoWay,
