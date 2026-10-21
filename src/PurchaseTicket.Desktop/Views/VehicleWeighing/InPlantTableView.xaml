@@ -1,0 +1,92 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Views.VehicleWeighing.InPlantTableView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Tabla de vehiculos en planta: filas de dos lineas -->
+    <DataGrid Style="{StaticResource AppDataGridStyle}"
+              RowHeight="60"
+              ItemsSource="{Binding Items}"
+              SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+
+        <DataGrid.Columns>
+
+            <!-- Folio -->
+            <DataGridTextColumn Header="Folio"
+                                Binding="{Binding TicketNumber}"
+                                ElementStyle="{StaticResource CellEmphasisTextStyle}"
+                                Width="80"
+                                MinWidth="80"/>
+
+            <!-- Hora de entrada y tiempo en planta -->
+            <DataGridTemplateColumn Header="Entrada"
+                                    Width="170"
+                                    MinWidth="170">
+
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+
+                        <StackPanel>
+
+                            <TextBlock Text="{Binding CheckInAt,
+                                                      StringFormat={}{0:dd/MM/yyyy HH:mm}}"/>
+
+                            <TextBlock Text="{Binding TimeInPlant}"
+                                       Style="{StaticResource CellSecondaryTextStyle}"/>
+
+                        </StackPanel>
+
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+
+            </DataGridTemplateColumn>
+
+            <!-- Proveedor y material -->
+            <DataGridTemplateColumn Header="Proveedor · Material"
+                                    Width="*"
+                                    MinWidth="200">
+
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+
+                        <StackPanel>
+
+                            <TextBlock Text="{Binding SupplierName}"
+                                       TextTrimming="CharacterEllipsis"/>
+
+                            <TextBlock Text="{Binding MaterialName}"
+                                       Style="{StaticResource CellSecondaryTextStyle}"/>
+
+                        </StackPanel>
+
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+
+            </DataGridTemplateColumn>
+
+            <!-- Placas: obligatorias en el convencional -->
+            <DataGridTextColumn Header="Placas"
+                                Binding="{Binding LicensePlate}"
+                                ElementStyle="{StaticResource CellPlateTextStyle}"
+                                Width="110"
+                                MinWidth="110"/>
+
+            <!-- Chofer -->
+            <DataGridTextColumn Header="Chofer"
+                                Binding="{Binding Transporter}"
+                                ElementStyle="{StaticResource CellTextStyle}"
+                                Width="170"
+                                MinWidth="150"/>
+
+            <!-- Peso bruto -->
+            <DataGridTextColumn Header="Peso bruto (kg)"
+                                HeaderStyle="{StaticResource RightAlignedColumnHeaderStyle}"
+                                Binding="{Binding GrossWeight, StringFormat={}{0:N0}}"
+                                ElementStyle="{StaticResource CellNumberTextStyle}"
+                                Width="140"
+                                MinWidth="140"/>
+
+        </DataGrid.Columns>
+
+    </DataGrid>
+
+</UserControl>

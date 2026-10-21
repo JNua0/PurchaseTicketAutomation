@@ -143,7 +143,7 @@ public class MainViewModel : INotifyPropertyChanged
             () => { },
             DispatcherPriority.ApplicationIdle);
 
-        await _vehicleWeighingViewModel.LoadTicketsAsync();
+        await _vehicleWeighingViewModel.LoadAsync();
     }
 
     // Mostrar el modulo de configuracion

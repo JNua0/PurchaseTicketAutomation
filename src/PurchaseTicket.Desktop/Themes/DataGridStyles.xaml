@@ -46,6 +46,16 @@
 
     </Style>
 
+    <!-- Encabezado a la derecha: columnas numericas, alineadas con sus valores -->
+    <Style x:Key="RightAlignedColumnHeaderStyle"
+           TargetType="DataGridColumnHeader"
+           BasedOn="{StaticResource AppDataGridColumnHeaderStyle}">
+
+        <Setter Property="HorizontalContentAlignment"
+                Value="Right"/>
+
+    </Style>
+
     <!-- Filas de la tabla -->
     <Style x:Key="AppDataGridRowStyle"
            TargetType="DataGridRow">
@@ -245,6 +255,78 @@
             </DataTrigger>
 
         </Style.Triggers>
+
+    </Style>
+
+    <!-- Textos de celda compartidos -->
+
+    <!-- Segunda linea de una celda: dato complementario en gris y mas chico -->
+    <Style x:Key="CellSecondaryTextStyle"
+           TargetType="TextBlock">
+
+        <Setter Property="FontSize"
+                Value="12"/>
+
+        <Setter Property="Foreground"
+                Value="{StaticResource SecondaryTextBrush}"/>
+
+        <Setter Property="Margin"
+                Value="0,2,0,0"/>
+
+        <Setter Property="TextTrimming"
+                Value="CharacterEllipsis"/>
+
+    </Style>
+
+    <!-- Dato principal de la fila, como el folio -->
+    <Style x:Key="CellEmphasisTextStyle"
+           TargetType="TextBlock">
+
+        <Setter Property="FontWeight"
+                Value="SemiBold"/>
+
+        <Setter Property="VerticalAlignment"
+                Value="Center"/>
+
+    </Style>
+
+    <!-- Placas en fuente monoespaciada: se distinguen 0/O y 1/I -->
+    <Style x:Key="CellPlateTextStyle"
+           TargetType="TextBlock">
+
+        <Setter Property="FontFamily"
+                Value="Consolas"/>
+
+        <Setter Property="VerticalAlignment"
+                Value="Center"/>
+
+    </Style>
+
+    <!-- Cantidades a la derecha para comparar cifras de un vistazo -->
+    <Style x:Key="CellNumberTextStyle"
+           TargetType="TextBlock">
+
+        <Setter Property="FontWeight"
+                Value="SemiBold"/>
+
+        <Setter Property="HorizontalAlignment"
+                Value="Right"/>
+
+        <Setter Property="VerticalAlignment"
+                Value="Center"/>
+
+    </Style>
+
+    <!-- Texto simple de celda. Asignarlo quita el margen de 2 px que
+         DataGridTextColumn pone por defecto y lo alinea con su encabezado -->
+    <Style x:Key="CellTextStyle"
+           TargetType="TextBlock">
+
+        <Setter Property="VerticalAlignment"
+                Value="Center"/>
+
+        <Setter Property="TextTrimming"
+                Value="CharacterEllipsis"/>
 
     </Style>
 

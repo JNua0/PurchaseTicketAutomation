@@ -1,0 +1,113 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Views.VehicleWeighing.WeighingFiltersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:filters="clr-namespace:PurchaseTicket.Desktop.Components.Filters"
+             xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback">
+
+    <!-- Contenedor principal de filtros -->
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Busqueda y selector de vista -->
+        <Grid Grid.Row="0">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"
+                                  MinWidth="150"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Busqueda por folio, placas, chofer, proveedor o material -->
+            <filters:SearchBox
+                Grid.Column="0"
+                Margin="0,0,20,0"
+                Label="Buscar ticket"
+                SearchText="{Binding SearchText, Mode=TwoWay}"
+                SearchCommand="{Binding SearchCommand}"
+                IsLoading="{Binding IsLoading}"/>
+
+            <!-- Selector de vista: recarga al cambiar -->
+            <StackPanel Grid.Column="1">
+
+                <TextBlock Text="Mostrar"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource PrimaryTextBrush}"
+                           Margin="0,0,0,7"/>
+
+                <ListBox ItemsSource="{Binding ViewOptions}"
+                         SelectedValuePath="Value"
+                         SelectedValue="{Binding SelectedView, Mode=TwoWay}">
+
+                    <ListBox.Style>
+                        <Style TargetType="ListBox"
+                               BasedOn="{StaticResource SegmentedSelectorStyle}">
+
+                            <Style.Triggers>
+
+                                <!-- Cambiar de vista durante la carga dejaria
+                                     la tabla con los datos de la vista anterior -->
+                                <DataTrigger Binding="{Binding IsLoading}"
+                                             Value="True">
+                                    <Setter Property="IsEnabled"
+                                            Value="False"/>
+                                </DataTrigger>
+
+                            </Style.Triggers>
+
+                        </Style>
+                    </ListBox.Style>
+
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <TextBlock Text="{Binding Label}"
+                                           VerticalAlignment="Center"/>
+
+                                <!-- Contador de vehiculos en planta -->
+                                <Border Margin="8,0,0,0"
+                                        MinWidth="20"
+                                        Height="20"
+                                        Padding="6,0"
+                                        CornerRadius="10"
+                                        Background="{StaticResource WarningSoftBrush}"
+                                        Visibility="{Binding ShowsCount,
+                                                             Converter={StaticResource BoolToVisibility}}">
+
+                                    <TextBlock Text="{Binding DataContext.InPlantCount,
+                                                              RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                               FontSize="12"
+                                               Foreground="{StaticResource WarningTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+
+                                </Border>
+
+                            </StackPanel>
+
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+
+                </ListBox>
+
+            </StackPanel>
+
+        </Grid>
+
+        <!-- Mensajes de carga y error -->
+        <feedback:QueryStatus
+            Grid.Row="1"
+            Margin="0,12,0,0"
+            IsLoading="{Binding IsLoading}"
+            LoadingMessage="Cargando pesajes..."
+            ErrorMessage="{Binding QueryErrorMessage}"/>
+
+    </Grid>
+
+</UserControl>

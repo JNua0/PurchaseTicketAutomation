@@ -58,6 +58,10 @@
     <SolidColorBrush x:Key="InfoBrush"
                      Color="#0A63C9"/>
 
+    <!-- Texto sobre WarningSoftBrush: WarningBrush no contrasta lo suficiente -->
+    <SolidColorBrush x:Key="WarningTextBrush"
+                     Color="#92400E"/>
+
     <!-- Fondos suaves de estado -->
     <SolidColorBrush x:Key="SuccessSoftBrush"
                      Color="#EDF8E7"/>

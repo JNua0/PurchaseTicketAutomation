@@ -1,306 +1,200 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
-using Microsoft.Extensions.DependencyInjection;
-using PurchaseTicket.Domain.Enums;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Get;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.Services;
+using PurchaseTicket.Desktop.ViewModels.Base;
+using PurchaseTicket.Domain.Enums;
 
 namespace PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 
-public class VehicleWeighingViewModel : INotifyPropertyChanged
+// Pantalla de pesaje con dos vistas que no se repiten: los convencionales
+// en planta y los pesajes unicos de hoy. Busqueda y paginacion vienen de la base
+public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IWeighingDialogService _weighingDialogService;
+    // Campos
 
-    private string _searchText = string.Empty;
-    private string _queryErrorMessage = string.Empty;
-    private int _currentPage = 1;
-    private int _pageSize = 20;
-    private int _totalCount;
-    private bool _isLoading;
-    private PurchaseTicketDto? _selectedTicket;
+    private readonly IWeighingDialogService _weighingDialogService;
+    private readonly TimeProvider _timeProvider;
+
+    private WeighingView _selectedView = WeighingView.InPlant;
+    private int _inPlantCount;
+
+    // Constructor
 
     public VehicleWeighingViewModel(
         IServiceScopeFactory scopeFactory,
-        IWeighingDialogService weighingDialogService)
+        IWeighingDialogService weighingDialogService,
+        TimeProvider timeProvider,
+        ILogger<VehicleWeighingViewModel> logger)
+        : base(scopeFactory, logger)
     {
-        _scopeFactory = scopeFactory;
         _weighingDialogService = weighingDialogService;
-
-        SearchTicketsCommand = new AsyncRelayCommand(
-            SearchTicketsAsync,
-            CanSearchTickets);
-
-        NextPageCommand = new AsyncRelayCommand(
-            NextPageAsync,
-            CanGoToNextPage);
-
-        PreviousPageCommand = new AsyncRelayCommand(
-            PreviousPageAsync,
-            CanGoToPreviousPage);
-
-        ChangePageSizeCommand = new AsyncRelayCommand(
-            ChangePageSizeAsync,
-            CanChangePageSize);
+        _timeProvider = timeProvider;
 
         NewWeighingCommand = new AsyncRelayCommand(
             NewWeighingAsync,
-            CanCreateWeighing);
+            CanInteract);
     }
 
-    // Coleccion de tickets pendientes de tara
-    public ObservableCollection<PurchaseTicketDto> Tickets { get; } = new();
+    // Propiedades
 
-    public int[] PageSizeOptions { get; } = [10, 20, 30, 50, 100];
+    public IReadOnlyList<WeighingViewOption> ViewOptions { get; } =
+    [
+        new(WeighingView.InPlant, "En planta", ShowsCount: true),
+        new(WeighingView.SinglesToday, "Únicos de hoy", ShowsCount: false)
+    ];
 
-    public AsyncRelayCommand SearchTicketsCommand { get; }
-    public AsyncRelayCommand NextPageCommand { get; }
-    public AsyncRelayCommand PreviousPageCommand { get; }
-    public AsyncRelayCommand ChangePageSizeCommand { get; }
+    public WeighingView SelectedView
+    {
+        get => _selectedView;
+        set
+        {
+            if (!SetProperty(ref _selectedView, value))
+                return;
+
+            OnPropertyChanged(nameof(IsInPlantView));
+            OnPropertyChanged(nameof(ViewDescription));
+
+            // Cambiar de vista es una accion deliberada: recargar desde la primera pagina
+            SearchCommand.Execute(null);
+        }
+    }
+
+    public bool IsInPlantView => SelectedView == WeighingView.InPlant;
+
+    public string ViewDescription =>
+        IsInPlantView
+            ? "Vehículos en planta que esperan su pesaje de salida"
+            : "Pesajes únicos de hoy, pendientes de importe";
+
+    // Total de vehiculos en planta, sin importar la vista ni la busqueda
+    public int InPlantCount
+    {
+        get => _inPlantCount;
+        private set => SetProperty(ref _inPlantCount, value);
+    }
+
+    protected override string LoadErrorMessage =>
+        "No fue posible cargar los pesajes.";
+
+    protected override string EmptyListMessage =>
+        IsInPlantView
+            ? "No hay vehículos en planta."
+            : "Hoy no hay pesajes únicos pendientes de importe.";
+
+    protected override string NoResultsMessage =>
+        "No se encontraron pesajes con la búsqueda aplicada.";
+
+    // Comandos
+
     public AsyncRelayCommand NewWeighingCommand { get; }
 
-    public string SearchText
+    // Metodos protegidos
+
+    protected override async Task<PagedResult<WeighingListItem>> FetchPageAsync(
+        IServiceProvider services,
+        int page,
+        int pageSize,
+        string? search)
     {
-        get => _searchText;
-        set
+        var getTickets =
+            services.GetRequiredService<GetPurchaseTickets>();
+
+        var result = await getTickets.ExecuteAsync(
+            BuildQuery(page, pageSize, search));
+
+        // Sin busqueda, la vista en planta ya trae el total; en otro
+        // caso se cuenta aparte pidiendo una sola fila
+        if (IsInPlantView && search is null)
         {
-            if (_searchText == value)
-                return;
-
-            _searchText = value;
-            OnPropertyChanged(nameof(SearchText));
+            InPlantCount = result.TotalCount;
         }
-    }
-
-    public string QueryErrorMessage
-    {
-        get => _queryErrorMessage;
-        private set
+        else
         {
-            if (_queryErrorMessage == value)
-                return;
+            var inPlant = await getTickets.ExecuteAsync(
+                InPlantQuery(page: 1, pageSize: 1, search: null));
 
-            _queryErrorMessage = value;
-            OnPropertyChanged(nameof(QueryErrorMessage));
+            InPlantCount = inPlant.TotalCount;
         }
+
+        var items = result.Items
+            .Select(ticket => WeighingListItem.From(ticket, _timeProvider))
+            .ToList();
+
+        return new PagedResult<WeighingListItem>(
+            items,
+            result.Page,
+            result.PageSize,
+            result.TotalCount);
     }
 
-    public int CurrentPage
+    protected override void NotifyCommandsCanExecuteChanged()
     {
-        get => _currentPage;
-        private set
-        {
-            if (_currentPage == value)
-                return;
+        base.NotifyCommandsCanExecuteChanged();
 
-            _currentPage = value;
-            OnPropertyChanged(nameof(CurrentPage));
-            NotifyPaginationCommands();
-        }
+        NewWeighingCommand?.NotifyCanExecuteChanged();
     }
 
-    public int PageSize
+    // Metodos privados
+
+    private static GetPurchaseTicketsQuery InPlantQuery(
+        int page,
+        int pageSize,
+        string? search)
     {
-        get => _pageSize;
-        set
-        {
-            if (_pageSize == value || !PageSizeOptions.Contains(value))
-                return;
-
-            _pageSize = value;
-            OnPropertyChanged(nameof(PageSize));
-            OnPropertyChanged(nameof(TotalPages));
-            NotifyPaginationCommands();
-        }
+        return new GetPurchaseTicketsQuery(
+            Page: page,
+            PageSize: pageSize,
+            Search: search,
+            Status: TicketStatus.WeighingPending,
+            WeighingType: WeighingType.Conventional);
     }
 
-    public int TotalCount
+    private GetPurchaseTicketsQuery BuildQuery(
+        int page,
+        int pageSize,
+        string? search)
     {
-        get => _totalCount;
-        private set
-        {
-            if (_totalCount == value)
-                return;
+        if (IsInPlantView)
+            return InPlantQuery(page, pageSize, search);
 
-            _totalCount = value;
-            OnPropertyChanged(nameof(TotalCount));
-            OnPropertyChanged(nameof(TotalPages));
-            NotifyPaginationCommands();
-        }
+        var (startUtc, endUtc) = GetTodayRangeUtc();
+
+        return new GetPurchaseTicketsQuery(
+            Page: page,
+            PageSize: pageSize,
+            Search: search,
+            Status: TicketStatus.AmountPending,
+            WeighingType: WeighingType.Single,
+            WeighedFrom: startUtc,
+            WeighedTo: endUtc);
     }
 
-    public int TotalPages =>
-        Math.Max(1, (int)Math.Ceiling((double)TotalCount / PageSize));
-
-    public bool IsLoading
+    // "Hoy" se decide con la hora local de la planta, pero la base guarda UTC:
+    // se toman las 00:00 de hoy y de manana en hora local y se pasan a UTC
+    private (DateTime StartUtc, DateTime EndUtc) GetTodayRangeUtc()
     {
-        get => _isLoading;
-        private set
-        {
-            if (_isLoading == value)
-                return;
+        TimeZoneInfo zone = _timeProvider.LocalTimeZone;
 
-            _isLoading = value;
-            OnPropertyChanged(nameof(IsLoading));
-            NotifyCommandsCanExecuteChanged();
-        }
+        DateTime today = TimeZoneInfo
+            .ConvertTime(_timeProvider.GetUtcNow(), zone)
+            .Date;
+
+        return (
+            TimeZoneInfo.ConvertTimeToUtc(today, zone),
+            TimeZoneInfo.ConvertTimeToUtc(today.AddDays(1), zone));
     }
 
-    public PurchaseTicketDto? SelectedTicket
-    {
-        get => _selectedTicket;
-        set
-        {
-            if (_selectedTicket == value)
-                return;
-
-            _selectedTicket = value;
-            OnPropertyChanged(nameof(SelectedTicket));
-        }
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
-    }
-
-    // Cargar tickets pendientes
-    public async Task LoadTicketsAsync()
-    {
-        await LoadPageAsync(CurrentPage);
-    }
-
-    private bool CanSearchTickets() => !IsLoading;
-
-    private bool CanGoToNextPage() =>
-        !IsLoading && CurrentPage < TotalPages;
-
-    private bool CanGoToPreviousPage() =>
-        !IsLoading && CurrentPage > 1;
-
-    private bool CanChangePageSize() => !IsLoading;
-
-    private async Task SearchTicketsAsync()
-    {
-        await LoadPageAsync(1);
-    }
-
-    private async Task NextPageAsync()
-    {
-        await LoadPageAsync(CurrentPage + 1);
-    }
-
-    private async Task PreviousPageAsync()
-    {
-        await LoadPageAsync(CurrentPage - 1);
-    }
-
-    private async Task ChangePageSizeAsync()
-    {
-        await LoadPageAsync(1);
-    }
-
-    // Consultar tickets pendientes con paginacion
-    private async Task<bool> LoadPageAsync(int page)
-    {
-        if (IsLoading)
-            return false;
-
-        IsLoading = true;
-        QueryErrorMessage = string.Empty;
-
-        try
-        {
-            await using var scope = _scopeFactory.CreateAsyncScope();
-
-            var getTickets = scope.ServiceProvider
-                .GetRequiredService<GetPurchaseTickets>();
-
-            var query = new GetPurchaseTicketsQuery(
-                Page: page,
-                PageSize: PageSize,
-                Search: string.IsNullOrWhiteSpace(SearchText)
-                    ? null
-                    : SearchText.Trim(),
-                Status: TicketStatus.WeighingPending);
-
-            var result = await getTickets.ExecuteAsync(query);
-
-            var totalPages = Math.Max(
-                1,
-                (int)Math.Ceiling(
-                    (double)result.TotalCount / PageSize));
-
-            // Ajustar pagina si disminuye el total
-            if (page > totalPages)
-            {
-                page = totalPages;
-                query = query with { Page = page };
-
-                result = await getTickets.ExecuteAsync(query);
-            }
-
-            SelectedTicket = null;
-            Tickets.Clear();
-
-            foreach (var ticket in result.Items)
-                Tickets.Add(ticket);
-
-            TotalCount = result.TotalCount;
-            CurrentPage = page;
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            QueryErrorMessage =
-                "No fue posible cargar los pesajes pendientes.";
-
-            Console.Error.WriteLine(ex);
-            return false;
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
-
-    private void NotifyPaginationCommands()
-    {
-        NextPageCommand?.NotifyCanExecuteChanged();
-        PreviousPageCommand?.NotifyCanExecuteChanged();
-    }
-
-    // Validar apertura del formulario
-    private bool CanCreateWeighing()
-    {
-        return !IsLoading;
-    }
-
-    // Abrir el formulario de nuevo pesaje
     private async Task NewWeighingAsync()
     {
-        if (!CanCreateWeighing())
+        if (!_weighingDialogService.ShowCreateDialog())
             return;
 
-        var saved = _weighingDialogService.ShowCreateDialog();
-
-        if (!saved)
-            return;
-
-        await LoadPageAsync(1);
-    }
-
-    private void NotifyCommandsCanExecuteChanged()
-    {
-        SearchTicketsCommand?.NotifyCanExecuteChanged();
-        NextPageCommand?.NotifyCanExecuteChanged();
-        PreviousPageCommand?.NotifyCanExecuteChanged();
-        ChangePageSizeCommand?.NotifyCanExecuteChanged();
+        await ReloadAfterActionAsync(
+            page: 1,
+            "El pesaje se registró correctamente, " +
+            "pero no fue posible actualizar el listado.");
     }
 }

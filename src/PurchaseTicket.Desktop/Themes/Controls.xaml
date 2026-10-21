@@ -636,9 +636,23 @@
                     <Setter Property="Cursor"
                             Value="Hand"/>
 
-                    <!-- El borde azul de foco reemplaza al rectangulo punteado -->
-                    <Setter Property="FocusVisualStyle"
-                            Value="{x:Null}"/>
+                    <!-- WPF solo dibuja el FocusVisualStyle cuando el foco llega por
+                         teclado; con un clic no aparece -->
+                    <Setter Property="FocusVisualStyle">
+                        <Setter.Value>
+                            <Style>
+                                <Setter Property="Control.Template">
+                                    <Setter.Value>
+                                        <ControlTemplate>
+                                            <Border CornerRadius="7"
+                                                    BorderThickness="2"
+                                                    BorderBrush="{StaticResource EcoBlueBrush}"/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Setter.Value>
+                    </Setter>
 
                     <Setter Property="Template">
                         <Setter.Value>
@@ -677,13 +691,6 @@
                                                 Value="{StaticResource BorderBrushLight}"/>
                                         <Setter Property="Foreground"
                                                 Value="{StaticResource EcoBlueDarkBrush}"/>
-                                    </Trigger>
-
-                                    <Trigger Property="IsKeyboardFocused"
-                                             Value="True">
-                                        <Setter TargetName="Segment"
-                                                Property="BorderBrush"
-                                                Value="{StaticResource EcoBlueBrush}"/>
                                     </Trigger>
 
                                     <Trigger Property="IsEnabled"

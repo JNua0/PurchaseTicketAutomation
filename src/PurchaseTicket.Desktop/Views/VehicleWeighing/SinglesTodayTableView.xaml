@@ -1,0 +1,126 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Views.VehicleWeighing.SinglesTodayTableView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Tabla de pesajes unicos de hoy: filas de dos lineas -->
+    <DataGrid Style="{StaticResource AppDataGridStyle}"
+              RowHeight="60"
+              ItemsSource="{Binding Items}"
+              SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+
+        <DataGrid.Columns>
+
+            <!-- Folio -->
+            <DataGridTextColumn Header="Folio"
+                                Binding="{Binding TicketNumber}"
+                                ElementStyle="{StaticResource CellEmphasisTextStyle}"
+                                Width="80"
+                                MinWidth="80"/>
+
+            <!-- Fecha y hora del pesaje -->
+            <DataGridTextColumn Header="Pesaje"
+                                Binding="{Binding WeighedAt,
+                                                  StringFormat={}{0:dd/MM/yyyy HH:mm}}"
+                                ElementStyle="{StaticResource CellTextStyle}"
+                                Width="170"
+                                MinWidth="170"/>
+
+            <!-- Proveedor y material -->
+            <DataGridTemplateColumn Header="Proveedor · Material"
+                                    Width="*"
+                                    MinWidth="200">
+
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+
+                        <StackPanel>
+
+                            <TextBlock Text="{Binding SupplierName}"
+                                       TextTrimming="CharacterEllipsis"/>
+
+                            <TextBlock Text="{Binding MaterialName}"
+                                       Style="{StaticResource CellSecondaryTextStyle}"/>
+
+                        </StackPanel>
+
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+
+            </DataGridTemplateColumn>
+
+            <!-- Placas: opcionales en el pesaje unico -->
+            <DataGridTemplateColumn Header="Placas"
+                                    Width="110"
+                                    MinWidth="110">
+
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+
+                        <TextBlock Text="{Binding LicensePlate,
+                                                  TargetNullValue=Sin placas}">
+
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock"
+                                       BasedOn="{StaticResource CellPlateTextStyle}">
+
+                                    <Style.Triggers>
+
+                                        <!-- Sin placas: texto normal en gris -->
+                                        <DataTrigger Binding="{Binding LicensePlate}"
+                                                     Value="{x:Null}">
+                                            <Setter Property="FontFamily"
+                                                    Value="Segoe UI"/>
+                                            <Setter Property="Foreground"
+                                                    Value="{StaticResource SecondaryTextBrush}"/>
+                                        </DataTrigger>
+
+                                    </Style.Triggers>
+
+                                </Style>
+                            </TextBlock.Style>
+
+                        </TextBlock>
+
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+
+            </DataGridTemplateColumn>
+
+            <!-- Chofer -->
+            <DataGridTextColumn Header="Chofer"
+                                Binding="{Binding Transporter}"
+                                ElementStyle="{StaticResource CellTextStyle}"
+                                Width="170"
+                                MinWidth="150"/>
+
+            <!-- Peso neto y modalidad -->
+            <DataGridTemplateColumn Header="Peso capturado"
+                                    HeaderStyle="{StaticResource RightAlignedColumnHeaderStyle}"
+                                    Width="150"
+                                    MinWidth="150">
+
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+
+                        <StackPanel HorizontalAlignment="Right">
+
+                            <TextBlock Text="{Binding NetWeight,
+                                                      StringFormat={}{0:N0} kg}"
+                                       Style="{StaticResource CellNumberTextStyle}"/>
+
+                            <TextBlock Text="Neto · Único"
+                                       HorizontalAlignment="Right"
+                                       Style="{StaticResource CellSecondaryTextStyle}"/>
+
+                        </StackPanel>
+
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+
+            </DataGridTemplateColumn>
+
+        </DataGrid.Columns>
+
+    </DataGrid>
+
+</UserControl>

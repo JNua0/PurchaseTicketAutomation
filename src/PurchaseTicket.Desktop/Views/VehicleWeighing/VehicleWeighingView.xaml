@@ -4,7 +4,8 @@
              xmlns:layout="clr-namespace:PurchaseTicket.Desktop.Components.Layout"
              xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions"
              xmlns:pagination="clr-namespace:PurchaseTicket.Desktop.Components.Pagination"
-             xmlns:filters="clr-namespace:PurchaseTicket.Desktop.Components.Filters">
+             xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
+             xmlns:weighing="clr-namespace:PurchaseTicket.Desktop.Views.VehicleWeighing">
 
     <!-- Estructura principal -->
     <layout:PageLayout>
@@ -19,11 +20,10 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Encabezado -->
-                <layout:PageHeader
-                    Grid.Row="0"
-                    Title="Pesaje de vehículos"
-                    Description="Registro y control de pesajes de vehículos">
+                <!-- Bloque 1: Encabezado; la descripcion cambia con la vista -->
+                <layout:PageHeader Grid.Row="0"
+                                   Title="Pesaje de vehículos"
+                                   Description="{Binding ViewDescription}">
 
                     <layout:PageHeader.Actions>
 
@@ -35,24 +35,19 @@
 
                 </layout:PageHeader>
 
-                <!-- Filtros de busqueda -->
-                <layout:FilterCard
-                    Grid.Row="1"
-                    Margin="0,0,0,20">
+                <!-- Bloque 2: Busqueda y selector de vista -->
+                <layout:FilterCard Grid.Row="1"
+                                   Margin="0,0,0,20">
 
                     <layout:FilterCard.FilterContent>
 
-                        <filters:SearchBox
-                            Label="Buscar ticket"
-                            SearchText="{Binding SearchText, Mode=TwoWay}"
-                            SearchCommand="{Binding SearchTicketsCommand}"
-                            IsLoading="{Binding IsLoading}"/>
+                        <weighing:WeighingFiltersView/>
 
                     </layout:FilterCard.FilterContent>
 
                 </layout:FilterCard>
 
-                <!-- Tabla y paginacion -->
+                <!-- Bloque 3: Tabla y paginacion -->
                 <layout:DataCard Grid.Row="2">
 
                     <layout:DataCard.DataContent>
@@ -64,66 +59,45 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <DataGrid Grid.Row="0"
-                                      Style="{StaticResource AppDataGridStyle}"
-                                      ItemsSource="{Binding Tickets}"
-                                      SelectedItem="{Binding SelectedTicket, Mode=TwoWay}">
+                            <!-- Una tabla por vista: sus columnas son distintas -->
+                            <weighing:InPlantTableView
+                                Grid.Row="0"
+                                Visibility="{Binding IsInPlantView,
+                                                     Converter={StaticResource BoolToVisibility}}"/>
 
-                                <DataGrid.Columns>
+                            <weighing:SinglesTodayTableView Grid.Row="0">
 
-                                    <DataGridTextColumn
-                                        Header="Folio"
-                                        Binding="{Binding TicketNumber}"
-                                        Width="140"/>
+                                <!-- Visible cuando no es la vista en planta -->
+                                <weighing:SinglesTodayTableView.Style>
+                                    <Style TargetType="weighing:SinglesTodayTableView">
 
-                                    <DataGridTextColumn
-                                        Header="Fecha de entrada"
-                                        Binding="{Binding CheckInAt, StringFormat={}{0:dd/MM/yyyy HH:mm}}"
-                                        Width="165"/>
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed"/>
 
-                                    <DataGridTextColumn
-                                        Header="Placas"
-                                        Binding="{Binding LicensePlate}"
-                                        Width="120"/>
+                                        <Style.Triggers>
 
-                                    <DataGridTextColumn
-                                        Header="Transportista"
-                                        Binding="{Binding Transporter}"
-                                        Width="*"
-                                        MinWidth="170"/>
+                                            <DataTrigger Binding="{Binding IsInPlantView}"
+                                                         Value="False">
+                                                <Setter Property="Visibility"
+                                                        Value="Visible"/>
+                                            </DataTrigger>
 
-                                    <DataGridTextColumn
-                                        Header="Peso bruto (kg)"
-                                        Binding="{Binding GrossWeight, StringFormat={}{0:N2}}"
-                                        Width="150"/>
+                                        </Style.Triggers>
 
-                                    <DataGridTemplateColumn
-                                        Header="Acciones"
-                                        HeaderStyle="{StaticResource CenteredColumnHeaderStyle}"
-                                        Width="145"
-                                        CanUserResize="False">
+                                    </Style>
+                                </weighing:SinglesTodayTableView.Style>
 
-                                        <DataGridTemplateColumn.CellTemplate>
+                            </weighing:SinglesTodayTableView>
 
-                                            <DataTemplate>
+                            <!-- Mensaje de tabla vacia, debajo de los encabezados -->
+                            <feedback:EmptyState
+                                Grid.Row="0"
+                                Margin="0,42,0,0"
+                                Message="{Binding EmptyMessage}"
+                                Visibility="{Binding IsEmpty,
+                                                     Converter={StaticResource BoolToVisibility}}"/>
 
-                                                <Button
-                                                    Content="Registrar tara"
-                                                    Command="{Binding DataContext.RegisterTareCommand,
-                                                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource PrimaryButtonStyle}"/>
-
-                                            </DataTemplate>
-
-                                        </DataGridTemplateColumn.CellTemplate>
-
-                                    </DataGridTemplateColumn>
-
-                                </DataGrid.Columns>
-
-                            </DataGrid>
-
+                            <!-- Controles de paginacion -->
                             <pagination:PaginationControl
                                 Grid.Row="1"
                                 Margin="0,16,0,0"
