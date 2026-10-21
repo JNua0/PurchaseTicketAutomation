@@ -7,6 +7,8 @@ public record PurchaseTicketDto(
     string TicketNumber,
     DateTime CheckInAt,
     DateTime? DepartureAt,
+    int SupplierId,
+    int MaterialId,
     string SupplierName,
     string MaterialName,
     string? LicensePlate,

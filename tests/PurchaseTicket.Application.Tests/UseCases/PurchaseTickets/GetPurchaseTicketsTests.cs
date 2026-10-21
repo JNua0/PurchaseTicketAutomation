@@ -63,6 +63,8 @@ public class GetPurchaseTicketsTests
                                 2026, 10, 6, 8, 30, 0),
                             DepartureAt: new DateTime(
                                 2026, 10, 6, 10, 15, 0),
+                            SupplierId: 3,
+                            MaterialId: 7,
                             SupplierName: "Proveedor Uno",
                             MaterialName: "Acero",
                             LicensePlate: "ABC123",
@@ -148,6 +150,10 @@ public class GetPurchaseTicketsTests
         Assert.Equal(
             new DateTime(2026, 10, 6, 10, 15, 0),
             item.DepartureAt);
+
+        // Los identificadores permiten editar el ticket sin buscarlo por nombre
+        Assert.Equal(3, item.SupplierId);
+        Assert.Equal(7, item.MaterialId);
     }
 
     [Fact]

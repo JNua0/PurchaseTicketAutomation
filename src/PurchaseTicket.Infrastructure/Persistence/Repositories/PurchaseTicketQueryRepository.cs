@@ -98,6 +98,8 @@ public class PurchaseTicketQueryRepository
                     x.Ticket.TicketNumber,
                     x.Ticket.CheckInAt,
                     x.Ticket.DepartureAt,
+                    x.Ticket.SupplierId,
+                    x.Ticket.MaterialId,
                     x.SupplierName,
                     x.MaterialName,
                     x.Ticket.LicensePlate,

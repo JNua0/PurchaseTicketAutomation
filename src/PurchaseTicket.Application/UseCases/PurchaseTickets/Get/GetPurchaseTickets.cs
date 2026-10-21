@@ -46,6 +46,8 @@ public class GetPurchaseTickets
                 item.TicketNumber,
                 item.CheckInAt,
                 item.DepartureAt,
+                item.SupplierId,
+                item.MaterialId,
                 item.SupplierName,
                 item.MaterialName,
                 item.LicensePlate,
