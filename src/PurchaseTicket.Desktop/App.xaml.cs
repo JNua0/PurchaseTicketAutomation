@@ -165,6 +165,7 @@ public partial class App : System.Windows.Application
                 // Servicios de impresion
                 services.AddTicketPrinter(configuration);
                 services.AddScoped<PrintPurchaseTicket>();
+                services.AddSingleton<ITicketPrintService, TicketPrintService>();
 
                 // Correccion de tickets
                 services.AddScoped<CorrectPurchaseTicket>();

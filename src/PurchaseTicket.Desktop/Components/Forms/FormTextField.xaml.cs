@@ -85,6 +85,20 @@ public partial class FormTextField : UserControl
         set => SetValue(MaxLengthProperty, value);
     }
 
+    // Mayusculas o minusculas al escribir; las placas se ven como quedaran guardadas
+    public static readonly DependencyProperty CharacterCasingProperty =
+        DependencyProperty.Register(
+            nameof(CharacterCasing),
+            typeof(CharacterCasing),
+            typeof(FormTextField),
+            new PropertyMetadata(CharacterCasing.Normal));
+
+    public CharacterCasing CharacterCasing
+    {
+        get => (CharacterCasing)GetValue(CharacterCasingProperty);
+        set => SetValue(CharacterCasingProperty, value);
+    }
+
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         if (!FocusOnLoad)

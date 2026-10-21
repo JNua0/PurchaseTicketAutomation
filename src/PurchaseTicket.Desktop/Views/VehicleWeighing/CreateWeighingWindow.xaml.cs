@@ -8,7 +8,11 @@ namespace PurchaseTicket.Desktop.Views.VehicleWeighing;
 
 public partial class CreateWeighingWindow : Window
 {
-    public ICommand CancelCommand { get; }
+    // Campos
+
+    private readonly CreateWeighingViewModel _viewModel;
+
+    // Constructor
 
     public CreateWeighingWindow(CreateWeighingViewModel viewModel)
     {
@@ -16,48 +20,46 @@ public partial class CreateWeighingWindow : Window
 
         InitializeComponent();
 
+        _viewModel = viewModel;
         DataContext = viewModel;
+
+        viewModel.Registered += OnRegistered;
     }
 
-    // Cargar catalogos al abrir el formulario
+    // Propiedades
+
+    public ICommand CancelCommand { get; }
+
+    // Metodos privados
+
+    // Los catalogos se cargan al abrir para mostrar los proveedores activos de ese momento
     private async void Window_Loaded(
         object sender,
         RoutedEventArgs e)
     {
-        if (DataContext is not CreateWeighingViewModel viewModel)
-            return;
-
-        await viewModel.LoadCatalogsAsync();
+        await _viewModel.LoadCatalogsAsync();
     }
 
-    // Cerrar el formulario
+    // Cerrar la ventana cuando el ticket se registra
+    private void OnRegistered(object? sender, EventArgs e)
+    {
+        DialogResult = true;
+    }
+
     private void Cancel()
     {
-        if (DataContext is not CreateWeighingViewModel viewModel)
+        if (_viewModel.IsBusy)
             return;
 
-        if (!viewModel.CanCloseForm)
-            return;
-
-        // Notificar si el ticket fue registrado
-        DialogResult = viewModel.IsRegistered;
+        DialogResult = false;
     }
 
-    // Impedir cerrar durante una operacion
+    // Evitar cerrar con la X mientras se lee el indicador o se registra
     private void Window_Closing(
         object? sender,
         CancelEventArgs e)
     {
-        if (DataContext is not CreateWeighingViewModel viewModel)
-            return;
-
-        if (!viewModel.CanCloseForm)
-        {
+        if (_viewModel.IsBusy)
             e.Cancel = true;
-            return;
-        }
-
-        // Conservar el resultado incluso al cerrar con la X
-        DialogResult = viewModel.IsRegistered;
     }
 }

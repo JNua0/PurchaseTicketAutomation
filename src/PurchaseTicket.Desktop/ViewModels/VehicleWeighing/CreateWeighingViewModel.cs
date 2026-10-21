@@ -1,351 +1,234 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
-using System.IO;
 using Microsoft.Extensions.DependencyInjection;
-using PurchaseTicket.Application.Abstractions.Printing;
+using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Materials.GetActive;
-using PurchaseTicket.Application.UseCases.PurchaseTickets.Correct;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateConventional;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateSingle;
-using PurchaseTicket.Application.UseCases.PurchaseTickets.Print;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.Results;
 using PurchaseTicket.Application.UseCases.Suppliers.GetActive;
-using PurchaseTicket.Application.UseCases.Weighing.ReadWeight;
+using PurchaseTicket.Desktop.Commands;
+using PurchaseTicket.Desktop.Services;
+using PurchaseTicket.Desktop.ViewModels.Base;
 using PurchaseTicket.Domain.Enums;
 using PurchaseTicket.Domain.Exceptions;
-using PurchaseTicket.Desktop.Commands;
+using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
 namespace PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 
-public class CreateWeighingViewModel : INotifyPropertyChanged
+// Formulario de Nuevo pesaje: registra la entrada de un convencional o un
+// pesaje unico. La lectura del peso la resuelve WeightCaptureViewModel
+public class CreateWeighingViewModel : ValidatableObject
 {
+    // Campos
+
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ITicketPrintService _printService;
+    private readonly ILogger<CreateWeighingViewModel> _logger;
 
     private WeighingType _selectedWeighingType = WeighingType.Conventional;
-    private SupplierOptionDto? _selectedSupplier;
-    private MaterialOptionDto? _selectedMaterial;
+    private int? _selectedSupplierId;
+    private int? _selectedMaterialId;
     private string _licensePlate = string.Empty;
     private string _transporter = string.Empty;
-    private string _weight = string.Empty;
+    private bool _printOnSave = true;
     private string _errorMessage = string.Empty;
-    private string _successMessage = string.Empty;
-    private string? _ticketNumber;
-    private int? _ticketId;
     private bool _isLoadingCatalogs;
-    private bool _isReadingWeight;
     private bool _isSaving;
-    private bool _isPrinting;
-    private bool _isRegistered;
-    private bool _isEditing;
-    private TicketSnapshot? _savedSnapshot;
 
-    private sealed record TicketSnapshot(
-        int SupplierId,
-        int MaterialId,
-        string? LicensePlate,
-        string Transporter,
-        decimal Weight);
+    // Se activa tras el primer intento de registrar; desde ahi se valida al escribir
+    private bool _validateOnChange;
 
-    public CreateWeighingViewModel(IServiceScopeFactory scopeFactory)
+    // Constructor
+
+    public CreateWeighingViewModel(
+        IServiceScopeFactory scopeFactory,
+        WeightCaptureViewModel weight,
+        ITicketPrintService printService,
+        ILogger<CreateWeighingViewModel> logger)
     {
         _scopeFactory = scopeFactory;
+        _printService = printService;
+        _logger = logger;
 
-        ReadWeightCommand = new AsyncRelayCommand(ReadWeightAsync, CanReadWeight);
+        Weight = weight;
+
+        // Mientras se lee el indicador no se permite registrar ni cerrar
+        Weight.PropertyChanged += OnWeightPropertyChanged;
+
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
-        PrintTicketCommand = new AsyncRelayCommand(PrintTicketAsync, CanPrintTicket);
-        UpdateCommand = new AsyncRelayCommand(UpdateAsync, CanUpdate);
-        EditCommand = new RelayCommand(BeginEdit);
-        CancelEditCommand = new RelayCommand(CancelEdit);
     }
 
-    // Catalogos disponibles
+    // Eventos
+
+    // Avisa a la ventana que el ticket se registro para que se cierre
+    public event EventHandler? Registered;
+
+    // Propiedades
+
+    public IReadOnlyList<WeighingTypeOption> WeighingTypeOptions { get; } =
+    [
+        new(WeighingType.Conventional, "Convencional", "Entrada y salida · bruto − tara"),
+        new(WeighingType.Single, "Pesaje único", "Una sola medición · peso neto")
+    ];
+
     public ObservableCollection<SupplierOptionDto> Suppliers { get; } = new();
+
     public ObservableCollection<MaterialOptionDto> Materials { get; } = new();
 
-    // Comandos
-    public AsyncRelayCommand ReadWeightCommand { get; }
-    public AsyncRelayCommand SaveCommand { get; }
-    public AsyncRelayCommand PrintTicketCommand { get; }
-    public AsyncRelayCommand UpdateCommand { get; }
-    public RelayCommand EditCommand { get; }
-    public RelayCommand CancelEditCommand { get; }
+    // Peso bruto en el convencional, peso neto en el unico
+    public WeightCaptureViewModel Weight { get; }
 
-    // Estado de la ventana
-    public bool ShowForm => !IsRegistered || IsEditing;
-    public bool ShowSummary => IsRegistered && !IsEditing;
-    public bool IsCreating => !IsRegistered;
-    public bool CanEditForm => ShowForm && !IsBusy;
-    public bool CanCloseForm => !IsBusy;
-    private bool IsBusy => IsLoadingCatalogs || IsReadingWeight || IsSaving || IsPrinting;
-    public bool IsRegistered
-    {
-        get => _isRegistered;
-        private set
-        {
-            if (_isRegistered == value) return;
-            _isRegistered = value;
-            OnPropertyChanged(nameof(IsRegistered));
-            NotifyViewStateChanged();
-        }
-    }
-    public bool IsEditing
-    {
-        get => _isEditing;
-        private set
-        {
-            if (_isEditing == value) return;
-            _isEditing = value;
-            OnPropertyChanged(nameof(IsEditing));
-            NotifyViewStateChanged();
-        }
-    }
     public WeighingType SelectedWeighingType
     {
         get => _selectedWeighingType;
         set
         {
-            if (_selectedWeighingType == value || IsRegistered || IsBusy) return;
-            _selectedWeighingType = value;
-            Weight = string.Empty;
-            OnPropertyChanged(nameof(SelectedWeighingType));
+            if (!SetProperty(ref _selectedWeighingType, value))
+                return;
+
             OnPropertyChanged(nameof(IsConventional));
-            OnPropertyChanged(nameof(IsSingle));
             OnPropertyChanged(nameof(WeightLabel));
+            OnPropertyChanged(nameof(WeightSectionTitle));
+
+            // Un peso bruto no sirve como neto ni al reves: se vuelve a capturar
+            Weight.Reset();
+
+            // Las placas pasan de obligatorias a opcionales, o al reves
+            if (_validateOnChange)
+                ValidateLicensePlate();
         }
     }
-    public bool IsConventional
+
+    public bool IsConventional =>
+        SelectedWeighingType == WeighingType.Conventional;
+
+    public string WeightSectionTitle =>
+        IsConventional ? "PESO DE ENTRADA" : "PESO CAPTURADO";
+
+    public string WeightLabel =>
+        IsConventional ? "Peso bruto" : "Peso neto";
+
+    public int? SelectedSupplierId
     {
-        get => SelectedWeighingType == WeighingType.Conventional;
-        set { if (value) SelectedWeighingType = WeighingType.Conventional; }
-    }
-    public bool IsSingle
-    {
-        get => SelectedWeighingType == WeighingType.Single;
-        set { if (value) SelectedWeighingType = WeighingType.Single; }
-    }
-    public string WeightLabel => IsConventional ? "Peso bruto (kg)" : "Peso neto (kg)";
-    public SupplierOptionDto? SelectedSupplier
-    {
-        get => _selectedSupplier;
+        get => _selectedSupplierId;
         set
         {
-            if (_selectedSupplier == value || (IsRegistered && !IsEditing)) return;
-            _selectedSupplier = value;
-            OnPropertyChanged(nameof(SelectedSupplier));
-            OnPropertyChanged(nameof(SupplierDisplay));
+            if (SetProperty(ref _selectedSupplierId, value) && _validateOnChange)
+                ValidateSupplier();
         }
     }
-    public MaterialOptionDto? SelectedMaterial
+
+    public int? SelectedMaterialId
     {
-        get => _selectedMaterial;
+        get => _selectedMaterialId;
         set
         {
-            if (_selectedMaterial == value || (IsRegistered && !IsEditing)) return;
-            _selectedMaterial = value;
-            OnPropertyChanged(nameof(SelectedMaterial));
-            OnPropertyChanged(nameof(MaterialDisplay));
+            if (SetProperty(ref _selectedMaterialId, value) && _validateOnChange)
+                ValidateMaterial();
         }
     }
+
     public string LicensePlate
     {
         get => _licensePlate;
         set
         {
-            if (_licensePlate == value || (IsRegistered && !IsEditing)) return;
-            _licensePlate = value;
-            OnPropertyChanged(nameof(LicensePlate));
-            OnPropertyChanged(nameof(LicensePlateDisplay));
+            if (SetProperty(ref _licensePlate, value) && _validateOnChange)
+                ValidateLicensePlate();
         }
     }
+
     public string Transporter
     {
         get => _transporter;
         set
         {
-            if (_transporter == value || (IsRegistered && !IsEditing)) return;
-            _transporter = value;
-            OnPropertyChanged(nameof(Transporter));
+            if (SetProperty(ref _transporter, value) && _validateOnChange)
+                ValidateTransporter();
         }
     }
-    // Peso introducido manualmente o recibido del indicador
-    public string Weight
+
+    public bool PrintOnSave
     {
-        get => _weight;
-        set
-        {
-            if (_weight == value || (IsRegistered && !IsEditing)) return;
-            _weight = value;
-            OnPropertyChanged(nameof(Weight));
-            OnPropertyChanged(nameof(WeightDisplay));
-        }
+        get => _printOnSave;
+        set => SetProperty(ref _printOnSave, value);
     }
-    // Propiedades listas para la vista de resumen
-    public string SupplierDisplay => SelectedSupplier?.Name ?? string.Empty;
-    public string MaterialDisplay => SelectedMaterial?.Name ?? string.Empty;
-    public string LicensePlateDisplay => string.IsNullOrWhiteSpace(LicensePlate) ? "Sin placas" : LicensePlate;
-    public string WeighingTypeDisplay => IsConventional ? "Convencional" : "Único";
-    public string WeightDisplay => string.IsNullOrWhiteSpace(Weight) ? "" : $"{Weight} kg";
-    public string StatusDisplay => IsConventional ? "Pendiente de tara" : "Pendiente de importe";
-    public int? TicketId
-    {
-        get => _ticketId;
-        private set
-        {
-            if (_ticketId == value) return;
-            _ticketId = value;
-            OnPropertyChanged(nameof(TicketId));
-            NotifyCommandsCanExecuteChanged();
-        }
-    }
-    public string? TicketNumber
-    {
-        get => _ticketNumber;
-        private set
-        {
-            if (_ticketNumber == value) return;
-            _ticketNumber = value;
-            OnPropertyChanged(nameof(TicketNumber));
-            OnPropertyChanged(nameof(TicketNumberDisplay));
-        }
-    }
-    public string TicketNumberDisplay => TicketNumber ?? "Se asignará al registrar";
+
+    // Errores que no pertenecen a un campo, como fallas de conexion
     public string ErrorMessage
     {
         get => _errorMessage;
-        private set
-        {
-            if (_errorMessage == value) return;
-            _errorMessage = value;
-            OnPropertyChanged(nameof(ErrorMessage));
-        }
+        private set => SetProperty(ref _errorMessage, value);
     }
-    public string SuccessMessage
-    {
-        get => _successMessage;
-        private set
-        {
-            if (_successMessage == value) return;
-            _successMessage = value;
-            OnPropertyChanged(nameof(SuccessMessage));
-        }
-    }
+
     public bool IsLoadingCatalogs
     {
         get => _isLoadingCatalogs;
         private set
         {
-            if (_isLoadingCatalogs == value) return;
-            _isLoadingCatalogs = value;
-            OnPropertyChanged(nameof(IsLoadingCatalogs));
-            NotifyViewStateChanged();
+            if (SetProperty(ref _isLoadingCatalogs, value))
+                NotifyBusyChanged();
         }
     }
-    public bool IsReadingWeight
-    {
-        get => _isReadingWeight;
-        private set
-        {
-            if (_isReadingWeight == value) return;
-            _isReadingWeight = value;
-            OnPropertyChanged(nameof(IsReadingWeight));
-            NotifyViewStateChanged();
-        }
-    }
+
     public bool IsSaving
     {
         get => _isSaving;
         private set
         {
-            if (_isSaving == value) return;
-            _isSaving = value;
-            OnPropertyChanged(nameof(IsSaving));
-            NotifyViewStateChanged();
-        }
-    }
-    public bool IsPrinting
-    {
-        get => _isPrinting;
-        private set
-        {
-            if (_isPrinting == value) return;
-            _isPrinting = value;
-            OnPropertyChanged(nameof(IsPrinting));
-            NotifyViewStateChanged();
+            if (SetProperty(ref _isSaving, value))
+                NotifyBusyChanged();
         }
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    public bool IsBusy =>
+        IsLoadingCatalogs || IsSaving || Weight.IsReading;
 
-    private void OnPropertyChanged(string name) =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    // Resultado del registro; el servicio de dialogo lo lee al cerrar
+    public WeighingRegistration? Registration { get; private set; }
 
-    private void NotifyCommandsCanExecuteChanged()
-    {
-        ReadWeightCommand.NotifyCanExecuteChanged();
-        SaveCommand.NotifyCanExecuteChanged();
-        PrintTicketCommand.NotifyCanExecuteChanged();
-        UpdateCommand.NotifyCanExecuteChanged();
-    }
+    // Comandos
 
-    private void NotifyViewStateChanged()
-    {
-        OnPropertyChanged(nameof(ShowForm));
-        OnPropertyChanged(nameof(ShowSummary));
-        OnPropertyChanged(nameof(IsCreating));
-        OnPropertyChanged(nameof(CanEditForm));
-        OnPropertyChanged(nameof(CanCloseForm));
-        NotifyCommandsCanExecuteChanged();
-    }
+    public AsyncRelayCommand SaveCommand { get; }
 
-    // Preparar un formulario nuevo
-    public void Initialize()
-    {
-        IsEditing = false;
-        IsRegistered = false;
-        TicketId = null;
-        TicketNumber = null;
-        _savedSnapshot = null;
-        IsPrinting = false;
-        SuccessMessage = string.Empty;
-        ErrorMessage = string.Empty;
+    // Metodos publicos
 
-        SelectedWeighingType = WeighingType.Conventional;
-        SelectedSupplier = null;
-        SelectedMaterial = null;
-        LicensePlate = string.Empty;
-        Transporter = string.Empty;
-        Weight = string.Empty;
-        Suppliers.Clear();
-        Materials.Clear();
-    }
-
-    // Cargar los catalogos activos
     public async Task LoadCatalogsAsync()
     {
-        if (IsBusy || IsRegistered) return;
-
         IsLoadingCatalogs = true;
         ErrorMessage = string.Empty;
 
         try
         {
             await using var scope = _scopeFactory.CreateAsyncScope();
-            var getSuppliers = scope.ServiceProvider.GetRequiredService<GetActiveSuppliers>();
-            var getMaterials = scope.ServiceProvider.GetRequiredService<GetActiveMaterials>();
 
-            var suppliers = await getSuppliers.ExecuteAsync();
-            var materials = await getMaterials.ExecuteAsync();
+            var suppliers = await scope.ServiceProvider
+                .GetRequiredService<GetActiveSuppliers>()
+                .ExecuteAsync();
+
+            var materials = await scope.ServiceProvider
+                .GetRequiredService<GetActiveMaterials>()
+                .ExecuteAsync();
 
             Suppliers.Clear();
             Materials.Clear();
-            foreach (var supplier in suppliers) Suppliers.Add(supplier);
-            foreach (var material in materials) Materials.Add(material);
+
+            foreach (var supplier in suppliers)
+                Suppliers.Add(supplier);
+
+            foreach (var material in materials)
+                Materials.Add(material);
         }
         catch (Exception ex)
         {
-            ErrorMessage = "No fue posible cargar los proveedores y materiales.";
-            Console.Error.WriteLine(ex);
+            ErrorMessage =
+                "No fue posible cargar los proveedores y materiales.";
+
+            _logger.LogError(
+                ex,
+                "No fue posible cargar los catálogos del nuevo pesaje.");
         }
         finally
         {
@@ -353,331 +236,196 @@ public class CreateWeighingViewModel : INotifyPropertyChanged
         }
     }
 
-    private bool CanReadWeight() => ShowForm && !IsBusy;
+    // Metodos privados
 
-    // Leer el indicador, sin eliminar el peso manual si falla
-    private async Task ReadWeightAsync()
+    private bool CanSave()
     {
-        if (!CanReadWeight()) return;
-        IsReadingWeight = true;
+        return !IsBusy;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!CanSave())
+            return;
+
         ErrorMessage = string.Empty;
+        _validateOnChange = true;
+
+        // Las reglas se revisan antes de ir a la base de datos
+        if (!ValidateAll(out decimal weight))
+            return;
+
+        IsSaving = true;
 
         try
         {
-            await using var scope = _scopeFactory.CreateAsyncScope();
-            var readWeight = scope.ServiceProvider.GetRequiredService<ReadWeightUseCase>();
-            decimal weight = await readWeight.ExecuteAsync();
+            CreatePurchaseTicketResult? result = await TryCreateAsync(weight);
 
-            if (weight <= 0)
-            {
-                ErrorMessage = "El indicador devolvió un peso inválido.";
+            if (result is null)
                 return;
-            }
 
-            Weight = weight.ToString("0.############################", CultureInfo.CurrentCulture);
-        }
-        catch (TimeoutException ex)
-        {
-            ErrorMessage = "El indicador no respondió a tiempo. Puedes introducir el peso manualmente.";
-            Console.Error.WriteLine(ex);
-        }
-        catch (IOException ex)
-        {
-            ErrorMessage = "Ocurrió un error de comunicación con el indicador. Puedes introducir el peso manualmente.";
-            Console.Error.WriteLine(ex);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            ErrorMessage = "No fue posible acceder al puerto del indicador. Puedes introducir el peso manualmente.";
-            Console.Error.WriteLine(ex);
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = "No fue posible obtener el peso del indicador. Puedes introducirlo manualmente.";
-            Console.Error.WriteLine(ex);
+            // El ticket ya esta guardado: si la impresion falla se avisa,
+            // pero el registro no se deshace; se puede reimprimir desde la lista
+            string? printWarning = PrintOnSave
+                ? await _printService.PrintAsync(result.Id)
+                : null;
+
+            Registration = new WeighingRegistration(
+                result.TicketNumber,
+                SelectedWeighingType,
+                printWarning);
         }
         finally
         {
-            IsReadingWeight = false;
+            IsSaving = false;
         }
+
+        // Fuera del try: un error al cerrar la ventana no debe
+        // mostrarse como error al registrar
+        Registered?.Invoke(this, EventArgs.Empty);
     }
 
-    private bool CanSave() => !IsRegistered && !IsBusy;
-
-    // Registrar un ticket nuevo una sola vez
-    private async Task SaveAsync()
+    // Devuelve null si no se registro; el motivo ya queda en pantalla
+    private async Task<CreatePurchaseTicketResult?> TryCreateAsync(decimal weight)
     {
-        if (!CanSave()) return;
-        ErrorMessage = string.Empty;
-        SuccessMessage = string.Empty;
-
-        if (!TryValidateForm(out decimal weight)) return;
-
-        IsSaving = true;
         try
         {
             await using var scope = _scopeFactory.CreateAsyncScope();
-            int ticketId;
-            string ticketNumber;
 
-            if (IsConventional)
-            {
-                var createTicket = scope.ServiceProvider.GetRequiredService<CreateConventionalPurchaseTicket>();
-                var command = new CreateConventionalPurchaseTicketCommand(
-                    SelectedSupplier!.Id, SelectedMaterial!.Id, LicensePlate, Transporter, weight);
-                var result = await createTicket.ExecuteAsync(command);
-                ticketId = result.Id;
-                ticketNumber = result.TicketNumber;
-            }
-            else
-            {
-                var createTicket = scope.ServiceProvider.GetRequiredService<CreateSinglePurchaseTicket>();
-                var command = new CreateSinglePurchaseTicketCommand(
-                    SelectedSupplier!.Id,
-                    SelectedMaterial!.Id,
-                    string.IsNullOrWhiteSpace(LicensePlate) ? null : LicensePlate,
-                    Transporter,
-                    weight);
-                var result = await createTicket.ExecuteAsync(command);
-                ticketId = result.Id;
-                ticketNumber = result.TicketNumber;
-            }
-
-            TicketId = ticketId;
-            TicketNumber = ticketNumber;
-            _savedSnapshot = CaptureSnapshot(weight);
-            IsRegistered = true;
-            SuccessMessage = $"El ticket {ticketNumber} se registró correctamente.";
+            return IsConventional
+                ? await CreateConventionalAsync(scope.ServiceProvider, weight)
+                : await CreateSingleAsync(scope.ServiceProvider, weight);
         }
         catch (Exception ex)
             when (ex is BusinessRuleException or NotFoundException)
         {
+            // Por ejemplo, un proveedor que se desactivo con el formulario abierto
             ErrorMessage = ex.Message;
         }
         catch (ArgumentException ex)
         {
-            ErrorMessage = ex.Message;
+            // Placas y transportista ya se validaron; lo que queda es el rango del peso
+            Weight.SetError(GetUserMessage(ex));
         }
         catch (Exception ex)
         {
             ErrorMessage = "No fue posible registrar el pesaje.";
-            Console.Error.WriteLine(ex);
+
+            _logger.LogError(
+                ex,
+                "No fue posible registrar un pesaje {WeighingType}.",
+                SelectedWeighingType);
         }
-        finally
-        {
-            IsSaving = false;
-        }
+
+        return null;
     }
 
-    // Abrir el formulario de correccion sin crear otro ticket
-    private void BeginEdit()
+    private Task<CreatePurchaseTicketResult> CreateConventionalAsync(
+        IServiceProvider services,
+        decimal grossWeight)
     {
-        if (!IsRegistered || IsEditing || IsBusy || !TicketId.HasValue || _savedSnapshot is null)
-            return;
-
-        ErrorMessage = string.Empty;
-        SuccessMessage = string.Empty;
-        IsEditing = true;
+        return services
+            .GetRequiredService<CreateConventionalPurchaseTicket>()
+            .ExecuteAsync(
+                new CreateConventionalPurchaseTicketCommand(
+                    SelectedSupplierId!.Value,
+                    SelectedMaterialId!.Value,
+                    LicensePlate,
+                    Transporter,
+                    grossWeight));
     }
 
-    // Cancelar los cambios realizados en pantalla
-    private void CancelEdit()
+    private Task<CreatePurchaseTicketResult> CreateSingleAsync(
+        IServiceProvider services,
+        decimal netWeight)
     {
-        if (!IsRegistered || !IsEditing || IsBusy || _savedSnapshot is null)
-            return;
+        // En el pesaje unico las placas son opcionales
+        string? licensePlate = string.IsNullOrWhiteSpace(LicensePlate)
+            ? null
+            : LicensePlate;
 
-        RestoreSnapshot(_savedSnapshot);
-        IsEditing = false;
-        ErrorMessage = string.Empty;
-        SuccessMessage = string.Empty;
+        return services
+            .GetRequiredService<CreateSinglePurchaseTicket>()
+            .ExecuteAsync(
+                new CreateSinglePurchaseTicketCommand(
+                    SelectedSupplierId!.Value,
+                    SelectedMaterialId!.Value,
+                    licensePlate,
+                    Transporter,
+                    netWeight));
     }
 
-    private bool CanUpdate() => IsRegistered && IsEditing && TicketId.HasValue && !IsBusy;
-
-    // Corregir solamente los campos modificados
-    private async Task UpdateAsync()
+    // Se validan todos los campos para mostrar todos los errores a la vez
+    private bool ValidateAll(out decimal weight)
     {
-        if (!CanUpdate() || _savedSnapshot is null) return;
-        ErrorMessage = string.Empty;
-        SuccessMessage = string.Empty;
+        bool isSupplierValid = ValidateSupplier();
+        bool isMaterialValid = ValidateMaterial();
+        bool isLicensePlateValid = ValidateLicensePlate();
+        bool isTransporterValid = ValidateTransporter();
+        bool hasWeight = Weight.TryGetWeight(out weight);
 
-        if (!TryValidateForm(out decimal weight)) return;
+        return isSupplierValid
+            && isMaterialValid
+            && isLicensePlateValid
+            && isTransporterValid
+            && hasWeight;
+    }
 
-        var before = _savedSnapshot;
-        var current = CaptureSnapshot(weight);
-
-        int? supplierId = current.SupplierId != before.SupplierId ? current.SupplierId : null;
-        int? materialId = current.MaterialId != before.MaterialId ? current.MaterialId : null;
-        string? transporter = !string.Equals(current.Transporter.Trim(), before.Transporter.Trim(), StringComparison.Ordinal)
-            ? current.Transporter
+    private bool ValidateSupplier()
+    {
+        string? error = SelectedSupplierId is null
+            ? "Selecciona un proveedor."
             : null;
-        bool changeLicensePlate = !string.Equals(
-            NormalizePlate(current.LicensePlate), NormalizePlate(before.LicensePlate), StringComparison.Ordinal);
-        bool changeWeight = current.Weight != before.Weight;
 
-        if (supplierId is null && materialId is null && transporter is null && !changeLicensePlate && !changeWeight)
-        {
-            IsEditing = false;
-            SuccessMessage = "No se realizaron cambios en el ticket.";
-            return;
-        }
+        SetError(nameof(SelectedSupplierId), error);
 
-        IsSaving = true;
-        try
-        {
-            await using var scope = _scopeFactory.CreateAsyncScope();
-            var correctTicket = scope.ServiceProvider.GetRequiredService<CorrectPurchaseTicket>();
-
-            var command = new CorrectPurchaseTicketCommand(
-                TicketId: TicketId!.Value,
-                SupplierId: supplierId,
-                MaterialId: materialId,
-                Transporter: transporter,
-                ChangeLicensePlate: changeLicensePlate,
-                LicensePlate: changeLicensePlate ? current.LicensePlate : null,
-                GrossWeight: changeWeight && IsConventional ? weight : null,
-                NetWeight: changeWeight && IsSingle ? weight : null);
-
-            await correctTicket.ExecuteAsync(command);
-
-            _savedSnapshot = current;
-            IsEditing = false;
-            SuccessMessage = $"Los cambios del ticket {TicketNumber} se guardaron correctamente.";
-        }
-        catch (Exception ex)
-            when (ex is BusinessRuleException or NotFoundException)
-        {
-            ErrorMessage = ex.Message;
-        }
-        catch (ArgumentException ex)
-        {
-            ErrorMessage = ex.Message;
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = "No fue posible corregir el ticket. Los cambios no se confirmaron.";
-            Console.Error.WriteLine(ex);
-        }
-        finally
-        {
-            IsSaving = false;
-        }
+        return error is null;
     }
 
-    private bool CanPrintTicket() => ShowSummary && TicketId.HasValue && !IsBusy;
-
-    // Enviar el ticket registrado a impresion
-    private async Task PrintTicketAsync()
+    private bool ValidateMaterial()
     {
-        if (!CanPrintTicket()) return;
+        string? error = SelectedMaterialId is null
+            ? "Selecciona un material."
+            : null;
 
-        IsPrinting = true;
-        ErrorMessage = string.Empty;
-        SuccessMessage = string.Empty;
+        SetError(nameof(SelectedMaterialId), error);
 
-        try
-        {
-            // Ejecutar la impresion fuera del hilo de WPF
-            var ticketId = TicketId!.Value;
-
-            var result = await Task.Run(async () =>
-            {
-                await using var scope = _scopeFactory.CreateAsyncScope();
-
-                var printTicket = scope.ServiceProvider
-                    .GetRequiredService<PrintPurchaseTicket>();
-
-                var command = new PrintPurchaseTicketCommand(ticketId);
-
-                return await printTicket.ExecuteAsync(command);
-            });
-
-            if (result.Printed)
-            {
-                SuccessMessage =
-                    $"El ticket {result.TicketNumber} se envió correctamente a impresión.";
-            }
-            else
-            {
-                ErrorMessage = result.ErrorCode switch
-                {
-                    PrinterErrorCode.PortNotFound =>
-                        "El puerto configurado para la impresora no está disponible. " +
-                        "Verifica la configuración de conexión.",
-
-                    PrinterErrorCode.PortAccessDenied =>
-                        "No fue posible acceder al puerto de la impresora. " +
-                        "Verifica que no esté siendo utilizado por otra aplicación.",
-
-                    PrinterErrorCode.CommunicationError =>
-                        "Ocurrió un error de comunicación con la impresora. " +
-                        "Verifica la conexión e inténtalo nuevamente.",
-
-                    _ =>
-                        "No fue posible imprimir el ticket. " +
-                        "Puedes intentarlo nuevamente."
-                };
-            }
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = "Ocurrió un error al solicitar la impresión. El ticket permanece registrado.";
-            Console.Error.WriteLine(ex);
-        }
-        finally
-        {
-            IsPrinting = false;
-        }
+        return error is null;
     }
 
-    // Validaciones antes de registrar o corregir
-    private bool TryValidateForm(out decimal weight)
+    // Mismas reglas del dominio: obligatorias en el convencional, opcionales en el unico
+    private bool ValidateLicensePlate()
     {
-        weight = 0;
-        if (SelectedSupplier is null)
-        {
-            ErrorMessage = "Selecciona un proveedor.";
-            return false;
-        }
-        if (SelectedMaterial is null)
-        {
-            ErrorMessage = "Selecciona un material.";
-            return false;
-        }
-        if (string.IsNullOrWhiteSpace(Transporter))
-        {
-            ErrorMessage = "El transportista es obligatorio.";
-            return false;
-        }
-        if (IsConventional && string.IsNullOrWhiteSpace(LicensePlate))
-        {
-            ErrorMessage = "Las placas son obligatorias para el pesaje convencional.";
-            return false;
-        }
-        if (!decimal.TryParse(Weight, NumberStyles.Number, CultureInfo.CurrentCulture, out weight) || weight <= 0)
-        {
-            ErrorMessage = "Introduce un peso válido mayor a cero.";
-            return false;
-        }
-        return true;
+        string? error = IsConventional
+            ? ValidateRule(() => Ticket.NormalizeLicensePlate(LicensePlate))
+            : ValidateRule(() => Ticket.NormalizeOptionalLicensePlate(LicensePlate));
+
+        SetError(nameof(LicensePlate), error);
+
+        return error is null;
     }
 
-    private TicketSnapshot CaptureSnapshot(decimal weight) => new(
-        SelectedSupplier!.Id,
-        SelectedMaterial!.Id,
-        string.IsNullOrWhiteSpace(LicensePlate) ? null : LicensePlate,
-        Transporter,
-        weight);
-
-    private void RestoreSnapshot(TicketSnapshot snapshot)
+    private bool ValidateTransporter()
     {
-        SelectedSupplier = Suppliers.FirstOrDefault(x => x.Id == snapshot.SupplierId);
-        SelectedMaterial = Materials.FirstOrDefault(x => x.Id == snapshot.MaterialId);
-        LicensePlate = snapshot.LicensePlate ?? string.Empty;
-        Transporter = snapshot.Transporter;
-        Weight = snapshot.Weight.ToString("0.############################", CultureInfo.CurrentCulture);
+        string? error = ValidateRule(
+            () => Ticket.NormalizeTransporter(Transporter));
+
+        SetError(nameof(Transporter), error);
+
+        return error is null;
     }
 
-    private static string NormalizePlate(string? value) =>
-        (value ?? string.Empty).Trim().ToUpperInvariant();
+    private void OnWeightPropertyChanged(
+        object? sender,
+        PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(WeightCaptureViewModel.IsReading))
+            NotifyBusyChanged();
+    }
+
+    private void NotifyBusyChanged()
+    {
+        OnPropertyChanged(nameof(IsBusy));
+        SaveCommand?.NotifyCanExecuteChanged();
+    }
 }

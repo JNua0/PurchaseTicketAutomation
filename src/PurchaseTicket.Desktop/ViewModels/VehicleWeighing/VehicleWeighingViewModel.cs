@@ -16,6 +16,7 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
     // Campos
 
     private readonly IWeighingDialogService _weighingDialogService;
+    private readonly INotificationService _notifications;
     private readonly TimeProvider _timeProvider;
 
     private WeighingView _selectedView = WeighingView.InPlant;
@@ -26,11 +27,13 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
     public VehicleWeighingViewModel(
         IServiceScopeFactory scopeFactory,
         IWeighingDialogService weighingDialogService,
+        INotificationService notifications,
         TimeProvider timeProvider,
         ILogger<VehicleWeighingViewModel> logger)
         : base(scopeFactory, logger)
     {
         _weighingDialogService = weighingDialogService;
+        _notifications = notifications;
         _timeProvider = timeProvider;
 
         NewWeighingCommand = new AsyncRelayCommand(
@@ -189,8 +192,35 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
 
     private async Task NewWeighingAsync()
     {
-        if (!_weighingDialogService.ShowCreateDialog())
+        var registration = _weighingDialogService.ShowCreateDialog();
+
+        if (registration is null)
             return;
+
+        _notifications.ShowSuccess(
+            $"Pesaje registrado con folio {registration.TicketNumber}.");
+
+        // El registro si se hizo: el problema de impresion va en un aviso
+        // aparte que espera a que el operador lo lea y lo cierre
+        if (registration.PrintWarning is not null)
+        {
+            _notifications.ShowWarning(
+                $"No se imprimió el folio {registration.TicketNumber}. " +
+                registration.PrintWarning);
+        }
+
+        // Se muestra la vista donde quedo el ticket nuevo
+        WeighingView targetView =
+            registration.WeighingType == WeighingType.Conventional
+                ? WeighingView.InPlant
+                : WeighingView.SinglesToday;
+
+        // Cambiar de vista ya recarga la lista; recargar otra vez se cruzaria
+        if (SelectedView != targetView)
+        {
+            SelectedView = targetView;
+            return;
+        }
 
         await ReloadAfterActionAsync(
             page: 1,

@@ -1,5 +1,4 @@
-﻿using System.Windows;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 using PurchaseTicket.Desktop.Views.VehicleWeighing;
 
@@ -7,15 +6,21 @@ namespace PurchaseTicket.Desktop.Services;
 
 public class WeighingDialogService : IWeighingDialogService
 {
+    // Campos
+
     private readonly IServiceScopeFactory _scopeFactory;
+
+    // Constructor
 
     public WeighingDialogService(IServiceScopeFactory scopeFactory)
     {
         _scopeFactory = scopeFactory;
     }
 
-    // Mostrar el formulario para registrar un nuevo pesaje
-    public bool ShowCreateDialog()
+    // Metodos publicos
+
+    // Cada apertura crea una ventana y un formulario nuevos, sin datos anteriores
+    public WeighingRegistration? ShowCreateDialog()
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -24,10 +29,10 @@ public class WeighingDialogService : IWeighingDialogService
 
         var viewModel = (CreateWeighingViewModel)window.DataContext;
 
-        viewModel.Initialize();
-
         window.Owner = System.Windows.Application.Current.MainWindow;
 
-        return window.ShowDialog() == true;
+        return window.ShowDialog() == true
+            ? viewModel.Registration
+            : null;
     }
 }

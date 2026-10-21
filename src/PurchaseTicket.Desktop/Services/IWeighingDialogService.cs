@@ -1,6 +1,9 @@
-﻿namespace PurchaseTicket.Desktop.Services;
+﻿using PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
+
+namespace PurchaseTicket.Desktop.Services;
 
 public interface IWeighingDialogService
 {
-    bool ShowCreateDialog();
+    // Null si se cerro sin registrar
+    WeighingRegistration? ShowCreateDialog();
 }

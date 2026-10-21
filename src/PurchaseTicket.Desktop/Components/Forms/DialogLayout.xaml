@@ -40,10 +40,17 @@
 
         </Grid>
 
-        <!-- Cuerpo: secciones del formulario -->
-        <ContentPresenter Grid.Row="1"
-                          Margin="28,22,28,22"
-                          Content="{Binding BodyContent, ElementName=Root}"/>
+        <!-- Cuerpo: secciones del formulario. La barra de desplazamiento solo
+             aparece si la pantalla es mas baja que el formulario -->
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Focusable="False">
+
+            <ContentPresenter Margin="28,22,28,22"
+                              Content="{Binding BodyContent, ElementName=Root}"/>
+
+        </ScrollViewer>
 
         <!-- Barra de acciones separada del cuerpo por una linea -->
         <Border Grid.Row="2"
