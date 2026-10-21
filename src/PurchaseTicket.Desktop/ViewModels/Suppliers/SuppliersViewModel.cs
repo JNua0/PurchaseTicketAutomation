@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Suppliers.Activate;
 using PurchaseTicket.Application.UseCases.Suppliers.Deactivate;
@@ -25,8 +26,9 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
         IServiceScopeFactory scopeFactory,
         ISupplierDialogService supplierDialogService,
         IConfirmationDialogService confirmationDialogService,
-        INotificationService notifications)
-        : base(scopeFactory)
+        INotificationService notifications,
+        ILogger<SuppliersViewModel> logger)
+        : base(scopeFactory, logger)
     {
         _supplierDialogService = supplierDialogService;
         _confirmationDialogService = confirmationDialogService;
@@ -185,7 +187,10 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
             QueryErrorMessage =
                 "No fue posible cambiar el estado del proveedor.";
 
-            Console.Error.WriteLine(ex);
+            Logger.LogError(
+                ex,
+                "No fue posible cambiar el estado del proveedor {SupplierId}.",
+                supplier.Id);
 
             return;
         }

@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Materials.Create;
 using PurchaseTicket.Application.UseCases.Materials.Update;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.ViewModels.Base;
+using PurchaseTicket.Desktop.ViewModels.Suppliers;
 using PurchaseTicket.Domain.Entities;
 
 namespace PurchaseTicket.Desktop.ViewModels.Materials;
@@ -14,6 +16,7 @@ public class MaterialFormViewModel : ValidatableObject
     // Campos
 
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<SupplierFormViewModel> _logger;
 
     private int? _materialId;
     private string _name = string.Empty;
@@ -25,9 +28,12 @@ public class MaterialFormViewModel : ValidatableObject
 
     // Constructor
 
-    public MaterialFormViewModel(IServiceScopeFactory scopeFactory)
+    public MaterialFormViewModel(
+        IServiceScopeFactory scopeFactory,
+        ILogger<SupplierFormViewModel> logger)
     {
         _scopeFactory = scopeFactory;
+        _logger = logger;
 
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
     }
@@ -163,15 +169,24 @@ public class MaterialFormViewModel : ValidatableObject
         {
             ErrorMessage = GetUserMessage(ex);
         }
-        catch (InvalidOperationException ex)
-        {
-            ErrorMessage = ex.Message;
-        }
         catch (Exception ex)
         {
             ErrorMessage = "Ocurrió un error al guardar el material.";
 
-            Console.Error.WriteLine(ex);
+            if (IsEditMode)
+            {
+                _logger.LogError(
+                    ex,
+                    "No fue posible actualizar el material {MaterialId}.",
+                    MaterialId);
+            }
+            else
+            {
+                _logger.LogError(
+                    ex,
+                    "No fue posible registrar el material {MaterialName}.",
+                    Name);
+            }
         }
         finally
         {

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Materials.Activate;
 using PurchaseTicket.Application.UseCases.Materials.Deactivate;
@@ -6,6 +7,7 @@ using PurchaseTicket.Application.UseCases.Materials.Get;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.Services;
 using PurchaseTicket.Desktop.ViewModels.Base;
+using PurchaseTicket.Desktop.ViewModels.Suppliers;
 using PurchaseTicket.Domain.Entities;
 
 namespace PurchaseTicket.Desktop.ViewModels.Materials;
@@ -27,8 +29,9 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
         IServiceScopeFactory scopeFactory,
         IMaterialDialogService materialDialogService,
         IConfirmationDialogService confirmationDialogService,
-        INotificationService notifications)
-        : base(scopeFactory)
+        INotificationService notifications,
+        ILogger<SuppliersViewModel> logger)
+        : base(scopeFactory, logger)
     {
         _materialDialogService = materialDialogService;
         _confirmationDialogService = confirmationDialogService;
@@ -186,7 +189,10 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
             QueryErrorMessage =
                 "No fue posible cambiar el estado del material.";
 
-            Console.Error.WriteLine(ex);
+            Logger.LogError(
+                ex,
+                "No fue posible cambiar el estado del material {MaterialId}.",
+                material.Id);
 
             return;
         }

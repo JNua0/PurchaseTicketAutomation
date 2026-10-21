@@ -1,7 +1,9 @@
-﻿using System.Collections.ObjectModel;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
 using PurchaseTicket.Desktop.Commands;
+using Serilog.Core;
+using System.Collections.ObjectModel;
 
 namespace PurchaseTicket.Desktop.ViewModels.Base;
 
@@ -24,9 +26,12 @@ public abstract class PagedListViewModel<TItem> : ObservableObject
 
     // Constructor
 
-    protected PagedListViewModel(IServiceScopeFactory scopeFactory)
+    protected PagedListViewModel(
+        IServiceScopeFactory scopeFactory,
+        ILogger logger)
     {
         ScopeFactory = scopeFactory;
+        Logger = logger;
 
         SearchCommand = new AsyncRelayCommand(
             () => LoadPageAsync(1),
@@ -160,6 +165,9 @@ public abstract class PagedListViewModel<TItem> : ObservableObject
 
     protected IServiceScopeFactory ScopeFactory { get; }
 
+    // Logger de la pantalla concreta: el registro indica que lista fallo
+    protected ILogger Logger { get; }
+
     // Mensaje que se muestra si la consulta falla
     protected abstract string LoadErrorMessage { get; }
 
@@ -266,7 +274,10 @@ public abstract class PagedListViewModel<TItem> : ObservableObject
         {
             QueryErrorMessage = LoadErrorMessage;
 
-            Console.Error.WriteLine(ex);
+            Logger.LogError(
+                ex,
+                "No fue posible cargar la página {Page} del listado.",
+                page);
 
             return false;
         }

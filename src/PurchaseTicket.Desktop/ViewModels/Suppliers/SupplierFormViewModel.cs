@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Suppliers.Create;
 using PurchaseTicket.Application.UseCases.Suppliers.Update;
@@ -14,6 +15,7 @@ public class SupplierFormViewModel : ValidatableObject
     // Campos
 
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<SupplierFormViewModel> _logger;
 
     private int? _supplierId;
     private string _name = string.Empty;
@@ -26,9 +28,12 @@ public class SupplierFormViewModel : ValidatableObject
 
     // Constructor
 
-    public SupplierFormViewModel(IServiceScopeFactory scopeFactory)
+    public SupplierFormViewModel(
+        IServiceScopeFactory scopeFactory,
+        ILogger<SupplierFormViewModel> logger)
     {
         _scopeFactory = scopeFactory;
+        _logger = logger;
 
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
     }
@@ -185,15 +190,24 @@ public class SupplierFormViewModel : ValidatableObject
         {
             ErrorMessage = GetUserMessage(ex);
         }
-        catch (InvalidOperationException ex)
-        {
-            ErrorMessage = ex.Message;
-        }
         catch (Exception ex)
         {
             ErrorMessage = "Ocurrió un error al guardar el proveedor.";
 
-            Console.Error.WriteLine(ex);
+            if (IsEditMode)
+            {
+                _logger.LogError(
+                    ex,
+                    "No fue posible actualizar el proveedor {SupplierId}.",
+                    SupplierId);
+            }
+            else
+            {
+                _logger.LogError(
+                    ex,
+                    "No fue posible registrar el proveedor {SupplierName}.",
+                    Name);
+            }
         }
         finally
         {
