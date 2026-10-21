@@ -22,7 +22,9 @@ public class PurchaseTicketQueryRepository
         int pageSize,
         string? search = null,
         TicketStatus? status = null,
-        WeighingType? weighingType = null)
+        WeighingType? weighingType = null,
+        DateTime? weighedFrom = null,
+        DateTime? weighedTo = null)
     {
         var query =
             from ticket in _context.PurchaseTickets.AsNoTracking()
@@ -63,18 +65,39 @@ public class PurchaseTicketQueryRepository
                 x.Ticket.WeighingType == weighingType.Value);
         }
 
+        // Ultimo pesaje: la salida en convencionales con tara y la
+        // entrada en el resto (pesaje unico o vehiculo aun en planta)
+        if (weighedFrom.HasValue)
+        {
+            var from = weighedFrom.Value;
+
+            query = query.Where(x =>
+                (x.Ticket.DepartureAt ?? x.Ticket.CheckInAt) >= from);
+        }
+
+        if (weighedTo.HasValue)
+        {
+            var to = weighedTo.Value;
+
+            query = query.Where(x =>
+                (x.Ticket.DepartureAt ?? x.Ticket.CheckInAt) < to);
+        }
+
         var totalCount =
             await query.CountAsync();
 
         var items =
             await query
-                .OrderByDescending(x => x.Ticket.CheckInAt)
+                .OrderByDescending(x =>
+                    x.Ticket.DepartureAt ?? x.Ticket.CheckInAt)
+                .ThenByDescending(x => x.Ticket.Id)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(x => new PurchaseTicketListItem(
                     x.Ticket.Id,
                     x.Ticket.TicketNumber,
                     x.Ticket.CheckInAt,
+                    x.Ticket.DepartureAt,
                     x.SupplierName,
                     x.MaterialName,
                     x.Ticket.LicensePlate,

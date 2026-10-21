@@ -25,18 +25,27 @@ public class GetPurchaseTickets
             throw new ArgumentException(
                 "El tamaño de página debe estar entre 1 y 100.");
 
+        if (query.WeighedFrom.HasValue &&
+            query.WeighedTo.HasValue &&
+            query.WeighedFrom.Value >= query.WeighedTo.Value)
+            throw new ArgumentException(
+                "La fecha inicial debe ser anterior a la fecha final.");
+
         var result = await _repository.GetPagedAsync(
             query.Page,
             query.PageSize,
             query.Search,
             query.Status,
-            query.WeighingType);
+            query.WeighingType,
+            query.WeighedFrom,
+            query.WeighedTo);
 
         var items = result.Items
             .Select(item => new PurchaseTicketDto(
                 item.Id,
                 item.TicketNumber,
                 item.CheckInAt,
+                item.DepartureAt,
                 item.SupplierName,
                 item.MaterialName,
                 item.LicensePlate,

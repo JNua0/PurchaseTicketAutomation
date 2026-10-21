@@ -11,5 +11,7 @@ public interface IPurchaseTicketQueryRepository
         int pageSize,
         string? search = null,
         TicketStatus? status = null,
-        WeighingType? weighingType = null);
+        WeighingType? weighingType = null,
+        DateTime? weighedFrom = null,
+        DateTime? weighedTo = null);
 }

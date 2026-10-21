@@ -23,19 +23,25 @@ public class GetPurchaseTicketsTests
         public string? ReceivedSearch { get; private set; }
         public TicketStatus? ReceivedStatus { get; private set; }
         public WeighingType? ReceivedWeighingType { get; private set; }
+        public DateTime? ReceivedWeighedFrom { get; private set; }
+        public DateTime? ReceivedWeighedTo { get; private set; }
 
         public Task<PagedResult<PurchaseTicketListItem>> GetPagedAsync(
             int page,
             int pageSize,
             string? search = null,
             TicketStatus? status = null,
-            WeighingType? weighingType = null)
+            WeighingType? weighingType = null,
+            DateTime? weighedFrom = null,
+            DateTime? weighedTo = null)
         {
             ReceivedPage = page;
             ReceivedPageSize = pageSize;
             ReceivedSearch = search;
             ReceivedStatus = status;
             ReceivedWeighingType = weighingType;
+            ReceivedWeighedFrom = weighedFrom;
+            ReceivedWeighedTo = weighedTo;
 
             return Task.FromResult(Result);
         }
@@ -55,6 +61,8 @@ public class GetPurchaseTicketsTests
                             TicketNumber: "T-000001",
                             CheckInAt: new DateTime(
                                 2026, 10, 6, 8, 30, 0),
+                            DepartureAt: new DateTime(
+                                2026, 10, 6, 10, 15, 0),
                             SupplierName: "Proveedor Uno",
                             MaterialName: "Acero",
                             LicensePlate: "ABC123",
@@ -136,6 +144,10 @@ public class GetPurchaseTicketsTests
 
         Assert.Equal(15000m, item.NetWeight);
         Assert.Equal(20000m, item.GrossWeight);
+
+        Assert.Equal(
+            new DateTime(2026, 10, 6, 10, 15, 0),
+            item.DepartureAt);
     }
 
     [Fact]
@@ -154,7 +166,9 @@ public class GetPurchaseTicketsTests
                 PageSize: 10,
                 Search: "T-000123",
                 Status: TicketStatus.Completed,
-                WeighingType: WeighingType.Conventional);
+                WeighingType: WeighingType.Conventional,
+                WeighedFrom: new DateTime(2026, 10, 21, 6, 0, 0, DateTimeKind.Utc),
+                WeighedTo: new DateTime(2026, 10, 22, 6, 0, 0, DateTimeKind.Utc));
 
         // Act
         await useCase.ExecuteAsync(query);
@@ -179,6 +193,14 @@ public class GetPurchaseTicketsTests
         Assert.Equal(
             WeighingType.Conventional,
             repository.ReceivedWeighingType);
+
+        Assert.Equal(
+            new DateTime(2026, 10, 21, 6, 0, 0, DateTimeKind.Utc),
+            repository.ReceivedWeighedFrom);
+
+        Assert.Equal(
+            new DateTime(2026, 10, 22, 6, 0, 0, DateTimeKind.Utc),
+            repository.ReceivedWeighedTo);
     }
 
     [Fact]
@@ -218,8 +240,7 @@ public class GetPurchaseTicketsTests
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
-    public async Task ExecuteAsync_ShouldThrowWhenPageIsInvalid(
-    int page)
+    public async Task ExecuteAsync_ShouldThrowWhenPageIsInvalid(int page)
     {
         // Arrange
         var repository =
@@ -276,5 +297,37 @@ public class GetPurchaseTicketsTests
             exception.Message);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task ExecuteAsync_ShouldThrowWhenDateRangeIsInvalid(
+        int hoursUntilEnd)
+    {
+        // Arrange
+        var repository =
+            new FakePurchaseTicketQueryRepository();
 
+        var useCase =
+            new GetPurchaseTickets(repository);
+
+        var start =
+            new DateTime(2026, 10, 21, 6, 0, 0, DateTimeKind.Utc);
+
+        var query =
+            new GetPurchaseTicketsQuery(
+                WeighedFrom: start,
+                WeighedTo: start.AddHours(hoursUntilEnd));
+
+        // Act
+        async Task Act() =>
+            await useCase.ExecuteAsync(query);
+
+        // Assert
+        var exception =
+            await Assert.ThrowsAsync<ArgumentException>(Act);
+
+        Assert.Equal(
+            "La fecha inicial debe ser anterior a la fecha final.",
+            exception.Message);
+    }
 }
