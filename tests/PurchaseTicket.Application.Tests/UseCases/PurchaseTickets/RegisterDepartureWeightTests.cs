@@ -22,9 +22,6 @@ public class RegisterDepartureWeightTests
             return Task.FromResult(Ticket);
         }
 
-        public Task<IReadOnlyList<Ticket>> GetPendingWeighingAsync()
-            => throw new NotImplementedException();
-
         public Task UpdateAsync(Ticket purchaseTicket)
         {
             UpdatedTicket = purchaseTicket;

@@ -84,14 +84,9 @@ public abstract class ValidatableObject : ObservableObject, INotifyDataErrorInfo
         }
     }
 
-    // .NET agrega " (Parameter 'x')" al mensaje; no es para el usuario
+    // Atajo para los formularios; la regla vive en ExceptionMessages
     protected static string GetUserMessage(ArgumentException ex)
     {
-        if (ex.ParamName is null)
-            return ex.Message;
-
-        return ex.Message.Replace(
-            $" (Parameter '{ex.ParamName}')",
-            string.Empty);
+        return ExceptionMessages.ForUser(ex);
     }
 }

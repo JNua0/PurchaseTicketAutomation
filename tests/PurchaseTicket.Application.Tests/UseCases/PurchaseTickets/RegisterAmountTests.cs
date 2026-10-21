@@ -29,9 +29,6 @@ public class RegisterAmountTests
 
         public Task AddAsync(Ticket purchaseTicket)
             => throw new NotImplementedException();
-
-        public Task<IReadOnlyList<Ticket>> GetPendingWeighingAsync()
-            => throw new NotImplementedException();
     }
 
     [Fact]

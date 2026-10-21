@@ -126,9 +126,6 @@ public partial class App : System.Windows.Application
                 services.AddTransient<MaterialFormWindow>();
                 services.AddTransient<IMaterialDialogService, MaterialDialogService>();
 
-                // Purchase ticket repositories
-                services.AddScoped<IPurchaseTicketQueryRepository, PurchaseTicketQueryRepository>();
-
                 // Vehicle weighing view models
                 services.AddTransient<VehicleWeighingViewModel>();
 
@@ -138,6 +135,7 @@ public partial class App : System.Windows.Application
 
                 // Purchase ticket repositories
                 services.AddScoped<IPurchaseTicketRepository, PurchaseTicketRepository>();
+                services.AddScoped<IPurchaseTicketQueryRepository, PurchaseTicketQueryRepository>();
 
                 // Purchase ticket use cases
                 services.AddScoped<GetPurchaseTickets>();

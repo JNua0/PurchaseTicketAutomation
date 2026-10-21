@@ -221,7 +221,7 @@ public class RegisterTareViewModel : ObservableObject
         catch (ArgumentException ex)
         {
             // Las reglas de la tara: mayor a cero y menor al peso bruto
-            Tare.SetError(GetUserMessage(ex));
+            Tare.SetError(ExceptionMessages.ForUser(ex));
         }
         catch (Exception ex)
         {
@@ -234,14 +234,6 @@ public class RegisterTareViewModel : ObservableObject
         }
 
         return false;
-    }
-
-    // .NET agrega " (Parameter 'x')" al mensaje; no es para el usuario
-    private static string GetUserMessage(ArgumentException ex)
-    {
-        return ex.ParamName is null
-            ? ex.Message
-            : ex.Message.Replace($" (Parameter '{ex.ParamName}')", string.Empty);
     }
 
     private void OnTarePropertyChanged(

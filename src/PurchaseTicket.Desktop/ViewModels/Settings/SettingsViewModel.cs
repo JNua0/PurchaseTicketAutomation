@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.IO.Ports;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.Configuration;
 
@@ -11,6 +12,7 @@ public class SettingsViewModel : INotifyPropertyChanged
 {
     // Dependencias
     private readonly ApplicationSettingsService _settingsService;
+    private readonly ILogger<SettingsViewModel> _logger;
 
     // Puertos detectados por Windows
     private readonly HashSet<string> _detectedPorts =
@@ -25,9 +27,11 @@ public class SettingsViewModel : INotifyPropertyChanged
     private string _errorMessage = string.Empty;
 
     public SettingsViewModel(
-        ApplicationSettingsService settingsService)
+        ApplicationSettingsService settingsService,
+        ILogger<SettingsViewModel> logger)
     {
         _settingsService = settingsService;
+        _logger = logger;
 
         RefreshPortsCommand = new RelayCommand(RefreshPorts);
         SaveSettingsCommand = new RelayCommand(SaveSettings);
@@ -151,7 +155,7 @@ public class SettingsViewModel : INotifyPropertyChanged
             ErrorMessage =
                 "No fue posible cargar la configuración.";
 
-            Console.Error.WriteLine(ex);
+            _logger.LogError(ex, "No fue posible cargar la configuración.");
         }
 
         // Consultar los puertos independientemente de la carga
@@ -215,7 +219,7 @@ public class SettingsViewModel : INotifyPropertyChanged
             ErrorMessage =
                 "No fue posible consultar los puertos COM.";
 
-            Console.Error.WriteLine(ex);
+            _logger.LogError(ex, "No fue posible consultar los puertos COM.");
         }
     }
 
@@ -279,7 +283,7 @@ public class SettingsViewModel : INotifyPropertyChanged
             ErrorMessage =
                 "No fue posible guardar la configuración.";
 
-            Console.Error.WriteLine(ex);
+            _logger.LogError(ex, "No fue posible guardar la configuración.");
         }
     }
 

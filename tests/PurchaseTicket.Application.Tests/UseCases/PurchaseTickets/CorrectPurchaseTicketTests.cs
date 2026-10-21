@@ -30,9 +30,6 @@ public class CorrectPurchaseTicketTests
 
             return Task.CompletedTask;
         }
-
-        public Task<IReadOnlyList<Ticket>> GetPendingWeighingAsync()
-            => throw new NotImplementedException();
     }
 
     private sealed class FakeSupplierRepository : ISupplierRepository

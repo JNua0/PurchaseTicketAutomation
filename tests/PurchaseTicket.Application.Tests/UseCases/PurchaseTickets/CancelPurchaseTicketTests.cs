@@ -167,9 +167,5 @@ public class CancelPurchaseTicketTests
 
         public Task AddAsync(Ticket purchaseTicket)
             => throw new NotImplementedException();
-
-        public Task<IReadOnlyList<Ticket>> GetPendingWeighingAsync()
-            => throw new NotImplementedException();
-
     }
 }

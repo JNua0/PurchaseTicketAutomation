@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PurchaseTicket.Application.Abstractions.Persistence;
-using PurchaseTicket.Domain.Enums;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
 namespace PurchaseTicket.Infrastructure.Persistence.Repositories;
@@ -30,13 +29,5 @@ public class PurchaseTicketRepository : IPurchaseTicketRepository
     {
         _context.PurchaseTickets.Update(purchaseTicket);
         await _context.SaveChangesAsync();
-    }
-
-    public async Task<IReadOnlyList<Ticket>> GetPendingWeighingAsync()
-    {
-        return await _context.PurchaseTickets
-            .AsNoTracking()
-            .Where(ticket => ticket.Status == TicketStatus.WeighingPending)
-            .ToListAsync();
     }
 }

@@ -30,11 +30,6 @@ public class CreateSinglePurchaseTicketTests
         {
             throw new NotImplementedException();
         }
-
-        public Task<IReadOnlyList<Ticket>> GetPendingWeighingAsync()
-        {
-            throw new NotImplementedException();
-        }
     }
 
     private sealed class FakeSupplierRepository : ISupplierRepository

@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
 using PurchaseTicket.Desktop.Commands;
-using Serilog.Core;
 using System.Collections.ObjectModel;
 
 namespace PurchaseTicket.Desktop.ViewModels.Base;
