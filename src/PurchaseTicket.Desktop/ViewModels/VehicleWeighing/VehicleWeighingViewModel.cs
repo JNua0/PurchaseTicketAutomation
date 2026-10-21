@@ -1,11 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.Cancel;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Get;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.Services;
 using PurchaseTicket.Desktop.ViewModels.Base;
 using PurchaseTicket.Domain.Enums;
+using PurchaseTicket.Domain.Exceptions;
 
 namespace PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 
@@ -17,6 +19,8 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
 
     private readonly IWeighingDialogService _weighingDialogService;
     private readonly INotificationService _notifications;
+    private readonly IConfirmationDialogService _confirmationDialogService;
+    private readonly ITicketPrintService _printService;
     private readonly TimeProvider _timeProvider;
 
     private WeighingView _selectedView = WeighingView.InPlant;
@@ -28,12 +32,16 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
         IServiceScopeFactory scopeFactory,
         IWeighingDialogService weighingDialogService,
         INotificationService notifications,
+        IConfirmationDialogService confirmationDialogService,
+        ITicketPrintService printService,
         TimeProvider timeProvider,
         ILogger<VehicleWeighingViewModel> logger)
         : base(scopeFactory, logger)
     {
         _weighingDialogService = weighingDialogService;
         _notifications = notifications;
+        _confirmationDialogService = confirmationDialogService;
+        _printService = printService;
         _timeProvider = timeProvider;
 
         NewWeighingCommand = new AsyncRelayCommand(
@@ -43,6 +51,14 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
         RegisterTareCommand = new AsyncRelayCommand<WeighingListItem>(
             RegisterTareAsync,
             CanRegisterTare);
+
+        ReprintCommand = new AsyncRelayCommand<WeighingListItem>(
+            ReprintAsync,
+            CanActOn);
+
+        CancelTicketCommand = new AsyncRelayCommand<WeighingListItem>(
+            CancelTicketAsync,
+            CanActOn);
     }
 
     // Propiedades
@@ -100,6 +116,10 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
 
     public AsyncRelayCommand<WeighingListItem> RegisterTareCommand { get; }
 
+    public AsyncRelayCommand<WeighingListItem> ReprintCommand { get; }
+
+    public AsyncRelayCommand<WeighingListItem> CancelTicketCommand { get; }
+
     // Metodos protegidos
 
     protected override async Task<PagedResult<WeighingListItem>> FetchPageAsync(
@@ -145,6 +165,8 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
 
         NewWeighingCommand?.NotifyCanExecuteChanged();
         RegisterTareCommand?.NotifyCanExecuteChanged();
+        ReprintCommand?.NotifyCanExecuteChanged();
+        CancelTicketCommand?.NotifyCanExecuteChanged();
     }
 
     // Metodos privados
@@ -195,6 +217,99 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
         return (
             TimeZoneInfo.ConvertTimeToUtc(today, zone),
             TimeZoneInfo.ConvertTimeToUtc(today.AddDays(1), zone));
+    }
+
+    // Las dos vistas solo muestran tickets pendientes: todos se pueden
+    // reimprimir y cancelar. El dominio vuelve a revisar el estado al guardar
+    private bool CanActOn(WeighingListItem ticket)
+    {
+        return ticket is not null && CanInteract();
+    }
+
+    private async Task ReprintAsync(WeighingListItem ticket)
+    {
+        string? printWarning;
+
+        // Ocupado mientras imprime: la impresora atiende un ticket a la vez
+        IsBusy = true;
+
+        try
+        {
+            printWarning = await _printService.PrintAsync(ticket.Id);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        if (printWarning is null)
+        {
+            _notifications.ShowSuccess(
+                $"Ticket folio {ticket.TicketNumber} enviado a impresión.");
+        }
+        else
+        {
+            _notifications.ShowWarning(
+                $"No se imprimió el folio {ticket.TicketNumber}. {printWarning}");
+        }
+    }
+
+    private async Task CancelTicketAsync(WeighingListItem ticket)
+    {
+        bool confirmed = _confirmationDialogService.Confirm(
+            "Cancelar ticket",
+            $"¿Deseas cancelar el ticket folio {ticket.TicketNumber}? " +
+            "Esta acción no se puede deshacer.");
+
+        if (!confirmed)
+            return;
+
+        IsBusy = true;
+
+        try
+        {
+            await using var scope = ScopeFactory.CreateAsyncScope();
+
+            await scope.ServiceProvider
+                .GetRequiredService<CancelPurchaseTicket>()
+                .ExecuteAsync(new CancelPurchaseTicketCommand(ticket.Id));
+        }
+        catch (Exception ex)
+            when (ex is BusinessRuleException or NotFoundException)
+        {
+            // Por ejemplo, otro equipo ya lo cancelo: se recarga para mostrarlo
+            _notifications.ShowError(ex.Message);
+            IsBusy = false;
+
+            await ReloadAfterActionAsync(
+                CurrentPage,
+                "No fue posible actualizar el listado.");
+
+            return;
+        }
+        catch (Exception ex)
+        {
+            _notifications.ShowError("No fue posible cancelar el ticket.");
+
+            Logger.LogError(
+                ex,
+                "No fue posible cancelar el ticket {TicketId}.",
+                ticket.Id);
+
+            return;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        _notifications.ShowSuccess(
+            $"Ticket folio {ticket.TicketNumber} cancelado.");
+
+        await ReloadAfterActionAsync(
+            CurrentPage,
+            "El ticket se canceló correctamente, " +
+            "pero no fue posible actualizar el listado.");
     }
 
     private bool CanRegisterTare(WeighingListItem ticket)
