@@ -7,10 +7,7 @@ namespace PurchaseTicket.Desktop.Components.Actions;
 
 public partial class StatusActionButton : UserControl
 {
-    public StatusActionButton()
-    {
-        InitializeComponent();
-    }
+    // Campos
 
     // Estado actual del registro
     public static readonly DependencyProperty IsActiveProperty =
@@ -20,12 +17,6 @@ public partial class StatusActionButton : UserControl
             typeof(StatusActionButton),
             new PropertyMetadata(false));
 
-    public bool IsActive
-    {
-        get => (bool)GetValue(IsActiveProperty);
-        set => SetValue(IsActiveProperty, value);
-    }
-
     // Comando para cambiar el estado
     public static readonly DependencyProperty CommandProperty =
         DependencyProperty.Register(
@@ -33,12 +24,6 @@ public partial class StatusActionButton : UserControl
             typeof(ICommand),
             typeof(StatusActionButton),
             new PropertyMetadata(null));
-
-    public ICommand? Command
-    {
-        get => (ICommand?)GetValue(CommandProperty);
-        set => SetValue(CommandProperty, value);
-    }
 
     // Registro sobre el que se ejecutara el comando
     public static readonly DependencyProperty CommandParameterProperty =
@@ -48,12 +33,6 @@ public partial class StatusActionButton : UserControl
             typeof(StatusActionButton),
             new PropertyMetadata(null));
 
-    public object? CommandParameter
-    {
-        get => GetValue(CommandParameterProperty);
-        set => SetValue(CommandParameterProperty, value);
-    }
-
     // Icono para activar; si no se indica, se usa el generico
     public static readonly DependencyProperty ActivateIconProperty =
         DependencyProperty.Register(
@@ -62,12 +41,6 @@ public partial class StatusActionButton : UserControl
             typeof(StatusActionButton),
             new PropertyMetadata(null));
 
-    public Geometry? ActivateIcon
-    {
-        get => (Geometry?)GetValue(ActivateIconProperty);
-        set => SetValue(ActivateIconProperty, value);
-    }
-
     // Icono para desactivar; si no se indica, se usa el generico
     public static readonly DependencyProperty DeactivateIconProperty =
         DependencyProperty.Register(
@@ -75,6 +48,39 @@ public partial class StatusActionButton : UserControl
             typeof(Geometry),
             typeof(StatusActionButton),
             new PropertyMetadata(null));
+
+    // Constructor
+
+    public StatusActionButton()
+    {
+        InitializeComponent();
+    }
+
+    // Propiedades
+
+    public bool IsActive
+    {
+        get => (bool)GetValue(IsActiveProperty);
+        set => SetValue(IsActiveProperty, value);
+    }
+
+    public ICommand? Command
+    {
+        get => (ICommand?)GetValue(CommandProperty);
+        set => SetValue(CommandProperty, value);
+    }
+
+    public object? CommandParameter
+    {
+        get => GetValue(CommandParameterProperty);
+        set => SetValue(CommandParameterProperty, value);
+    }
+
+    public Geometry? ActivateIcon
+    {
+        get => (Geometry?)GetValue(ActivateIconProperty);
+        set => SetValue(ActivateIconProperty, value);
+    }
 
     public Geometry? DeactivateIcon
     {

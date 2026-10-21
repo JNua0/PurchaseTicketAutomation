@@ -16,7 +16,6 @@ public class SupplierFormViewModel : ValidatableObject
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<SupplierFormViewModel> _logger;
-
     private int? _supplierId;
     private string _name = string.Empty;
     private string _phoneNumber = string.Empty;
@@ -111,15 +110,17 @@ public class SupplierFormViewModel : ValidatableObject
         }
     }
 
+    // Comandos
+
+    public AsyncRelayCommand SaveCommand { get; }
+
+    // Propiedades privadas
+
     // El telefono es opcional: un campo vacio se envia como null
     private string? PhoneNumberOrNull =>
         string.IsNullOrWhiteSpace(PhoneNumber)
             ? null
             : PhoneNumber;
-
-    // Comandos
-
-    public AsyncRelayCommand SaveCommand { get; }
 
     // Metodos publicos
 

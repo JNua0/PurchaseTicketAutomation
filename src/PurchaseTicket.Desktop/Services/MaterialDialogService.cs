@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
-using PurchaseTicket.Desktop.Views.Materials;
 using PurchaseTicket.Desktop.ViewModels.Materials;
+using PurchaseTicket.Desktop.Views.Materials;
 
 namespace PurchaseTicket.Desktop.Services;
 

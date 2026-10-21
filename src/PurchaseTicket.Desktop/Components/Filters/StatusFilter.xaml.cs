@@ -5,10 +5,7 @@ namespace PurchaseTicket.Desktop.Components.Filters;
 
 public partial class StatusFilter : UserControl
 {
-    public StatusFilter()
-    {
-        InitializeComponent();
-    }
+    // Campos
 
     // Etiqueta del filtro
     public static readonly DependencyProperty LabelProperty =
@@ -17,12 +14,6 @@ public partial class StatusFilter : UserControl
             typeof(string),
             typeof(StatusFilter),
             new PropertyMetadata("Estado"));
-
-    public string Label
-    {
-        get => (string)GetValue(LabelProperty);
-        set => SetValue(LabelProperty, value);
-    }
 
     // Estado seleccionado
     public static readonly DependencyProperty SelectedStatusProperty =
@@ -34,12 +25,6 @@ public partial class StatusFilter : UserControl
                 null,
                 FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-    public bool? SelectedStatus
-    {
-        get => (bool?)GetValue(SelectedStatusProperty);
-        set => SetValue(SelectedStatusProperty, value);
-    }
-
     // Estado de carga
     public static readonly DependencyProperty IsLoadingProperty =
         DependencyProperty.Register(
@@ -47,6 +32,27 @@ public partial class StatusFilter : UserControl
             typeof(bool),
             typeof(StatusFilter),
             new PropertyMetadata(false));
+
+    // Constructor
+
+    public StatusFilter()
+    {
+        InitializeComponent();
+    }
+
+    // Propiedades
+
+    public string Label
+    {
+        get => (string)GetValue(LabelProperty);
+        set => SetValue(LabelProperty, value);
+    }
+
+    public bool? SelectedStatus
+    {
+        get => (bool?)GetValue(SelectedStatusProperty);
+        set => SetValue(SelectedStatusProperty, value);
+    }
 
     public bool IsLoading
     {

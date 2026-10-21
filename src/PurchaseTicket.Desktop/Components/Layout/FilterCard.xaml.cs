@@ -1,15 +1,11 @@
-﻿
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 
 namespace PurchaseTicket.Desktop.Components.Layout;
 
 public partial class FilterCard : UserControl
 {
-    public FilterCard()
-    {
-        InitializeComponent();
-    }
+    // Campos
 
     public static readonly DependencyProperty FilterContentProperty =
         DependencyProperty.Register(
@@ -17,6 +13,15 @@ public partial class FilterCard : UserControl
             typeof(object),
             typeof(FilterCard),
             new PropertyMetadata(null));
+
+    // Constructor
+
+    public FilterCard()
+    {
+        InitializeComponent();
+    }
+
+    // Propiedades
 
     public object? FilterContent
     {

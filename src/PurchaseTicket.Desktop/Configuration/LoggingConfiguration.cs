@@ -16,8 +16,10 @@ public static class LoggingConfiguration
     public static void Initialize()
     {
         Log.Logger = new LoggerConfiguration()
+
             // Para el codigo propio se registran advertencias y errores
             .MinimumLevel.Warning()
+
             // Para librerias de Microsoft y System solo errores
             .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
             .MinimumLevel.Override("System", LogEventLevel.Error)

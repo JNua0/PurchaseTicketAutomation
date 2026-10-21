@@ -10,8 +10,11 @@ namespace PurchaseTicket.Desktop.ViewModels.Settings;
 
 public class SettingsViewModel : INotifyPropertyChanged
 {
+    // Campos
+
     // Dependencias
     private readonly ApplicationSettingsService _settingsService;
+
     private readonly ILogger<SettingsViewModel> _logger;
 
     // Puertos detectados por Windows
@@ -20,11 +23,15 @@ public class SettingsViewModel : INotifyPropertyChanged
 
     // Estado de los dispositivos
     private string? _selectedPrinterPort;
+
     private string? _selectedWeightIndicatorPort;
 
     // Mensajes de la interfaz
     private string _successMessage = string.Empty;
+
     private string _errorMessage = string.Empty;
+
+    // Constructor
 
     public SettingsViewModel(
         ApplicationSettingsService settingsService,
@@ -39,6 +46,12 @@ public class SettingsViewModel : INotifyPropertyChanged
         LoadSettings();
     }
 
+    // Eventos
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    // Propiedades
+
     // Informacion general
     public string Title => "Configuración";
 
@@ -50,11 +63,6 @@ public class SettingsViewModel : INotifyPropertyChanged
 
     // Datos del encabezado del ticket
     public TicketHeaderSettings TicketHeader { get; } = new();
-
-    // Comandos
-    public ICommand RefreshPortsCommand { get; }
-
-    public ICommand SaveSettingsCommand { get; }
 
     // Configuracion de la impresora
     public string? SelectedPrinterPort
@@ -140,7 +148,13 @@ public class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    // Comandos
+
+    public ICommand RefreshPortsCommand { get; }
+
+    public ICommand SaveSettingsCommand { get; }
+
+    // Metodos privados
 
     // Cargar la configuracion inicial
     private void LoadSettings()

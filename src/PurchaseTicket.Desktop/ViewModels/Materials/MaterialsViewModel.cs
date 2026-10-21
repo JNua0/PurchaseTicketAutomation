@@ -20,7 +20,6 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
     private readonly IMaterialDialogService _materialDialogService;
     private readonly IConfirmationDialogService _confirmationDialogService;
     private readonly INotificationService _notifications;
-
     private bool? _isActiveFilter;
 
     // Constructor
@@ -64,6 +63,16 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
         }
     }
 
+    // Comandos
+
+    public AsyncRelayCommand NewMaterialCommand { get; }
+
+    public AsyncRelayCommand<MaterialDto> EditMaterialCommand { get; }
+
+    public AsyncRelayCommand<MaterialDto> ChangeMaterialStatusCommand { get; }
+
+    // Propiedades protegidas
+
     protected override string LoadErrorMessage =>
         "No fue posible cargar los materiales.";
 
@@ -75,14 +84,6 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
 
     protected override bool HasExtraFilters =>
         IsActiveFilter is not null;
-
-    // Comandos
-
-    public AsyncRelayCommand NewMaterialCommand { get; }
-
-    public AsyncRelayCommand<MaterialDto> EditMaterialCommand { get; }
-
-    public AsyncRelayCommand<MaterialDto> ChangeMaterialStatusCommand { get; }
 
     // Metodos protegidos
 

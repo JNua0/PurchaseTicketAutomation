@@ -5,10 +5,7 @@ namespace PurchaseTicket.Desktop.Components.Layout;
 
 public partial class DataCard : UserControl
 {
-    public DataCard()
-    {
-        InitializeComponent();
-    }
+    // Campos
 
     public static readonly DependencyProperty DataContentProperty =
         DependencyProperty.Register(
@@ -16,6 +13,15 @@ public partial class DataCard : UserControl
             typeof(object),
             typeof(DataCard),
             new PropertyMetadata(null));
+
+    // Constructor
+
+    public DataCard()
+    {
+        InitializeComponent();
+    }
+
+    // Propiedades
 
     public object? DataContent
     {

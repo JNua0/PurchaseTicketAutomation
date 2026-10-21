@@ -10,10 +10,10 @@ public sealed class NotificationService : INotificationService
 {
     // Campos
 
-    private static readonly TimeSpan DisplayDuration = TimeSpan.FromSeconds(4);
-
     // Mas avisos taparian la pantalla; al pasar el limite se quita el mas antiguo
     private const int MaxVisible = 4;
+
+    private static readonly TimeSpan DisplayDuration = TimeSpan.FromSeconds(4);
 
     // Propiedades
 

@@ -4,12 +4,26 @@ namespace PurchaseTicket.Desktop.Commands;
 
 public class RelayCommand : ICommand
 {
+    // Campos
+
     private readonly Action _execute;
+
+    // Constructor
 
     public RelayCommand(Action execute)
     {
         _execute = execute ?? throw new ArgumentNullException(nameof(execute));
     }
+
+    // Eventos
+
+    public event EventHandler? CanExecuteChanged
+    {
+        add { }
+        remove { }
+    }
+
+    // Metodos publicos
 
     public bool CanExecute(object? parameter)
     {
@@ -19,11 +33,5 @@ public class RelayCommand : ICommand
     public void Execute(object? parameter)
     {
         _execute();
-    }
-
-    public event EventHandler? CanExecuteChanged
-    {
-        add { }
-        remove { }
     }
 }

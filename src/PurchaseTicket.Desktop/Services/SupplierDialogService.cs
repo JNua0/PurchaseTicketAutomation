@@ -1,8 +1,7 @@
-﻿
-using System.Windows;
+﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
-using PurchaseTicket.Desktop.Views.Suppliers;
 using PurchaseTicket.Desktop.ViewModels.Suppliers;
+using PurchaseTicket.Desktop.Views.Suppliers;
 
 namespace PurchaseTicket.Desktop.Services;
 
@@ -30,7 +29,6 @@ public class SupplierDialogService : ISupplierDialogService
         return window.ShowDialog() == true;
     }
 
-
     public bool ShowEditDialog(
         int supplierId,
         string name,
@@ -52,5 +50,4 @@ public class SupplierDialogService : ISupplierDialogService
 
         return window.ShowDialog() == true;
     }
-
 }

@@ -6,10 +6,7 @@ namespace PurchaseTicket.Desktop.Components.Actions;
 
 public partial class CreateActionButton : UserControl
 {
-    public CreateActionButton()
-    {
-        InitializeComponent();
-    }
+    // Campos
 
     // Texto que mostrara el boton
     public static readonly DependencyProperty TextProperty =
@@ -19,12 +16,6 @@ public partial class CreateActionButton : UserControl
             typeof(CreateActionButton),
             new PropertyMetadata(string.Empty));
 
-    public string Text
-    {
-        get => (string)GetValue(TextProperty);
-        set => SetValue(TextProperty, value);
-    }
-
     // Comando que ejecutara el boton
     public static readonly DependencyProperty CommandProperty =
         DependencyProperty.Register(
@@ -33,12 +24,6 @@ public partial class CreateActionButton : UserControl
             typeof(CreateActionButton),
             new PropertyMetadata(null));
 
-    public ICommand? Command
-    {
-        get => (ICommand?)GetValue(CommandProperty);
-        set => SetValue(CommandProperty, value);
-    }
-
     // Parametro opcional del comando
     public static readonly DependencyProperty CommandParameterProperty =
         DependencyProperty.Register(
@@ -46,6 +31,27 @@ public partial class CreateActionButton : UserControl
             typeof(object),
             typeof(CreateActionButton),
             new PropertyMetadata(null));
+
+    // Constructor
+
+    public CreateActionButton()
+    {
+        InitializeComponent();
+    }
+
+    // Propiedades
+
+    public string Text
+    {
+        get => (string)GetValue(TextProperty);
+        set => SetValue(TextProperty, value);
+    }
+
+    public ICommand? Command
+    {
+        get => (ICommand?)GetValue(CommandProperty);
+        set => SetValue(CommandProperty, value);
+    }
 
     public object? CommandParameter
     {

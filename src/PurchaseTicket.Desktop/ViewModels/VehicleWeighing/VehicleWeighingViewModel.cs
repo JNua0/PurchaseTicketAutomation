@@ -22,7 +22,6 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
     private readonly IConfirmationDialogService _confirmationDialogService;
     private readonly ITicketPrintService _printService;
     private readonly TimeProvider _timeProvider;
-
     private WeighingView _selectedView = WeighingView.InPlant;
     private int _inPlantCount;
 
@@ -103,17 +102,6 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
         private set => SetProperty(ref _inPlantCount, value);
     }
 
-    protected override string LoadErrorMessage =>
-        "No fue posible cargar los pesajes.";
-
-    protected override string EmptyListMessage =>
-        IsInPlantView
-            ? "No hay vehículos en planta."
-            : "Hoy no hay pesajes únicos pendientes de importe.";
-
-    protected override string NoResultsMessage =>
-        "No se encontraron pesajes con la búsqueda aplicada.";
-
     // Comandos
 
     public AsyncRelayCommand NewWeighingCommand { get; }
@@ -125,6 +113,19 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
     public AsyncRelayCommand<WeighingListItem> ReprintCommand { get; }
 
     public AsyncRelayCommand<WeighingListItem> CancelTicketCommand { get; }
+
+    // Propiedades protegidas
+
+    protected override string LoadErrorMessage =>
+        "No fue posible cargar los pesajes.";
+
+    protected override string EmptyListMessage =>
+        IsInPlantView
+            ? "No hay vehículos en planta."
+            : "Hoy no hay pesajes únicos pendientes de importe.";
+
+    protected override string NoResultsMessage =>
+        "No se encontraron pesajes con la búsqueda aplicada.";
 
     // Metodos protegidos
 

@@ -1,5 +1,4 @@
-﻿
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using PurchaseTicket.Desktop.Commands;
@@ -9,7 +8,7 @@ namespace PurchaseTicket.Desktop.Views.Materials;
 
 public partial class MaterialFormWindow : Window
 {
-    public ICommand CancelCommand { get; }
+    // Constructor
 
     public MaterialFormWindow(MaterialFormViewModel viewModel)
     {
@@ -21,6 +20,12 @@ public partial class MaterialFormWindow : Window
 
         viewModel.Saved += OnMaterialSaved;
     }
+
+    // Comandos
+
+    public ICommand CancelCommand { get; }
+
+    // Metodos privados
 
     // Cerrar la ventana cuando se guarda correctamente
     private void OnMaterialSaved(object? sender, EventArgs e)

@@ -1,5 +1,4 @@
-﻿
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -7,10 +6,7 @@ namespace PurchaseTicket.Desktop.Components.Actions;
 
 public partial class EditActionButton : UserControl
 {
-    public EditActionButton()
-    {
-        InitializeComponent();
-    }
+    // Campos
 
     // Comando para editar el registro
     public static readonly DependencyProperty CommandProperty =
@@ -20,12 +16,6 @@ public partial class EditActionButton : UserControl
             typeof(EditActionButton),
             new PropertyMetadata(null));
 
-    public ICommand? Command
-    {
-        get => (ICommand?)GetValue(CommandProperty);
-        set => SetValue(CommandProperty, value);
-    }
-
     // Registro que se va a editar
     public static readonly DependencyProperty CommandParameterProperty =
         DependencyProperty.Register(
@@ -33,6 +23,21 @@ public partial class EditActionButton : UserControl
             typeof(object),
             typeof(EditActionButton),
             new PropertyMetadata(null));
+
+    // Constructor
+
+    public EditActionButton()
+    {
+        InitializeComponent();
+    }
+
+    // Propiedades
+
+    public ICommand? Command
+    {
+        get => (ICommand?)GetValue(CommandProperty);
+        set => SetValue(CommandProperty, value);
+    }
 
     public object? CommandParameter
     {

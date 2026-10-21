@@ -5,10 +5,7 @@ namespace PurchaseTicket.Desktop.Components.Layout;
 
 public partial class PageLayout : UserControl
 {
-    public PageLayout()
-    {
-        InitializeComponent();
-    }
+    // Campos
 
     public static readonly DependencyProperty PageContentProperty =
         DependencyProperty.Register(
@@ -16,6 +13,15 @@ public partial class PageLayout : UserControl
             typeof(object),
             typeof(PageLayout),
             new PropertyMetadata(null));
+
+    // Constructor
+
+    public PageLayout()
+    {
+        InitializeComponent();
+    }
+
+    // Propiedades
 
     public object? PageContent
     {

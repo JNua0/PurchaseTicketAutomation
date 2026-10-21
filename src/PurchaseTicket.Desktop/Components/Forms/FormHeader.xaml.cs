@@ -5,10 +5,7 @@ namespace PurchaseTicket.Desktop.Components.Forms;
 
 public partial class FormHeader : UserControl
 {
-    public FormHeader()
-    {
-        InitializeComponent();
-    }
+    // Campos
 
     // Titulo del formulario
     public static readonly DependencyProperty TitleProperty =
@@ -18,12 +15,6 @@ public partial class FormHeader : UserControl
             typeof(FormHeader),
             new PropertyMetadata(string.Empty));
 
-    public string Title
-    {
-        get => (string)GetValue(TitleProperty);
-        set => SetValue(TitleProperty, value);
-    }
-
     // Descripcion del formulario
     public static readonly DependencyProperty DescriptionProperty =
         DependencyProperty.Register(
@@ -31,6 +22,21 @@ public partial class FormHeader : UserControl
             typeof(string),
             typeof(FormHeader),
             new PropertyMetadata(string.Empty));
+
+    // Constructor
+
+    public FormHeader()
+    {
+        InitializeComponent();
+    }
+
+    // Propiedades
+
+    public string Title
+    {
+        get => (string)GetValue(TitleProperty);
+        set => SetValue(TitleProperty, value);
+    }
 
     public string Description
     {

@@ -1,9 +1,9 @@
-﻿using System.Windows.Threading;
+﻿using System.Windows;
+using System.Windows.Threading;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Serilog;
 using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.TicketNumbers;
 using PurchaseTicket.Application.UseCases.Materials.Activate;
@@ -12,11 +12,14 @@ using PurchaseTicket.Application.UseCases.Materials.Deactivate;
 using PurchaseTicket.Application.UseCases.Materials.Get;
 using PurchaseTicket.Application.UseCases.Materials.GetActive;
 using PurchaseTicket.Application.UseCases.Materials.Update;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.Cancel;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Correct;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateConventional;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateSingle;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Get;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Print;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterAmount;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterDepartureWeight;
 using PurchaseTicket.Application.UseCases.Suppliers.Activate;
 using PurchaseTicket.Application.UseCases.Suppliers.Create;
 using PurchaseTicket.Application.UseCases.Suppliers.Deactivate;
@@ -24,9 +27,6 @@ using PurchaseTicket.Application.UseCases.Suppliers.Get;
 using PurchaseTicket.Application.UseCases.Suppliers.GetActive;
 using PurchaseTicket.Application.UseCases.Suppliers.Update;
 using PurchaseTicket.Application.UseCases.Weighing.ReadWeight;
-using PurchaseTicket.Application.UseCases.PurchaseTickets.Cancel;
-using PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterAmount;
-using PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterDepartureWeight;
 using PurchaseTicket.Desktop.Configuration;
 using PurchaseTicket.Desktop.Services;
 using PurchaseTicket.Desktop.ViewModels;
@@ -43,15 +43,20 @@ using PurchaseTicket.Infrastructure.Persistence.Repositories;
 using PurchaseTicket.Infrastructure.Printing;
 using PurchaseTicket.Infrastructure.TicketNumbers;
 using PurchaseTicket.Infrastructure.Weighing;
-using System.Windows;
+using Serilog;
 
 namespace PurchaseTicket.Desktop;
 
 public partial class App : System.Windows.Application
 {
+    // Campos
+
     private readonly IHost _host;
+
     // Evita abrir un mensaje de error dentro de otro
     private bool _isShowingErrorMessage;
+
+    // Constructor
 
     public App()
     {
@@ -182,6 +187,8 @@ public partial class App : System.Windows.Application
             .Build();
     }
 
+    // Metodos protegidos
+
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -202,6 +209,32 @@ public partial class App : System.Windows.Application
         Log.CloseAndFlush();
 
         base.OnExit(e);
+    }
+
+    // Metodos privados
+
+    private static void OnDomainUnhandledException(
+        object sender,
+        UnhandledExceptionEventArgs e)
+    {
+        Log.Fatal(
+            e.ExceptionObject as Exception,
+            "Error no controlado. La aplicación se cerrará.");
+
+        // La aplicacion se cerrara: escribir en disco antes
+        Log.CloseAndFlush();
+    }
+
+    private static void OnUnobservedTaskException(
+        object? sender,
+        UnobservedTaskExceptionEventArgs e)
+    {
+        Log.Error(
+            e.Exception,
+            "Una tarea en segundo plano falló sin ser observada.");
+
+        // Marca la excepcion como atendida
+        e.SetObserved();
     }
 
     // Registra los errores que ningun try/catch atrapo
@@ -256,29 +289,5 @@ public partial class App : System.Windows.Application
 
         // Evita que la aplicacion se cierre
         e.Handled = true;
-    }
-
-    private static void OnDomainUnhandledException(
-        object sender,
-        UnhandledExceptionEventArgs e)
-    {
-        Log.Fatal(
-            e.ExceptionObject as Exception,
-            "Error no controlado. La aplicación se cerrará.");
-
-        // La aplicacion se cerrara: escribir en disco antes
-        Log.CloseAndFlush();
-    }
-
-    private static void OnUnobservedTaskException(
-        object? sender,
-        UnobservedTaskExceptionEventArgs e)
-    {
-        Log.Error(
-            e.Exception,
-            "Una tarea en segundo plano falló sin ser observada.");
-
-        // Marca la excepcion como atendida
-        e.SetObserved();
     }
 }

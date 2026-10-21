@@ -3,15 +3,17 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.ViewModels.Home;
-using PurchaseTicket.Desktop.ViewModels.Suppliers;
 using PurchaseTicket.Desktop.ViewModels.Materials;
-using PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 using PurchaseTicket.Desktop.ViewModels.Settings;
+using PurchaseTicket.Desktop.ViewModels.Suppliers;
+using PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 
 namespace PurchaseTicket.Desktop.ViewModels;
 
 public class MainViewModel : INotifyPropertyChanged
 {
+    // Campos
+
     private readonly HomeViewModel _homeViewModel;
     private readonly SuppliersViewModel _suppliersViewModel;
     private readonly MaterialsViewModel _materialsViewModel;
@@ -19,6 +21,8 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly SettingsViewModel _settingsViewModel;
     private object? _currentViewModel;
     private bool _isSidebarExpanded = true;
+
+    // Constructor
 
     public MainViewModel(
         HomeViewModel homeViewModel,
@@ -43,6 +47,12 @@ public class MainViewModel : INotifyPropertyChanged
         CurrentViewModel = _homeViewModel;
     }
 
+    // Eventos
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    // Propiedades
+
     public object? CurrentViewModel
     {
         get => _currentViewModel;
@@ -60,10 +70,15 @@ public class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsVehicleWeighingSelected));
         }
     }
+
     public bool IsHomeSelected => ReferenceEquals(CurrentViewModel, _homeViewModel);
+
     public bool IsMaterialsSelected => ReferenceEquals(CurrentViewModel, _materialsViewModel);
+
     public bool IsSuppliersSelected => ReferenceEquals(CurrentViewModel, _suppliersViewModel);
+
     public bool IsVehicleWeighingSelected => ReferenceEquals(CurrentViewModel, _vehicleWeighingViewModel);
+
     public bool IsSidebarExpanded
     {
         get => _isSidebarExpanded;
@@ -77,16 +92,24 @@ public class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsSidebarExpanded));
         }
     }
+
     public bool IsSettingsSelected => ReferenceEquals(CurrentViewModel, _settingsViewModel);
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    // Comandos
 
     public ICommand ShowHomeCommand { get; }
+
     public ICommand ShowSuppliersCommand { get; }
+
     public ICommand ToggleSidebarCommand { get; }
+
     public ICommand ShowMaterialsCommand { get; }
+
     public ICommand ShowVehicleWeighingCommand { get; }
+
     public ICommand ShowSettingsCommand { get; }
+
+    // Metodos privados
 
     private void ShowHome()
     {

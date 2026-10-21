@@ -36,6 +36,28 @@ public abstract class ValidatableObject : ObservableObject, INotifyDataErrorInfo
 
     // Metodos protegidos
 
+    // Ejecuta una regla del dominio y devuelve su mensaje si no se cumple.
+    // Asi la interfaz reutiliza las reglas en lugar de copiarlas.
+    protected static string? ValidateRule(Action rule)
+    {
+        try
+        {
+            rule();
+
+            return null;
+        }
+        catch (ArgumentException ex)
+        {
+            return GetUserMessage(ex);
+        }
+    }
+
+    // Atajo para los formularios; la regla vive en ExceptionMessages
+    protected static string GetUserMessage(ArgumentException ex)
+    {
+        return ExceptionMessages.ForUser(ex);
+    }
+
     // Asigna o quita (con null) el error de una propiedad y avisa a la vista
     protected void SetError(string propertyName, string? error)
     {
@@ -66,27 +88,5 @@ public abstract class ValidatableObject : ObservableObject, INotifyDataErrorInfo
     {
         foreach (var propertyName in _errors.Keys.ToList())
             SetError(propertyName, null);
-    }
-
-    // Ejecuta una regla del dominio y devuelve su mensaje si no se cumple.
-    // Asi la interfaz reutiliza las reglas en lugar de copiarlas.
-    protected static string? ValidateRule(Action rule)
-    {
-        try
-        {
-            rule();
-
-            return null;
-        }
-        catch (ArgumentException ex)
-        {
-            return GetUserMessage(ex);
-        }
-    }
-
-    // Atajo para los formularios; la regla vive en ExceptionMessages
-    protected static string GetUserMessage(ArgumentException ex)
-    {
-        return ExceptionMessages.ForUser(ex);
     }
 }

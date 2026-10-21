@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.ObjectModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
 using PurchaseTicket.Desktop.Commands;
-using System.Collections.ObjectModel;
 
 namespace PurchaseTicket.Desktop.ViewModels.Base;
 
@@ -156,6 +156,18 @@ public abstract class PagedListViewModel<TItem> : ObservableObject
             ? NoResultsMessage
             : EmptyListMessage;
 
+    // Comandos
+
+    public AsyncRelayCommand SearchCommand { get; }
+
+    public AsyncRelayCommand ChangePageSizeCommand { get; }
+
+    public AsyncRelayCommand NextPageCommand { get; }
+
+    public AsyncRelayCommand PreviousPageCommand { get; }
+
+    // Propiedades protegidas
+
     // La busqueda aplicada cuenta como filtro; cada pantalla agrega los suyos
     protected bool HasAppliedFilters =>
         _appliedSearch is not null || HasExtraFilters;
@@ -175,16 +187,6 @@ public abstract class PagedListViewModel<TItem> : ObservableObject
 
     // Mensaje cuando los filtros no encontraron registros
     protected abstract string NoResultsMessage { get; }
-
-    // Comandos
-
-    public AsyncRelayCommand SearchCommand { get; }
-
-    public AsyncRelayCommand ChangePageSizeCommand { get; }
-
-    public AsyncRelayCommand NextPageCommand { get; }
-
-    public AsyncRelayCommand PreviousPageCommand { get; }
 
     // Metodos publicos
 

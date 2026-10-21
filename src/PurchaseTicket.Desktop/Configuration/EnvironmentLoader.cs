@@ -1,5 +1,5 @@
-﻿using DotNetEnv;
-using System.IO;
+﻿using System.IO;
+using DotNetEnv;
 
 namespace PurchaseTicket.Desktop.Configuration;
 

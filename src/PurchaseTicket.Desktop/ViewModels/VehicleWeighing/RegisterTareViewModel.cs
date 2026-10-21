@@ -21,7 +21,6 @@ public class RegisterTareViewModel : ObservableObject
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ITicketPrintService _printService;
     private readonly ILogger<RegisterTareViewModel> _logger;
-
     private WeighingListItem? _ticket;
     private IReadOnlyList<DetailItem> _details = [];
     private bool _printOnSave = true;
@@ -119,12 +118,14 @@ public class RegisterTareViewModel : ObservableObject
     // Resultado del registro; el servicio de dialogo lo lee al cerrar
     public TareRegistration? Registration { get; private set; }
 
-    // Un convencional en planta siempre tiene peso bruto
-    private decimal GrossWeight => _ticket?.GrossWeight ?? 0;
-
     // Comandos
 
     public AsyncRelayCommand SaveCommand { get; }
+
+    // Propiedades privadas
+
+    // Un convencional en planta siempre tiene peso bruto
+    private decimal GrossWeight => _ticket?.GrossWeight ?? 0;
 
     // Metodos publicos
 

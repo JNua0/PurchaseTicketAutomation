@@ -7,10 +7,7 @@ namespace PurchaseTicket.Desktop.Components.Navigation;
 
 public partial class SidebarNavItem : UserControl
 {
-    public SidebarNavItem()
-    {
-        InitializeComponent();
-    }
+    // Campos
 
     // Texto de la opcion
     public static readonly DependencyProperty TextProperty =
@@ -20,12 +17,6 @@ public partial class SidebarNavItem : UserControl
             typeof(SidebarNavItem),
             new PropertyMetadata(string.Empty));
 
-    public string Text
-    {
-        get => (string)GetValue(TextProperty);
-        set => SetValue(TextProperty, value);
-    }
-
     // Geometria del icono
     public static readonly DependencyProperty IconProperty =
         DependencyProperty.Register(
@@ -33,12 +24,6 @@ public partial class SidebarNavItem : UserControl
             typeof(Geometry),
             typeof(SidebarNavItem),
             new PropertyMetadata(null));
-
-    public Geometry? Icon
-    {
-        get => (Geometry?)GetValue(IconProperty);
-        set => SetValue(IconProperty, value);
-    }
 
     // Comando de navegacion
     public static readonly DependencyProperty CommandProperty =
@@ -48,12 +33,6 @@ public partial class SidebarNavItem : UserControl
             typeof(SidebarNavItem),
             new PropertyMetadata(null));
 
-    public ICommand? Command
-    {
-        get => (ICommand?)GetValue(CommandProperty);
-        set => SetValue(CommandProperty, value);
-    }
-
     // Indica si la opcion esta seleccionada
     public static readonly DependencyProperty IsSelectedProperty =
         DependencyProperty.Register(
@@ -62,11 +41,40 @@ public partial class SidebarNavItem : UserControl
             typeof(SidebarNavItem),
             new PropertyMetadata(false));
 
+    // Constructor
+
+    public SidebarNavItem()
+    {
+        InitializeComponent();
+    }
+
+    // Propiedades
+
+    public string Text
+    {
+        get => (string)GetValue(TextProperty);
+        set => SetValue(TextProperty, value);
+    }
+
+    public Geometry? Icon
+    {
+        get => (Geometry?)GetValue(IconProperty);
+        set => SetValue(IconProperty, value);
+    }
+
+    public ICommand? Command
+    {
+        get => (ICommand?)GetValue(CommandProperty);
+        set => SetValue(CommandProperty, value);
+    }
+
     public bool IsSelected
     {
         get => (bool)GetValue(IsSelectedProperty);
         set => SetValue(IsSelectedProperty, value);
     }
+
+    // Metodos privados
 
     private void NavigationButton_Click(object sender, RoutedEventArgs e)
     {

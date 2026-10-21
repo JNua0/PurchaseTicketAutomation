@@ -6,12 +6,7 @@ namespace PurchaseTicket.Desktop.Components.Forms;
 
 public partial class FormTextField : UserControl
 {
-    public FormTextField()
-    {
-        InitializeComponent();
-
-        Loaded += OnLoaded;
-    }
+    // Campos
 
     // Etiqueta del campo
     public static readonly DependencyProperty LabelProperty =
@@ -21,12 +16,6 @@ public partial class FormTextField : UserControl
             typeof(FormTextField),
             new PropertyMetadata(string.Empty));
 
-    public string Label
-    {
-        get => (string)GetValue(LabelProperty);
-        set => SetValue(LabelProperty, value);
-    }
-
     // Indica si el campo es obligatorio
     public static readonly DependencyProperty IsRequiredProperty =
         DependencyProperty.Register(
@@ -35,12 +24,6 @@ public partial class FormTextField : UserControl
             typeof(FormTextField),
             new PropertyMetadata(false));
 
-    public bool IsRequired
-    {
-        get => (bool)GetValue(IsRequiredProperty);
-        set => SetValue(IsRequiredProperty, value);
-    }
-
     // Indica si el cursor debe colocarse en este campo al abrir el formulario
     public static readonly DependencyProperty FocusOnLoadProperty =
         DependencyProperty.Register(
@@ -48,12 +31,6 @@ public partial class FormTextField : UserControl
             typeof(bool),
             typeof(FormTextField),
             new PropertyMetadata(false));
-
-    public bool FocusOnLoad
-    {
-        get => (bool)GetValue(FocusOnLoadProperty);
-        set => SetValue(FocusOnLoadProperty, value);
-    }
 
     // Valor del campo
     public static readonly DependencyProperty TextProperty =
@@ -65,12 +42,6 @@ public partial class FormTextField : UserControl
                 string.Empty,
                 FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-    public string Text
-    {
-        get => (string)GetValue(TextProperty);
-        set => SetValue(TextProperty, value);
-    }
-
     // Longitud maxima del texto
     public static readonly DependencyProperty MaxLengthProperty =
         DependencyProperty.Register(
@@ -78,12 +49,6 @@ public partial class FormTextField : UserControl
             typeof(int),
             typeof(FormTextField),
             new PropertyMetadata(0));
-
-    public int MaxLength
-    {
-        get => (int)GetValue(MaxLengthProperty);
-        set => SetValue(MaxLengthProperty, value);
-    }
 
     // Mayusculas o minusculas al escribir; las placas se ven como quedaran guardadas
     public static readonly DependencyProperty CharacterCasingProperty =
@@ -93,11 +58,54 @@ public partial class FormTextField : UserControl
             typeof(FormTextField),
             new PropertyMetadata(CharacterCasing.Normal));
 
+    // Constructor
+
+    public FormTextField()
+    {
+        InitializeComponent();
+
+        Loaded += OnLoaded;
+    }
+
+    // Propiedades
+
+    public string Label
+    {
+        get => (string)GetValue(LabelProperty);
+        set => SetValue(LabelProperty, value);
+    }
+
+    public bool IsRequired
+    {
+        get => (bool)GetValue(IsRequiredProperty);
+        set => SetValue(IsRequiredProperty, value);
+    }
+
+    public bool FocusOnLoad
+    {
+        get => (bool)GetValue(FocusOnLoadProperty);
+        set => SetValue(FocusOnLoadProperty, value);
+    }
+
+    public string Text
+    {
+        get => (string)GetValue(TextProperty);
+        set => SetValue(TextProperty, value);
+    }
+
+    public int MaxLength
+    {
+        get => (int)GetValue(MaxLengthProperty);
+        set => SetValue(MaxLengthProperty, value);
+    }
+
     public CharacterCasing CharacterCasing
     {
         get => (CharacterCasing)GetValue(CharacterCasingProperty);
         set => SetValue(CharacterCasingProperty, value);
     }
+
+    // Metodos privados
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {

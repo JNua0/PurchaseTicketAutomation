@@ -18,10 +18,10 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
     private readonly ISupplierDialogService _supplierDialogService;
     private readonly IConfirmationDialogService _confirmationDialogService;
     private readonly INotificationService _notifications;
-
     private bool? _isActiveFilter;
 
     // Constructor
+
     public SuppliersViewModel(
         IServiceScopeFactory scopeFactory,
         ISupplierDialogService supplierDialogService,
@@ -61,6 +61,16 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
         }
     }
 
+    // Comandos
+
+    public AsyncRelayCommand NewSupplierCommand { get; }
+
+    public AsyncRelayCommand<SupplierDto> EditSupplierCommand { get; }
+
+    public AsyncRelayCommand<SupplierDto> ChangeSupplierStatusCommand { get; }
+
+    // Propiedades protegidas
+
     protected override string LoadErrorMessage =>
         "No fue posible cargar los proveedores.";
 
@@ -72,14 +82,6 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
 
     protected override bool HasExtraFilters =>
         IsActiveFilter is not null;
-
-    // Comandos
-
-    public AsyncRelayCommand NewSupplierCommand { get; }
-
-    public AsyncRelayCommand<SupplierDto> EditSupplierCommand { get; }
-
-    public AsyncRelayCommand<SupplierDto> ChangeSupplierStatusCommand { get; }
 
     // Metodos protegidos
 

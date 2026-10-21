@@ -8,7 +8,7 @@ namespace PurchaseTicket.Desktop.Views.Suppliers;
 
 public partial class SupplierFormWindow : Window
 {
-    public ICommand CancelCommand { get; }
+    // Constructor
 
     public SupplierFormWindow(SupplierFormViewModel viewModel)
     {
@@ -21,6 +21,12 @@ public partial class SupplierFormWindow : Window
 
         viewModel.Saved += OnSupplierSaved;
     }
+
+    // Comandos
+
+    public ICommand CancelCommand { get; }
+
+    // Metodos privados
 
     // Cerrar la ventana cuando se guarda correctamente
     private void OnSupplierSaved(object? sender, EventArgs e)
