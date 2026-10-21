@@ -6,4 +6,7 @@ public interface ITicketPrintService
 {
     // Devuelve null si se imprimio; si no, el motivo para mostrar al usuario
     Task<string?> PrintAsync(int ticketId);
+
+    // Ticket de prueba desde Configuracion, con el puerto y el encabezado guardados
+    Task<string?> PrintTestAsync();
 }

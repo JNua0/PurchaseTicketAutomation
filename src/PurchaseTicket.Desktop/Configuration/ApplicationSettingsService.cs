@@ -5,10 +5,21 @@ using Microsoft.Extensions.Configuration;
 
 namespace PurchaseTicket.Desktop.Configuration;
 
+// Lee la configuracion y guarda los cambios del operador en
+// appsettings.local.json, que tiene prioridad sobre appsettings.json
 public sealed class ApplicationSettingsService
 {
+    // Campos
+
+    private static readonly JsonSerializerOptions WriteOptions = new()
+    {
+        WriteIndented = true
+    };
+
     private readonly IConfiguration _configuration;
     private readonly string _localSettingsPath;
+
+    // Constructor
 
     public ApplicationSettingsService(IConfiguration configuration)
     {
@@ -26,84 +37,75 @@ public sealed class ApplicationSettingsService
             "appsettings.local.json");
     }
 
-    // Obtener un valor de configuracion
+    // Metodos publicos
+
     public string? GetValue(string key)
     {
         return _configuration[key];
     }
 
-    // Guardar la configuracion general
-    public void SaveSettings(
-        string? printerPort,
-        string? weightIndicatorPort,
-        TicketHeaderSettings header)
+    // Puerto de un dispositivo; section es "Printer" o "WeightIndicator"
+    public void SavePort(string section, string port)
+    {
+        Update(root =>
+        {
+            var device = root[section] as JsonObject
+                ?? new JsonObject();
+
+            device["PortName"] = port;
+            root[section] = device;
+        });
+    }
+
+    public void SaveTicketHeader(TicketHeaderSettings header)
     {
         ArgumentNullException.ThrowIfNull(header);
 
-        // Leer la configuracion local existente
-        JsonObject root;
-
-        if (File.Exists(_localSettingsPath))
+        Update(root =>
         {
-            string json = File.ReadAllText(_localSettingsPath);
-
-            root = JsonNode.Parse(json) as JsonObject
+            var ticketHeader = root["TicketHeader"] as JsonObject
                 ?? new JsonObject();
-        }
-        else
+
+            ticketHeader["CompanyName"] = header.CompanyName.Trim();
+            ticketHeader["Address"] = header.Address.Trim();
+            ticketHeader["Neighborhood"] = header.Neighborhood.Trim();
+            ticketHeader["PhoneNumber"] = header.PhoneNumber.Trim();
+            ticketHeader["Email"] = header.Email.Trim();
+
+            root["TicketHeader"] = ticketHeader;
+        });
+    }
+
+    public TicketHeaderSettings GetTicketHeader()
+    {
+        return new TicketHeaderSettings
         {
-            root = new JsonObject();
-        }
-
-        // Actualizar el puerto de la impresora
-        var printer = root["Printer"] as JsonObject
-            ?? new JsonObject();
-
-        printer["PortName"] = printerPort ?? string.Empty;
-        root["Printer"] = printer;
-
-        // Actualizar el puerto del indicador
-        var indicator = root["WeightIndicator"] as JsonObject
-            ?? new JsonObject();
-
-        indicator["PortName"] = weightIndicatorPort ?? string.Empty;
-        root["WeightIndicator"] = indicator;
-
-        // Actualizar el encabezado del ticket
-        var ticketHeader = root["TicketHeader"] as JsonObject
-            ?? new JsonObject();
-
-        ticketHeader["CompanyName"] =
-            (header.CompanyName ?? string.Empty).Trim();
-
-        ticketHeader["Address"] =
-            (header.Address ?? string.Empty).Trim();
-
-        ticketHeader["Neighborhood"] =
-            (header.Neighborhood ?? string.Empty).Trim();
-
-        ticketHeader["PhoneNumber"] =
-            (header.PhoneNumber ?? string.Empty).Trim();
-
-        ticketHeader["Email"] =
-            (header.Email ?? string.Empty).Trim();
-
-        root["TicketHeader"] = ticketHeader;
-
-        // Guardar todos los cambios
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true
+            CompanyName = GetValue("TicketHeader:CompanyName") ?? string.Empty,
+            Address = GetValue("TicketHeader:Address") ?? string.Empty,
+            Neighborhood = GetValue("TicketHeader:Neighborhood") ?? string.Empty,
+            PhoneNumber = GetValue("TicketHeader:PhoneNumber") ?? string.Empty,
+            Email = GetValue("TicketHeader:Email") ?? string.Empty
         };
+    }
+
+    // Metodos privados
+
+    // Lee el archivo local, aplica el cambio y lo escribe completo. Despues
+    // recarga la configuracion: la impresora y el indicador leen sus opciones
+    // cada vez que se usan, asi el cambio aplica sin reiniciar la aplicacion
+    private void Update(Action<JsonObject> change)
+    {
+        JsonObject root = File.Exists(_localSettingsPath)
+            ? JsonNode.Parse(File.ReadAllText(_localSettingsPath)) as JsonObject ?? new JsonObject()
+            : new JsonObject();
+
+        change(root);
 
         File.WriteAllText(
             _localSettingsPath,
-            root.ToJsonString(options));
+            root.ToJsonString(WriteOptions));
 
-        // Recargar la configuracion despues de guardar
         if (_configuration is IConfigurationRoot configurationRoot)
-        {
             configurationRoot.Reload();
-        }
     }
 }

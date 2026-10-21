@@ -41,7 +41,7 @@ public class MainViewModel : INotifyPropertyChanged
         ShowSuppliersCommand = new AsyncRelayCommand(ShowSuppliersAsync);
         ShowMaterialsCommand = new AsyncRelayCommand(ShowMaterialsAsync);
         ShowVehicleWeighingCommand = new AsyncRelayCommand(ShowVehicleWeighingAsync);
-        ShowSettingsCommand = new RelayCommand(ShowSettings);
+        ShowSettingsCommand = new AsyncRelayCommand(ShowSettingsAsync);
         ToggleSidebarCommand = new RelayCommand(ToggleSidebar);
 
         CurrentViewModel = _homeViewModel;
@@ -169,9 +169,11 @@ public class MainViewModel : INotifyPropertyChanged
         await _vehicleWeighingViewModel.LoadAsync();
     }
 
-    // Mostrar el modulo de configuracion
-    private void ShowSettings()
+    // Mostrar el modulo de configuracion; los puertos se revisan al entrar
+    private async Task ShowSettingsAsync()
     {
         CurrentViewModel = _settingsViewModel;
+
+        await _settingsViewModel.LoadAsync();
     }
 }

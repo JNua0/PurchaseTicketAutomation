@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Abstractions.Printing;
 using PurchaseTicket.Application.Common;
+using PurchaseTicket.Application.UseCases.Printing.PrintTest;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Print;
 using PurchaseTicket.Domain.Exceptions;
 
@@ -63,12 +64,40 @@ public sealed class TicketPrintService : ITicketPrintService
         }
     }
 
+    public async Task<string?> PrintTestAsync()
+    {
+        try
+        {
+            var errorCode = await Task.Run(async () =>
+            {
+                await using var scope = _scopeFactory.CreateAsyncScope();
+
+                return await scope.ServiceProvider
+                    .GetRequiredService<PrintTestTicket>()
+                    .ExecuteAsync();
+            });
+
+            return errorCode == PrinterErrorCode.None
+                ? null
+                : DescribeError(errorCode);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "No fue posible solicitar el ticket de prueba.");
+
+            return "Ocurrió un error al solicitar la impresión.";
+        }
+    }
+
     // Metodos privados
 
     private static string DescribeError(PrinterErrorCode errorCode)
     {
         return errorCode switch
         {
+            PrinterErrorCode.NotConfigured =>
+                "La impresora no está configurada. Elige su puerto en Configuración.",
+
             PrinterErrorCode.PortNotFound =>
                 "El puerto de la impresora no está disponible; verifica la configuración.",
 

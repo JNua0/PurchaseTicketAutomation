@@ -2,6 +2,7 @@
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PurchaseTicket.Application.Abstractions.Devices;
 using PurchaseTicket.Application.UseCases.Weighing.ReadWeight;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.ViewModels.Base;
@@ -199,31 +200,8 @@ public sealed class WeightCaptureViewModel : ObservableObject
         State = WeightCaptureState.Empty;
     }
 
-    // Metodos privados
-
-    // Solo enteros con separador de miles opcional: "13200" o "13,200"
-    private static decimal? ParseManual(string text)
-    {
-        bool parsed = decimal.TryParse(
-            text.Trim(),
-            NumberStyles.AllowThousands,
-            CultureInfo.CurrentCulture,
-            out decimal weight);
-
-        return parsed ? weight : null;
-    }
-
-    private void CaptureManually()
-    {
-        // Se parte del peso leido, si lo hay, para solo ajustarlo
-        if (_readWeight is decimal readWeight && State == WeightCaptureState.Read)
-            ManualText = readWeight.ToString("0", CultureInfo.CurrentCulture);
-
-        ValidationError = string.Empty;
-        State = WeightCaptureState.Manual;
-    }
-
-    private async Task ReadAsync()
+    // La usa el comando del campo y la prueba del indicador en Configuracion
+    public async Task ReadAsync()
     {
         ReadErrorMessage = string.Empty;
         ValidationError = string.Empty;
@@ -246,6 +224,10 @@ public sealed class WeightCaptureViewModel : ObservableObject
             _readWeight = weight;
             State = WeightCaptureState.Read;
         }
+        catch (DeviceNotConfiguredException ex)
+        {
+            Fail("El indicador no está configurado. Elige su puerto en Configuración.", ex);
+        }
         catch (TimeoutException ex)
         {
             Fail("El indicador no respondió a tiempo.", ex);
@@ -262,6 +244,30 @@ public sealed class WeightCaptureViewModel : ObservableObject
         {
             Fail("No fue posible obtener el peso del indicador.", ex);
         }
+    }
+
+    // Metodos privados
+
+    // Solo enteros con separador de miles opcional: "13200" o "13,200"
+    private static decimal? ParseManual(string text)
+    {
+        bool parsed = decimal.TryParse(
+            text.Trim(),
+            NumberStyles.AllowThousands,
+            CultureInfo.CurrentCulture,
+            out decimal weight);
+
+        return parsed ? weight : null;
+    }
+
+    private void CaptureManually()
+    {
+        // Se parte del peso leido, si lo hay, para solo ajustarlo
+        if (_readWeight is decimal readWeight && State == WeightCaptureState.Read)
+            ManualText = readWeight.ToString("0", CultureInfo.CurrentCulture);
+
+        ValidationError = string.Empty;
+        State = WeightCaptureState.Manual;
     }
 
     // Un indicador apagado no es una falla de la aplicacion, por eso es
