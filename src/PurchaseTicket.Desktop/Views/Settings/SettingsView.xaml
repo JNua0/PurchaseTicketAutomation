@@ -138,6 +138,32 @@
                                            TextWrapping="Wrap"
                                            Margin="0,8,0,0"/>
 
+                                <Button Command="{Binding EditHeaderCommand}"
+                                        Style="{StaticResource OutlinePrimaryButtonStyle}"
+                                        HorizontalAlignment="Left"
+                                        Margin="0,16,0,0">
+
+                                    <StackPanel Orientation="Horizontal">
+
+                                        <Path Data="{StaticResource EditIcon}"
+                                              Width="15"
+                                              Height="15"
+                                              Margin="0,0,8,0"
+                                              Stretch="Uniform"
+                                              Stroke="{StaticResource EcoBlueDarkBrush}"
+                                              StrokeThickness="2"
+                                              StrokeStartLineCap="Round"
+                                              StrokeEndLineCap="Round"
+                                              StrokeLineJoin="Round"
+                                              VerticalAlignment="Center"/>
+
+                                        <TextBlock Text="Editar encabezado"
+                                                   VerticalAlignment="Center"/>
+
+                                    </StackPanel>
+
+                                </Button>
+
                             </StackPanel>
 
                         </Grid>

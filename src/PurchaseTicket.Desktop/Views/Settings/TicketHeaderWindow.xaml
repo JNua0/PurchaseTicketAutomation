@@ -1,0 +1,115 @@
+﻿<Window x:Class="PurchaseTicket.Desktop.Views.Settings.TicketHeaderWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:forms="clr-namespace:PurchaseTicket.Desktop.Components.Forms"
+        xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
+        Title="Editar encabezado"
+        Width="760"
+        SizeToContent="Height"
+        MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource ContentBrush}">
+
+    <forms:DialogLayout Title="Editar encabezado"
+                        Description="Datos de la empresa que se imprimen al inicio de cada ticket">
+
+        <forms:DialogLayout.BodyContent>
+
+            <StackPanel>
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Campos: el contador muestra cuanto cabe en una linea del ticket -->
+                    <StackPanel Grid.Column="0">
+
+                        <forms:FormTextField Label="Nombre de la empresa"
+                                             IsRequired="True"
+                                             FocusOnLoad="True"
+                                             Text="{Binding CompanyName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             CounterLimit="{Binding LineWidth}"
+                                             Margin="0,0,0,18"/>
+
+                        <forms:FormTextField Label="Dirección"
+                                             Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             CounterLimit="{Binding LineWidth}"
+                                             Margin="0,0,0,18"/>
+
+                        <forms:FormTextField Label="Colonia"
+                                             Text="{Binding Neighborhood, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             CounterLimit="{Binding LineWidth}"
+                                             Margin="0,0,0,18"/>
+
+                        <forms:FormTextField Label="Teléfono"
+                                             Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             MaxLength="20"
+                                             Margin="0,0,0,18"/>
+
+                        <forms:FormTextField Label="Correo electrónico"
+                                             Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             CounterLimit="{Binding LineWidth}"
+                                             Margin="0"/>
+
+                    </StackPanel>
+
+                    <!-- Vista previa con la fuente y el ancho del papel -->
+                    <StackPanel Grid.Column="1"
+                                Margin="28,0,0,0">
+
+                        <TextBlock Text="VISTA PREVIA"
+                                   Style="{StaticResource FormSectionTitleStyle}"
+                                   Margin="0,0,0,10"/>
+
+                        <Grid>
+
+                            <Rectangle Fill="#FBFBF7"
+                                       Stroke="#C9D3D9"
+                                       StrokeDashArray="4 3"
+                                       RadiusX="6"
+                                       RadiusY="6"/>
+
+                            <TextBlock Text="{Binding Preview}"
+                                       FontFamily="Consolas"
+                                       FontSize="13"
+                                       LineHeight="19"
+                                       Foreground="{StaticResource PrimaryTextBrush}"
+                                       Margin="16,14"/>
+
+                        </Grid>
+
+                        <TextBlock Text="Las líneas vacías no se imprimen."
+                                   FontSize="12"
+                                   Foreground="{StaticResource SecondaryTextBrush}"
+                                   Margin="0,8,0,0"/>
+
+                    </StackPanel>
+
+                </Grid>
+
+                <!-- Errores que no son de un campo, como no poder guardar el archivo -->
+                <feedback:QueryStatus Margin="0,14,0,0"
+                                      IsLoading="False"
+                                      ErrorMessage="{Binding ErrorMessage}"/>
+
+            </StackPanel>
+
+        </forms:DialogLayout.BodyContent>
+
+        <forms:DialogLayout.Actions>
+
+            <forms:FormActions SaveButtonText="Guardar encabezado"
+                               SaveCommand="{Binding SaveCommand}"
+                               CancelCommand="{Binding CancelCommand,
+                                                       RelativeSource={RelativeSource AncestorType=Window}}"
+                               IsSaving="False"/>
+
+        </forms:DialogLayout.Actions>
+
+    </forms:DialogLayout>
+
+</Window>

@@ -37,6 +37,7 @@ using PurchaseTicket.Desktop.ViewModels.Settings;
 using PurchaseTicket.Desktop.ViewModels.Suppliers;
 using PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 using PurchaseTicket.Desktop.Views.Materials;
+using PurchaseTicket.Desktop.Views.Settings;
 using PurchaseTicket.Desktop.Views.Suppliers;
 using PurchaseTicket.Desktop.Views.VehicleWeighing;
 using PurchaseTicket.Infrastructure.Communication.Serial;
@@ -185,6 +186,11 @@ public partial class App : System.Windows.Application
 
                 // ViewModel de configuracion
                 services.AddTransient<SettingsViewModel>();
+
+                // Ventana Editar encabezado
+                services.AddTransient<TicketHeaderFormViewModel>();
+                services.AddTransient<TicketHeaderWindow>();
+                services.AddTransient<ISettingsDialogService, SettingsDialogService>();
 
                 // Configuracion de la aplicacion
                 services.AddSingleton<IConfiguration>(configuration);

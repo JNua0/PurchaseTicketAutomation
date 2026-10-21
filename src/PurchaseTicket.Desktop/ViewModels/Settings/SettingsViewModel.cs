@@ -20,6 +20,7 @@ public sealed class SettingsViewModel : ObservableObject
     private readonly ISerialPortDiscovery _portDiscovery;
     private readonly ITicketPrintService _printService;
     private readonly INotificationService _notifications;
+    private readonly ISettingsDialogService _dialogs;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<SettingsViewModel> _logger;
 
@@ -34,6 +35,7 @@ public sealed class SettingsViewModel : ObservableObject
         ISerialPortDiscovery portDiscovery,
         ITicketPrintService printService,
         INotificationService notifications,
+        ISettingsDialogService dialogs,
         WeightCaptureViewModel indicatorReading,
         TimeProvider timeProvider,
         ILogger<SettingsViewModel> logger)
@@ -42,6 +44,7 @@ public sealed class SettingsViewModel : ObservableObject
         _portDiscovery = portDiscovery;
         _printService = printService;
         _notifications = notifications;
+        _dialogs = dialogs;
         _timeProvider = timeProvider;
         _logger = logger;
 
@@ -68,6 +71,8 @@ public sealed class SettingsViewModel : ObservableObject
         RefreshPortsCommand = new AsyncRelayCommand(
             RefreshPortsAsync,
             () => !IsRefreshing);
+
+        EditHeaderCommand = new RelayCommand(EditHeader);
     }
 
     // Propiedades
@@ -130,6 +135,8 @@ public sealed class SettingsViewModel : ObservableObject
 
     public AsyncRelayCommand RefreshPortsCommand { get; }
 
+    public RelayCommand EditHeaderCommand { get; }
+
     // Metodos publicos
 
     // Al entrar a la pantalla: lo guardado y los puertos conectados ahora
@@ -153,6 +160,18 @@ public sealed class SettingsViewModel : ObservableObject
     }
 
     // Metodos privados
+
+    private void EditHeader()
+    {
+        var saved = _dialogs.ShowTicketHeaderDialog(TicketHeader);
+
+        if (saved is null)
+            return;
+
+        TicketHeader = saved;
+
+        _notifications.ShowSuccess("Encabezado guardado. Se usará en los próximos tickets.");
+    }
 
     private async Task RefreshPortsAsync()
     {
