@@ -24,6 +24,9 @@ using PurchaseTicket.Application.UseCases.Suppliers.Get;
 using PurchaseTicket.Application.UseCases.Suppliers.GetActive;
 using PurchaseTicket.Application.UseCases.Suppliers.Update;
 using PurchaseTicket.Application.UseCases.Weighing.ReadWeight;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.Cancel;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterAmount;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterDepartureWeight;
 using PurchaseTicket.Desktop.Configuration;
 using PurchaseTicket.Desktop.Services;
 using PurchaseTicket.Desktop.ViewModels;
@@ -126,9 +129,6 @@ public partial class App : System.Windows.Application
                 // Purchase ticket repositories
                 services.AddScoped<IPurchaseTicketQueryRepository, PurchaseTicketQueryRepository>();
 
-                // Purchase ticket use cases
-                services.AddScoped<GetPurchaseTickets>();
-
                 // Vehicle weighing view models
                 services.AddTransient<VehicleWeighingViewModel>();
 
@@ -140,8 +140,12 @@ public partial class App : System.Windows.Application
                 services.AddScoped<IPurchaseTicketRepository, PurchaseTicketRepository>();
 
                 // Purchase ticket use cases
+                services.AddScoped<GetPurchaseTickets>();
                 services.AddScoped<CreateConventionalPurchaseTicket>();
                 services.AddScoped<CreateSinglePurchaseTicket>();
+                services.AddScoped<RegisterDepartureWeight>();
+                services.AddScoped<CancelPurchaseTicket>();
+                services.AddScoped<RegisterAmount>();
                 services.AddScoped<ReadWeightUseCase>();
 
                 // Weighing form
