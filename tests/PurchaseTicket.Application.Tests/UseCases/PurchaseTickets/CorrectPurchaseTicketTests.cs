@@ -2,6 +2,7 @@
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Correct;
 using PurchaseTicket.Domain.Entities;
 using PurchaseTicket.Domain.Enums;
+using PurchaseTicket.Domain.Exceptions;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
 namespace PurchaseTicket.Application.Tests.UseCases.PurchaseTickets;
@@ -1291,7 +1292,7 @@ public class CorrectPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<BusinessRuleException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -1359,7 +1360,7 @@ public class CorrectPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<BusinessRuleException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -1419,7 +1420,7 @@ public class CorrectPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<BusinessRuleException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -1485,7 +1486,7 @@ public class CorrectPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<BusinessRuleException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -1551,7 +1552,7 @@ public class CorrectPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<BusinessRuleException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -1619,7 +1620,7 @@ public class CorrectPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<BusinessRuleException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert
@@ -1690,7 +1691,7 @@ public class CorrectPurchaseTicketTests
 
         // Act
         var exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<BusinessRuleException>(
                 () => useCase.ExecuteAsync(command));
 
         // Assert

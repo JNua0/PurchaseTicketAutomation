@@ -1,6 +1,7 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Cancel;
 using PurchaseTicket.Domain.Enums;
+using PurchaseTicket.Domain.Exceptions;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
 namespace PurchaseTicket.Application.Tests.UseCases.PurchaseTickets;
@@ -133,7 +134,7 @@ public class CancelPurchaseTicketTests
             new CancelPurchaseTicket(repository);
 
         // Act
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<BusinessRuleException>(
             () => useCase.ExecuteAsync(command));
 
         // Assert

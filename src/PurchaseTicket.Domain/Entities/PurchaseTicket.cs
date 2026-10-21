@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using PurchaseTicket.Domain.Enums;
+using PurchaseTicket.Domain.Exceptions;
 using PurchaseTicket.Domain.ValueObjects;
 
 namespace PurchaseTicket.Domain.Entities;
@@ -116,11 +117,11 @@ public class PurchaseTicket
     public void Cancel()
     {
         if (Status == TicketStatus.Cancelled)
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 "El ticket ya se encuentra cancelado.");
 
         if (Status == TicketStatus.Completed)
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 "Un ticket completado no puede cancelarse.");
 
         Status = TicketStatus.Cancelled;
@@ -401,7 +402,7 @@ public class PurchaseTicket
     private void ValidateConventionalWeighing()
     {
         if (WeighingType != WeighingType.Conventional)
-            throw new InvalidOperationException("Esta operación solo aplica a un pesaje convencional.");
+            throw new BusinessRuleException("Esta operación solo aplica a un pesaje convencional.");
     }
 
     private static void ValidateTareWeight(decimal tareWeight, decimal grossWeight)
@@ -417,7 +418,7 @@ public class PurchaseTicket
     {
         if (Status != TicketStatus.WeighingPending)
         {
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 "El ticket debe estar pendiente de pesaje.");
         }
     }
@@ -425,7 +426,7 @@ public class PurchaseTicket
     private void ValidateAmountPendingStatus()
     {
         if (Status != TicketStatus.AmountPending)
-            throw new InvalidOperationException("El ticket debe estar pendiente de importe.");
+            throw new BusinessRuleException("El ticket debe estar pendiente de importe.");
     }
 
     private static void ValidatePricePerKg(decimal pricePerKg)
@@ -474,25 +475,25 @@ public class PurchaseTicket
     private void ValidateCanModifyGeneralData()
     {
         if (Status != TicketStatus.WeighingPending && Status != TicketStatus.Completed)
-            throw new InvalidOperationException("El ticket no permite modificar este campo en su estado actual.");
+            throw new BusinessRuleException("El ticket no permite modificar este campo en su estado actual.");
     }
 
     private void ValidateCanModifyTareWeight()
     {
         if (Status != TicketStatus.AmountPending && Status != TicketStatus.Completed)
-            throw new InvalidOperationException("La tara no puede modificarse en el estado actual del ticket.");
+            throw new BusinessRuleException("La tara no puede modificarse en el estado actual del ticket.");
     }
 
     private void ValidateCanModifyGrossWeight()
     {
         if (Status != TicketStatus.WeighingPending && Status != TicketStatus.Completed)
-            throw new InvalidOperationException("El peso bruto no puede modificarse en el estado actual del ticket.");
+            throw new BusinessRuleException("El peso bruto no puede modificarse en el estado actual del ticket.");
     }
     
     private void ValidateCompletedStatus()
     {
         if (Status != TicketStatus.Completed)
-            throw new InvalidOperationException("El ticket debe estar completado.");
+            throw new BusinessRuleException("El ticket debe estar completado.");
     }
 
     private static void ValidateDiscount(int discount)
@@ -506,14 +507,14 @@ public class PurchaseTicket
     private void ValidateSingleWeighing()
     {
         if (WeighingType != WeighingType.Single)
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 "El peso neto solo puede modificarse directamente en un pesaje único.");
     }
 
     private void ValidateCanModifyNetWeight()
     {
         if (Status != TicketStatus.AmountPending && Status != TicketStatus.Completed)
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 "El peso neto no puede modificarse en el estado actual del ticket.");
     }
 

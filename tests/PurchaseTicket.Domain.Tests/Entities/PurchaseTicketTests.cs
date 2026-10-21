@@ -1,4 +1,5 @@
 using PurchaseTicket.Domain.Enums;
+using PurchaseTicket.Domain.Exceptions;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
 namespace PurchaseTicket.Domain.Tests.Entities;
@@ -717,7 +718,7 @@ public class PurchaseTicketTests
 
         // Assert
         var exception =
-            Assert.Throws<InvalidOperationException>(act);
+            Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(
             "Esta operación solo aplica a un pesaje convencional.",
@@ -744,7 +745,7 @@ public class PurchaseTicketTests
 
         // Assert
         var exception =
-            Assert.Throws<InvalidOperationException>(act);
+            Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(
             "El ticket debe estar pendiente de pesaje.",
@@ -943,7 +944,7 @@ public class PurchaseTicketTests
 
         // Assert
         var exception =
-            Assert.Throws<InvalidOperationException>(act);
+            Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(
             "El ticket debe estar pendiente de importe.",
@@ -974,7 +975,7 @@ public class PurchaseTicketTests
 
         // Assert
         var exception =
-            Assert.Throws<InvalidOperationException>(act);
+            Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(
             "El ticket debe estar pendiente de importe.",
@@ -1044,7 +1045,7 @@ public class PurchaseTicketTests
 
         // Act
         var exception =
-            Assert.Throws<InvalidOperationException>(
+            Assert.Throws<BusinessRuleException>(
                 () => ticket.Cancel());
 
         // Assert
@@ -1077,7 +1078,7 @@ public class PurchaseTicketTests
 
         // Assert
         var exception =
-            Assert.Throws<InvalidOperationException>(act);
+            Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(
             "El ticket ya se encuentra cancelado.",
@@ -1146,7 +1147,7 @@ public class PurchaseTicketTests
 
         // Assert
         var exception =
-            Assert.Throws<InvalidOperationException>(act);
+            Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(
             "El ticket no permite modificar este campo en su estado actual.",
@@ -1175,7 +1176,7 @@ public class PurchaseTicketTests
 
         // Assert
         var exception =
-            Assert.Throws<InvalidOperationException>(act);
+            Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(
             "El ticket no permite modificar este campo en su estado actual.",
@@ -1279,7 +1280,7 @@ public class PurchaseTicketTests
 
         // Assert
         var exception =
-            Assert.Throws<InvalidOperationException>(act);
+            Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(
             "El ticket no permite modificar este campo en su estado actual.",
@@ -1308,7 +1309,7 @@ public class PurchaseTicketTests
 
         // Assert
         var exception =
-            Assert.Throws<InvalidOperationException>(act);
+            Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(
             "El ticket no permite modificar este campo en su estado actual.",
@@ -1472,7 +1473,7 @@ public class PurchaseTicketTests
             ticket.ChangeLicensePlate("ABC1234");
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Null(ticket.LicensePlate);
     }
@@ -1496,7 +1497,7 @@ public class PurchaseTicketTests
             ticket.ChangeLicensePlate("XYZ5678");
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal("ABC1234", ticket.LicensePlate);
     }
@@ -1560,7 +1561,7 @@ public class PurchaseTicketTests
             ticket.ChangeTransporter("Maria Lopez");
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal("Juan Perez", ticket.Transporter);
     }
@@ -1584,7 +1585,7 @@ public class PurchaseTicketTests
             ticket.ChangeTransporter("Maria Lopez");
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal("Juan Perez", ticket.Transporter);
     }
@@ -1750,7 +1751,7 @@ public class PurchaseTicketTests
             ticket.ChangeGrossWeight(26000m);
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(25000m, ticket.GrossWeight);
         Assert.Null(ticket.UpdatedAt);
@@ -1777,7 +1778,7 @@ public class PurchaseTicketTests
             ticket.ChangeGrossWeight(26000m);
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(25000m, ticket.GrossWeight);
         Assert.NotNull(updatedAtAfterCancellation);
@@ -1802,7 +1803,7 @@ public class PurchaseTicketTests
             ticket.ChangeGrossWeight(600m);
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Null(ticket.GrossWeight);
         Assert.Equal(500m, ticket.NetWeight);
@@ -1974,7 +1975,7 @@ public class PurchaseTicketTests
             ticket.ChangeDiscount(5);
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Null(ticket.Discount);
         Assert.Null(ticket.DiscountWeight);
@@ -2002,7 +2003,7 @@ public class PurchaseTicketTests
             ticket.ChangeDiscount(5);
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Null(ticket.Discount);
         Assert.Null(ticket.DiscountWeight);
@@ -2030,7 +2031,7 @@ public class PurchaseTicketTests
 
         // Act
         var exception =
-            Assert.Throws<InvalidOperationException>(
+            Assert.Throws<BusinessRuleException>(
                 () => ticket.ChangeDiscount(5));
 
         // Assert
@@ -2124,7 +2125,7 @@ public class PurchaseTicketTests
             ticket.ChangePricePerKg(6m);
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Null(ticket.PricePerKg);
         Assert.Null(ticket.Amount);
@@ -2150,7 +2151,7 @@ public class PurchaseTicketTests
             ticket.ChangePricePerKg(6m);
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Null(ticket.PricePerKg);
         Assert.Null(ticket.Amount);
@@ -2176,7 +2177,7 @@ public class PurchaseTicketTests
             ticket.UpdatedAt;
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => ticket.ChangePricePerKg(3m));
+        var exception = Assert.Throws<BusinessRuleException>(() => ticket.ChangePricePerKg(3m));
 
         // Assert
         Assert.Equal("El ticket debe estar completado.", exception.Message);
@@ -2303,7 +2304,7 @@ public class PurchaseTicketTests
             ticket.ChangeNetWeight(14000m);
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(15000m, ticket.NetWeight);
         Assert.Equal(TicketStatus.Cancelled, ticket.Status);
@@ -2331,7 +2332,7 @@ public class PurchaseTicketTests
             ticket.ChangeNetWeight(14000m);
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(15000m, ticket.NetWeight);
         Assert.Null(ticket.UpdatedAt);
@@ -2357,7 +2358,7 @@ public class PurchaseTicketTests
             ticket.ChangeNetWeight(14000m);
 
         // Assert
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
 
         Assert.Equal(15000m, ticket.NetWeight);
         Assert.Equal(73500m, ticket.Amount);
