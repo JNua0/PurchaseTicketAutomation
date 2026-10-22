@@ -185,6 +185,13 @@
                         Command="{Binding ShowTicketAmountsCommand}"
                         IsSelected="{Binding IsTicketAmountsSelected, Mode=OneWay}"/>
 
+                    <!-- Tickets: consulta y correccion de todos -->
+                    <navigation:SidebarNavItem
+                        Text="Tickets"
+                        Icon="{StaticResource TicketsIcon}"
+                        Command="{Binding ShowTicketsCommand}"
+                        IsSelected="{Binding IsTicketsSelected, Mode=OneWay}"/>
+
                     <!-- Proveedores -->
                         <navigation:SidebarNavItem
                             Text="Proveedores"

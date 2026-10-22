@@ -19,6 +19,7 @@ using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateConventional;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateSingle;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Get;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.GetDetail;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.GetFilterOptions;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Print;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterAmount;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterDepartureWeight;
@@ -37,6 +38,7 @@ using PurchaseTicket.Desktop.ViewModels.Home;
 using PurchaseTicket.Desktop.ViewModels.Materials;
 using PurchaseTicket.Desktop.ViewModels.Settings;
 using PurchaseTicket.Desktop.ViewModels.Suppliers;
+using PurchaseTicket.Desktop.ViewModels.Tickets;
 using PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 using PurchaseTicket.Desktop.Views.Amounts;
 using PurchaseTicket.Desktop.Views.Materials;
@@ -146,6 +148,9 @@ public partial class App : System.Windows.Application
                 services.AddTransient<RegisterAmountWindow>();
                 services.AddTransient<IAmountDialogService, AmountDialogService>();
 
+                // Tickets
+                services.AddTransient<TicketsViewModel>();
+
                 // Active catalogs
                 services.AddScoped<GetActiveSuppliers>();
                 services.AddScoped<GetActiveMaterials>();
@@ -157,6 +162,7 @@ public partial class App : System.Windows.Application
                 // Purchase ticket use cases
                 services.AddScoped<GetPurchaseTickets>();
                 services.AddScoped<GetPurchaseTicketDetail>();
+                services.AddScoped<GetTicketFilterOptions>();
                 services.AddScoped<CreateConventionalPurchaseTicket>();
                 services.AddScoped<CreateSinglePurchaseTicket>();
                 services.AddScoped<RegisterDepartureWeight>();
