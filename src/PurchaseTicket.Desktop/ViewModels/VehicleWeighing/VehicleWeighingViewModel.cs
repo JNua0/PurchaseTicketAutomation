@@ -1,13 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
-using PurchaseTicket.Application.UseCases.PurchaseTickets.Cancel;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Get;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.Services;
 using PurchaseTicket.Desktop.ViewModels.Base;
 using PurchaseTicket.Domain.Enums;
-using PurchaseTicket.Domain.Exceptions;
 
 namespace PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 
@@ -19,8 +17,7 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
 
     private readonly IWeighingDialogService _weighingDialogService;
     private readonly INotificationService _notifications;
-    private readonly IConfirmationDialogService _confirmationDialogService;
-    private readonly ITicketPrintService _printService;
+    private readonly ITicketActionsService _ticketActions;
     private readonly TimeProvider _timeProvider;
     private WeighingView _selectedView = WeighingView.InPlant;
     private int _inPlantCount;
@@ -31,16 +28,14 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
         IServiceScopeFactory scopeFactory,
         IWeighingDialogService weighingDialogService,
         INotificationService notifications,
-        IConfirmationDialogService confirmationDialogService,
-        ITicketPrintService printService,
+        ITicketActionsService ticketActions,
         TimeProvider timeProvider,
         ILogger<VehicleWeighingViewModel> logger)
         : base(scopeFactory, logger)
     {
         _weighingDialogService = weighingDialogService;
         _notifications = notifications;
-        _confirmationDialogService = confirmationDialogService;
-        _printService = printService;
+        _ticketActions = ticketActions;
         _timeProvider = timeProvider;
 
         NewWeighingCommand = new AsyncRelayCommand(
@@ -250,88 +245,35 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
 
     private async Task ReprintAsync(WeighingListItem ticket)
     {
-        string? printWarning;
-
         // Ocupado mientras imprime: la impresora atiende un ticket a la vez
         IsBusy = true;
 
         try
         {
-            printWarning = await _printService.PrintAsync(ticket.Id);
+            await _ticketActions.ReprintAsync(ticket.Id, ticket.TicketNumber);
         }
         finally
         {
             IsBusy = false;
-        }
-
-        if (printWarning is null)
-        {
-            _notifications.ShowSuccess(
-                $"Ticket folio {ticket.TicketNumber} enviado a impresión.");
-        }
-        else
-        {
-            _notifications.ShowWarning(
-                $"No se imprimió el folio {ticket.TicketNumber}. {printWarning}");
         }
     }
 
     private async Task CancelTicketAsync(WeighingListItem ticket)
     {
-        bool confirmed = _confirmationDialogService.Confirm(
-            "Cancelar ticket",
-            $"¿Deseas cancelar el ticket folio {ticket.TicketNumber}? " +
-            "Esta acción no se puede deshacer.");
-
-        if (!confirmed)
-            return;
+        CancelTicketOutcome outcome;
 
         IsBusy = true;
 
         try
         {
-            await using var scope = ScopeFactory.CreateAsyncScope();
-
-            await scope.ServiceProvider
-                .GetRequiredService<CancelPurchaseTicket>()
-                .ExecuteAsync(new CancelPurchaseTicketCommand(ticket.Id));
-        }
-        catch (Exception ex)
-            when (ex is BusinessRuleException or NotFoundException)
-        {
-            // Por ejemplo, otro equipo ya lo cancelo: se recarga para mostrarlo
-            _notifications.ShowError(ex.Message);
-            IsBusy = false;
-
-            await ReloadAfterActionAsync(
-                CurrentPage,
-                "No fue posible actualizar el listado.");
-
-            return;
-        }
-        catch (Exception ex)
-        {
-            _notifications.ShowError("No fue posible cancelar el ticket.");
-
-            Logger.LogError(
-                ex,
-                "No fue posible cancelar el ticket {TicketId}.",
-                ticket.Id);
-
-            return;
+            outcome = await _ticketActions.CancelAsync(ticket.Id, ticket.TicketNumber);
         }
         finally
         {
             IsBusy = false;
         }
 
-        _notifications.ShowSuccess(
-            $"Ticket folio {ticket.TicketNumber} cancelado.");
-
-        await ReloadAfterActionAsync(
-            CurrentPage,
-            "El ticket se canceló correctamente, " +
-            "pero no fue posible actualizar el listado.");
+        await ReloadAfterCancelAsync(outcome);
     }
 
     private bool CanRegisterTare(WeighingListItem ticket)

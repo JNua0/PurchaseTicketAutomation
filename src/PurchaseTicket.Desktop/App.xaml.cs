@@ -191,6 +191,9 @@ public partial class App : System.Windows.Application
                 services.AddScoped<PrintTestTicket>();
                 services.AddSingleton<ITicketPrintService, TicketPrintService>();
 
+                // Cancelar y reimprimir, compartidos por Pesaje, Importes y Tickets
+                services.AddSingleton<ITicketActionsService, TicketActionsService>();
+
                 // Correccion de tickets
                 services.AddScoped<CorrectPurchaseTicket>();
 
