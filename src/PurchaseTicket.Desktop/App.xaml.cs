@@ -31,6 +31,7 @@ using PurchaseTicket.Application.UseCases.Weighing.ReadWeight;
 using PurchaseTicket.Desktop.Configuration;
 using PurchaseTicket.Desktop.Services;
 using PurchaseTicket.Desktop.ViewModels;
+using PurchaseTicket.Desktop.ViewModels.Amounts;
 using PurchaseTicket.Desktop.ViewModels.Home;
 using PurchaseTicket.Desktop.ViewModels.Materials;
 using PurchaseTicket.Desktop.ViewModels.Settings;
@@ -136,6 +137,9 @@ public partial class App : System.Windows.Application
 
                 // Vehicle weighing view models
                 services.AddTransient<VehicleWeighingViewModel>();
+
+                // Importes de tickets
+                services.AddTransient<TicketAmountsViewModel>();
 
                 // Active catalogs
                 services.AddScoped<GetActiveSuppliers>();

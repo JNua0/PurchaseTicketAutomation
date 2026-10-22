@@ -182,7 +182,8 @@
                     <navigation:SidebarNavItem
                         Text="Importes de tickets"
                         Icon="{StaticResource TicketAmountIcon}"
-                        IsEnabled="False"/>
+                        Command="{Binding ShowTicketAmountsCommand}"
+                        IsSelected="{Binding IsTicketAmountsSelected, Mode=OneWay}"/>
 
                     <!-- Proveedores -->
                         <navigation:SidebarNavItem

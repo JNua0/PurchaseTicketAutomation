@@ -1,0 +1,114 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Views.Amounts.AmountsTableView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions">
+
+    <!-- Tabla de Importes: sin bruto, tara, placas ni chofer -->
+    <DataGrid Style="{StaticResource AppDataGridStyle}"
+              RowHeight="60"
+              ItemsSource="{Binding Items}"
+              SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+
+        <DataGrid.Columns>
+
+            <!-- Folio -->
+            <DataGridTextColumn Header="Folio"
+                                Binding="{Binding TicketNumber}"
+                                ElementStyle="{StaticResource CellEmphasisTextStyle}"
+                                Width="80"
+                                MinWidth="80"/>
+
+            <!-- Fin del pesaje y cuanto lleva esperando -->
+            <DataGridTemplateColumn Header="Pesaje terminado"
+                                    Width="180"
+                                    MinWidth="170">
+
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+
+                        <StackPanel>
+
+                            <TextBlock Text="{Binding WeighedAt,
+                                                      StringFormat={}{0:dd/MM/yyyy HH:mm}}"/>
+
+                            <TextBlock Text="{Binding WaitingTime}"
+                                       Style="{StaticResource CellSecondaryTextStyle}"/>
+
+                        </StackPanel>
+
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+
+            </DataGridTemplateColumn>
+
+            <!-- Proveedor y material -->
+            <DataGridTemplateColumn Header="Proveedor · Material"
+                                    Width="*"
+                                    MinWidth="200">
+
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+
+                        <StackPanel>
+
+                            <TextBlock Text="{Binding SupplierName}"
+                                       TextTrimming="CharacterEllipsis"/>
+
+                            <TextBlock Text="{Binding MaterialName}"
+                                       Style="{StaticResource CellSecondaryTextStyle}"/>
+
+                        </StackPanel>
+
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+
+            </DataGridTemplateColumn>
+
+            <!-- Modalidad -->
+            <DataGridTextColumn Header="Modalidad"
+                                Binding="{Binding WeighingTypeText}"
+                                ElementStyle="{StaticResource CellTextStyle}"
+                                Width="150"
+                                MinWidth="140"/>
+
+            <!-- Peso neto -->
+            <DataGridTextColumn Header="Peso neto (kg)"
+                                Binding="{Binding NetWeight, StringFormat={}{0:N0}}"
+                                HeaderStyle="{StaticResource RightAlignedColumnHeaderStyle}"
+                                ElementStyle="{StaticResource CellNumberTextStyle}"
+                                Width="140"
+                                MinWidth="130"/>
+
+            <!-- Acciones: sin reimpresion, el ticket solo imprime pesos -->
+            <DataGridTemplateColumn Header="Acciones"
+                                    HeaderStyle="{StaticResource CenteredColumnHeaderStyle}"
+                                    Width="120"
+                                    MinWidth="120"
+                                    CanUserResize="False">
+
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center">
+
+                            <!-- Cancelar ticket -->
+                            <actions:RowActionButton Icon="{StaticResource DeactivateIcon}"
+                                                     Variant="Danger"
+                                                     ToolTip="Cancelar ticket"
+                                                     Command="{Binding DataContext.CancelTicketCommand,
+                                                                       RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                     CommandParameter="{Binding}"/>
+
+                        </StackPanel>
+
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+
+            </DataGridTemplateColumn>
+
+        </DataGrid.Columns>
+
+    </DataGrid>
+
+</UserControl>
