@@ -1,13 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
-using PurchaseTicket.Application.UseCases.PurchaseTickets.Cancel;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Get;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.Services;
 using PurchaseTicket.Desktop.ViewModels.Base;
 using PurchaseTicket.Domain.Enums;
-using PurchaseTicket.Domain.Exceptions;
 
 namespace PurchaseTicket.Desktop.ViewModels.Amounts;
 
@@ -19,7 +17,7 @@ public class TicketAmountsViewModel : PagedListViewModel<AmountListItem>
 
     private readonly IAmountDialogService _amountDialogService;
     private readonly INotificationService _notifications;
-    private readonly IConfirmationDialogService _confirmationDialogService;
+    private readonly ITicketActionsService _ticketActions;
     private readonly TimeProvider _timeProvider;
     private int _pendingCount;
 
@@ -29,14 +27,14 @@ public class TicketAmountsViewModel : PagedListViewModel<AmountListItem>
         IServiceScopeFactory scopeFactory,
         IAmountDialogService amountDialogService,
         INotificationService notifications,
-        IConfirmationDialogService confirmationDialogService,
+        ITicketActionsService ticketActions,
         TimeProvider timeProvider,
         ILogger<TicketAmountsViewModel> logger)
         : base(scopeFactory, logger)
     {
         _amountDialogService = amountDialogService;
         _notifications = notifications;
-        _confirmationDialogService = confirmationDialogService;
+        _ticketActions = ticketActions;
         _timeProvider = timeProvider;
 
         RegisterAmountCommand = new AsyncRelayCommand<AmountListItem>(
@@ -172,63 +170,21 @@ public class TicketAmountsViewModel : PagedListViewModel<AmountListItem>
             "pero no fue posible actualizar el listado.");
     }
 
-    // Mismo flujo que en Pesaje. Si la pantalla Tickets lo necesita tambien,
-    // conviene moverlo a un servicio compartido
     private async Task CancelTicketAsync(AmountListItem ticket)
     {
-        bool confirmed = _confirmationDialogService.Confirm(
-            "Cancelar ticket",
-            $"¿Deseas cancelar el ticket folio {ticket.TicketNumber}? " +
-            "Esta acción no se puede deshacer.");
-
-        if (!confirmed)
-            return;
+        CancelTicketOutcome outcome;
 
         IsBusy = true;
 
         try
         {
-            await using var scope = ScopeFactory.CreateAsyncScope();
-
-            await scope.ServiceProvider
-                .GetRequiredService<CancelPurchaseTicket>()
-                .ExecuteAsync(new CancelPurchaseTicketCommand(ticket.Id));
-        }
-        catch (Exception ex)
-            when (ex is BusinessRuleException or NotFoundException)
-        {
-            // Por ejemplo, otro equipo ya registro su importe: se recarga para mostrarlo
-            _notifications.ShowError(ex.Message);
-            IsBusy = false;
-
-            await ReloadAfterActionAsync(
-                CurrentPage,
-                "No fue posible actualizar el listado.");
-
-            return;
-        }
-        catch (Exception ex)
-        {
-            _notifications.ShowError("No fue posible cancelar el ticket.");
-
-            Logger.LogError(
-                ex,
-                "No fue posible cancelar el ticket {TicketId}.",
-                ticket.Id);
-
-            return;
+            outcome = await _ticketActions.CancelAsync(ticket.Id, ticket.TicketNumber);
         }
         finally
         {
             IsBusy = false;
         }
 
-        _notifications.ShowSuccess(
-            $"Ticket folio {ticket.TicketNumber} cancelado.");
-
-        await ReloadAfterActionAsync(
-            CurrentPage,
-            "El ticket se canceló correctamente, " +
-            "pero no fue posible actualizar el listado.");
+        await ReloadAfterCancelAsync(outcome);
     }
 }

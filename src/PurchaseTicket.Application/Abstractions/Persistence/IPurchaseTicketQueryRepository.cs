@@ -14,5 +14,15 @@ public interface IPurchaseTicketQueryRepository
         WeighingType? weighingType = null,
         DateTime? weighedFrom = null,
         DateTime? weighedTo = null,
-        bool oldestFirst = false);
+        bool oldestFirst = false,
+        int? supplierId = null,
+        int? materialId = null);
+
+    // Todos los datos de un ticket para la ventana de detalle; null si no existe
+    Task<PurchaseTicketDetail?> GetDetailAsync(int id);
+
+    // Proveedores y materiales con al menos un ticket, activos o no, por nombre
+    Task<IReadOnlyList<CatalogOption>> GetSuppliersInUseAsync();
+
+    Task<IReadOnlyList<CatalogOption>> GetMaterialsInUseAsync();
 }

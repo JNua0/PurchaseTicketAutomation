@@ -12,6 +12,8 @@
         xmlns:weighingViews="clr-namespace:PurchaseTicket.Desktop.Views.VehicleWeighing"
         xmlns:amountsVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Amounts"
         xmlns:amountsViews="clr-namespace:PurchaseTicket.Desktop.Views.Amounts"
+        xmlns:ticketsVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Tickets"
+        xmlns:ticketsViews="clr-namespace:PurchaseTicket.Desktop.Views.Tickets"
         xmlns:settingsVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Settings"
         xmlns:settingsView="clr-namespace:PurchaseTicket.Desktop.Views.Settings"
         xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
@@ -49,6 +51,11 @@
         <!-- Pantalla de importes -->
         <DataTemplate DataType="{x:Type amountsVm:TicketAmountsViewModel}">
             <amountsViews:TicketAmountsView/>
+        </DataTemplate>
+
+        <!-- Pantalla de tickets -->
+        <DataTemplate DataType="{x:Type ticketsVm:TicketsViewModel}">
+            <ticketsViews:TicketsView/>
         </DataTemplate>
 
         <!-- Pantalla de configuracion -->

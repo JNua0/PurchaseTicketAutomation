@@ -25,7 +25,9 @@ public class PurchaseTicketQueryRepository
         WeighingType? weighingType = null,
         DateTime? weighedFrom = null,
         DateTime? weighedTo = null,
-        bool oldestFirst = false)
+        bool oldestFirst = false,
+        int? supplierId = null,
+        int? materialId = null)
     {
         var query =
             from ticket in _context.PurchaseTickets.AsNoTracking()
@@ -64,6 +66,18 @@ public class PurchaseTicketQueryRepository
         {
             query = query.Where(x =>
                 x.Ticket.WeighingType == weighingType.Value);
+        }
+
+        if (supplierId.HasValue)
+        {
+            query = query.Where(x =>
+                x.Ticket.SupplierId == supplierId.Value);
+        }
+
+        if (materialId.HasValue)
+        {
+            query = query.Where(x =>
+                x.Ticket.MaterialId == materialId.Value);
         }
 
         // Ultimo pesaje: la salida en convencionales con tara y la
@@ -125,5 +139,68 @@ public class PurchaseTicketQueryRepository
             page,
             pageSize,
             totalCount);
+    }
+
+    public async Task<PurchaseTicketDetail?> GetDetailAsync(int id)
+    {
+        var query =
+            from ticket in _context.PurchaseTickets.AsNoTracking()
+            join supplier in _context.Suppliers.AsNoTracking()
+                on ticket.SupplierId equals supplier.Id
+            join material in _context.Materials.AsNoTracking()
+                on ticket.MaterialId equals material.Id
+            where ticket.Id == id
+            select new PurchaseTicketDetail(
+                ticket.Id,
+                ticket.TicketNumber,
+                ticket.Status,
+                ticket.WeighingType,
+                ticket.CheckInAt,
+                ticket.DepartureAt,
+                ticket.SupplierId,
+                supplier.Name,
+                ticket.MaterialId,
+                material.Name,
+                ticket.LicensePlate,
+                ticket.Transporter,
+                ticket.GrossWeight,
+                ticket.TareWeight,
+                ticket.NetWeight,
+                ticket.Discount,
+                ticket.DiscountWeight,
+                ticket.NetWeightAfterDiscount,
+                ticket.PricePerKg,
+                ticket.Amount,
+                ticket.UpdatedAt);
+
+        return await query.SingleOrDefaultAsync();
+    }
+
+    public async Task<IReadOnlyList<CatalogOption>> GetSuppliersInUseAsync()
+    {
+        return await _context.Suppliers
+            .AsNoTracking()
+            .Where(supplier => _context.PurchaseTickets
+                .Any(ticket => ticket.SupplierId == supplier.Id))
+            .OrderBy(supplier => supplier.Name)
+            .Select(supplier => new CatalogOption(
+                supplier.Id,
+                supplier.Name,
+                supplier.IsActive))
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<CatalogOption>> GetMaterialsInUseAsync()
+    {
+        return await _context.Materials
+            .AsNoTracking()
+            .Where(material => _context.PurchaseTickets
+                .Any(ticket => ticket.MaterialId == material.Id))
+            .OrderBy(material => material.Name)
+            .Select(material => new CatalogOption(
+                material.Id,
+                material.Name,
+                material.IsActive))
+            .ToListAsync();
     }
 }

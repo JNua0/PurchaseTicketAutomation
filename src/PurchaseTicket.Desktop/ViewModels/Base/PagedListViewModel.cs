@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
 using PurchaseTicket.Desktop.Commands;
+using PurchaseTicket.Desktop.Services;
 
 namespace PurchaseTicket.Desktop.ViewModels.Base;
 
@@ -298,6 +299,25 @@ public abstract class PagedListViewModel<TItem> : ObservableObject
 
         if (!loaded)
             QueryErrorMessage = failureMessage;
+    }
+
+    // Despues de cancelar desde la lista. Si el dominio la rechazo, otro
+    // equipo ya cambio el ticket: tambien se recarga para mostrarlo
+    protected async Task ReloadAfterCancelAsync(CancelTicketOutcome outcome)
+    {
+        if (outcome == CancelTicketOutcome.Cancelled)
+        {
+            await ReloadAfterActionAsync(
+                CurrentPage,
+                "El ticket se canceló correctamente, " +
+                "pero no fue posible actualizar el listado.");
+        }
+        else if (outcome == CancelTicketOutcome.Rejected)
+        {
+            await ReloadAfterActionAsync(
+                CurrentPage,
+                "No fue posible actualizar el listado.");
+        }
     }
 
     // Metodos privados

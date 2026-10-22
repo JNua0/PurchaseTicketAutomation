@@ -14,4 +14,6 @@ public record GetPurchaseTicketsQuery(
     WeighingType? WeighingType = null,
     DateTime? WeighedFrom = null,
     DateTime? WeighedTo = null,
-    bool OldestFirst = false);
+    bool OldestFirst = false,
+    int? SupplierId = null,
+    int? MaterialId = null);

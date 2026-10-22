@@ -1,0 +1,118 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Views.Tickets.TicketsTableView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback">
+
+    <!-- Tabla de todos los tickets: lo esencial; el resto esta en el detalle -->
+    <DataGrid Style="{StaticResource AppDataGridStyle}"
+              RowHeight="56"
+              ItemsSource="{Binding Items}"
+              SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+
+        <!-- Doble clic o Enter sobre la fila seleccionada abren su detalle -->
+        <DataGrid.InputBindings>
+            <MouseBinding Gesture="LeftDoubleClick"
+                          Command="{Binding OpenDetailCommand}"
+                          CommandParameter="{Binding SelectedItem,
+                                                     RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+            <KeyBinding Key="Enter"
+                        Command="{Binding OpenDetailCommand}"
+                        CommandParameter="{Binding SelectedItem,
+                                                   RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+        </DataGrid.InputBindings>
+
+        <!-- Sin boton por fila: el aviso dice como abrir el detalle -->
+        <DataGrid.RowStyle>
+            <Style TargetType="DataGridRow"
+                   BasedOn="{StaticResource AppDataGridRowStyle}">
+                <Setter Property="ToolTip"
+                        Value="Doble clic para ver el detalle"/>
+            </Style>
+        </DataGrid.RowStyle>
+
+        <DataGrid.Columns>
+
+            <!-- Folio -->
+            <DataGridTextColumn Header="Folio"
+                                Binding="{Binding TicketNumber}"
+                                ElementStyle="{StaticResource CellEmphasisTextStyle}"
+                                Width="70"
+                                MinWidth="70"/>
+
+            <!-- Ultimo pesaje -->
+            <DataGridTextColumn Header="Último pesaje"
+                                Binding="{Binding WeighedAt, StringFormat={}{0:dd/MM/yyyy HH:mm}}"
+                                ElementStyle="{StaticResource CellTextStyle}"
+                                Width="150"
+                                MinWidth="150"/>
+
+            <!-- Proveedor y material -->
+            <DataGridTemplateColumn Header="Proveedor · Material"
+                                    Width="*"
+                                    MinWidth="200">
+
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+
+                        <StackPanel>
+
+                            <TextBlock Text="{Binding SupplierName}"
+                                       TextTrimming="CharacterEllipsis"/>
+
+                            <TextBlock Text="{Binding MaterialName}"
+                                       Style="{StaticResource CellSecondaryTextStyle}"/>
+
+                        </StackPanel>
+
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+
+            </DataGridTemplateColumn>
+
+            <!-- Modalidad -->
+            <DataGridTextColumn Header="Modalidad"
+                                Binding="{Binding WeighingTypeText}"
+                                ElementStyle="{StaticResource CellTextStyle}"
+                                Width="130"
+                                MinWidth="130"/>
+
+            <!-- Peso neto: falta mientras el convencional espera su tara -->
+            <DataGridTextColumn Header="Peso neto (kg)"
+                                Binding="{Binding NetWeight, StringFormat={}{0:N0}, TargetNullValue=—}"
+                                HeaderStyle="{StaticResource RightAlignedColumnHeaderStyle}"
+                                ElementStyle="{StaticResource CellNumberTextStyle}"
+                                Width="120"
+                                MinWidth="120"/>
+
+            <!-- Importe: solo en los completados -->
+            <DataGridTextColumn Header="Importe"
+                                Binding="{Binding Amount, StringFormat={}${0:N2}, TargetNullValue=—}"
+                                HeaderStyle="{StaticResource RightAlignedColumnHeaderStyle}"
+                                ElementStyle="{StaticResource CellNumberTextStyle}"
+                                Width="120"
+                                MinWidth="120"/>
+
+            <!-- Estado con su color -->
+            <DataGridTemplateColumn Header="Estado"
+                                    Width="210"
+                                    MinWidth="210">
+
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+
+                        <feedback:StatusBadge Text="{Binding StatusText}"
+                                              Kind="{Binding StatusKind}"
+                                              HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+                                              Margin="12,0,0,0"/>
+
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+
+            </DataGridTemplateColumn>
+
+        </DataGrid.Columns>
+
+    </DataGrid>
+
+</UserControl>

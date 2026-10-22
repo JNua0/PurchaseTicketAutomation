@@ -62,22 +62,46 @@
                                     VerticalAlignment="Center">
 
                             <!-- Editar proveedor -->
-                            <actions:EditActionButton
-                                Command="{Binding DataContext.EditSupplierCommand,
-                                                  RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                CommandParameter="{Binding}"
-                                ToolTip="Editar proveedor"
-                                Margin="0,0,8,0"/>
+                            <actions:RowActionButton Icon="{StaticResource EditIcon}"
+                                                     Variant="Edit"
+                                                     ToolTip="Editar proveedor"
+                                                     Command="{Binding DataContext.EditSupplierCommand,
+                                                                       RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                     CommandParameter="{Binding}"
+                                                     Margin="0,0,8,0"/>
 
                             <!-- Activar o desactivar proveedor -->
-                            <actions:StatusActionButton
-                                IsActive="{Binding IsActive}"
-                                ActivateIcon="{StaticResource ActivateUserIcon}"
-                                DeactivateIcon="{StaticResource DeactivateUserIcon}"
-                                Command="{Binding DataContext.ChangeSupplierStatusCommand,
-                                                  RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                CommandParameter="{Binding}"
-                                VerticalAlignment="Center"/>
+                            <actions:RowActionButton Command="{Binding DataContext.ChangeSupplierStatusCommand,
+                                                                       RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                     CommandParameter="{Binding}">
+
+                                <!-- Activo: desactivar en rojo. Inactivo: activar en verde -->
+                                <actions:RowActionButton.Style>
+                                    <Style TargetType="actions:RowActionButton">
+
+                                        <Setter Property="Icon"
+                                                Value="{StaticResource DeactivateUserIcon}"/>
+                                        <Setter Property="Variant"
+                                                Value="Danger"/>
+                                        <Setter Property="ToolTip"
+                                                Value="Desactivar proveedor"/>
+
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsActive}"
+                                                         Value="False">
+                                                <Setter Property="Icon"
+                                                        Value="{StaticResource ActivateUserIcon}"/>
+                                                <Setter Property="Variant"
+                                                        Value="Success"/>
+                                                <Setter Property="ToolTip"
+                                                        Value="Activar proveedor"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+
+                                    </Style>
+                                </actions:RowActionButton.Style>
+
+                            </actions:RowActionButton>
 
                         </StackPanel>
 

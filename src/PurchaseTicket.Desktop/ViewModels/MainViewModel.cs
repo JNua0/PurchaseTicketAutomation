@@ -7,6 +7,7 @@ using PurchaseTicket.Desktop.ViewModels.Home;
 using PurchaseTicket.Desktop.ViewModels.Materials;
 using PurchaseTicket.Desktop.ViewModels.Settings;
 using PurchaseTicket.Desktop.ViewModels.Suppliers;
+using PurchaseTicket.Desktop.ViewModels.Tickets;
 using PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 
 namespace PurchaseTicket.Desktop.ViewModels;
@@ -20,6 +21,7 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly MaterialsViewModel _materialsViewModel;
     private readonly VehicleWeighingViewModel _vehicleWeighingViewModel;
     private readonly TicketAmountsViewModel _ticketAmountsViewModel;
+    private readonly TicketsViewModel _ticketsViewModel;
     private readonly SettingsViewModel _settingsViewModel;
     private object? _currentViewModel;
     private bool _isSidebarExpanded = true;
@@ -32,6 +34,7 @@ public class MainViewModel : INotifyPropertyChanged
         MaterialsViewModel materialsViewModel,
         VehicleWeighingViewModel vehicleWeighingViewModel,
         TicketAmountsViewModel ticketAmountsViewModel,
+        TicketsViewModel ticketsViewModel,
         SettingsViewModel settingsViewModel)
     {
         _homeViewModel = homeViewModel;
@@ -39,6 +42,7 @@ public class MainViewModel : INotifyPropertyChanged
         _materialsViewModel = materialsViewModel;
         _vehicleWeighingViewModel = vehicleWeighingViewModel;
         _ticketAmountsViewModel = ticketAmountsViewModel;
+        _ticketsViewModel = ticketsViewModel;
         _settingsViewModel = settingsViewModel;
 
         ShowHomeCommand = new RelayCommand(ShowHome);
@@ -46,6 +50,7 @@ public class MainViewModel : INotifyPropertyChanged
         ShowMaterialsCommand = new AsyncRelayCommand(ShowMaterialsAsync);
         ShowVehicleWeighingCommand = new AsyncRelayCommand(ShowVehicleWeighingAsync);
         ShowTicketAmountsCommand = new AsyncRelayCommand(ShowTicketAmountsAsync);
+        ShowTicketsCommand = new AsyncRelayCommand(ShowTicketsAsync);
         ShowSettingsCommand = new AsyncRelayCommand(ShowSettingsAsync);
         ToggleSidebarCommand = new RelayCommand(ToggleSidebar);
 
@@ -74,6 +79,7 @@ public class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsMaterialsSelected));
             OnPropertyChanged(nameof(IsVehicleWeighingSelected));
             OnPropertyChanged(nameof(IsTicketAmountsSelected));
+            OnPropertyChanged(nameof(IsTicketsSelected));
         }
     }
 
@@ -86,6 +92,8 @@ public class MainViewModel : INotifyPropertyChanged
     public bool IsVehicleWeighingSelected => ReferenceEquals(CurrentViewModel, _vehicleWeighingViewModel);
 
     public bool IsTicketAmountsSelected => ReferenceEquals(CurrentViewModel, _ticketAmountsViewModel);
+
+    public bool IsTicketsSelected => ReferenceEquals(CurrentViewModel, _ticketsViewModel);
 
     public bool IsSidebarExpanded
     {
@@ -116,6 +124,8 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ShowVehicleWeighingCommand { get; }
 
     public ICommand ShowTicketAmountsCommand { get; }
+
+    public ICommand ShowTicketsCommand { get; }
 
     public ICommand ShowSettingsCommand { get; }
 
@@ -190,6 +200,18 @@ public class MainViewModel : INotifyPropertyChanged
             DispatcherPriority.ApplicationIdle);
 
         await _ticketAmountsViewModel.LoadAsync();
+    }
+
+    // Mostrar el modulo de tickets; las opciones de los filtros se recargan al entrar
+    private async Task ShowTicketsAsync()
+    {
+        CurrentViewModel = _ticketsViewModel;
+
+        await System.Windows.Application.Current.Dispatcher.InvokeAsync(
+            () => { },
+            DispatcherPriority.ApplicationIdle);
+
+        await _ticketsViewModel.InitializeAsync();
     }
 
     // Mostrar el modulo de configuracion; los puertos se revisan al entrar
