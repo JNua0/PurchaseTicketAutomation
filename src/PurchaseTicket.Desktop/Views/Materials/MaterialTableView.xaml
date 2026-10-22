@@ -53,20 +53,46 @@
                                     VerticalAlignment="Center">
 
                             <!-- Editar material -->
-                            <actions:EditActionButton
-                                Command="{Binding DataContext.EditMaterialCommand,
-                                                  RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                CommandParameter="{Binding}"
-                                ToolTip="Editar material"
-                                Margin="0,0,8,0"/>
+                            <actions:RowActionButton Icon="{StaticResource EditIcon}"
+                                                     Variant="Edit"
+                                                     ToolTip="Editar material"
+                                                     Command="{Binding DataContext.EditMaterialCommand,
+                                                                       RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                     CommandParameter="{Binding}"
+                                                     Margin="0,0,8,0"/>
 
                             <!-- Activar o desactivar material -->
-                            <actions:StatusActionButton
-                                IsActive="{Binding IsActive}"
-                                Command="{Binding DataContext.ChangeMaterialStatusCommand,
-                                                  RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                CommandParameter="{Binding}"
-                                VerticalAlignment="Center"/>
+                            <actions:RowActionButton Command="{Binding DataContext.ChangeMaterialStatusCommand,
+                                                                       RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                     CommandParameter="{Binding}">
+
+                                <!-- Activo: desactivar en rojo. Inactivo: activar en verde -->
+                                <actions:RowActionButton.Style>
+                                    <Style TargetType="actions:RowActionButton">
+
+                                        <Setter Property="Icon"
+                                                Value="{StaticResource DeactivateIcon}"/>
+                                        <Setter Property="Variant"
+                                                Value="Danger"/>
+                                        <Setter Property="ToolTip"
+                                                Value="Desactivar material"/>
+
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsActive}"
+                                                         Value="False">
+                                                <Setter Property="Icon"
+                                                        Value="{StaticResource ActivateIcon}"/>
+                                                <Setter Property="Variant"
+                                                        Value="Success"/>
+                                                <Setter Property="ToolTip"
+                                                        Value="Activar material"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+
+                                    </Style>
+                                </actions:RowActionButton.Style>
+
+                            </actions:RowActionButton>
 
                         </StackPanel>
 

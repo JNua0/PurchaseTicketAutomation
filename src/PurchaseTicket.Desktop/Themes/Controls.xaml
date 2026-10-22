@@ -361,45 +361,6 @@
     </Style>
 
 
-    <!-- Boton para editar registros -->
-    <Style x:Key="EditActionButtonStyle"
-       TargetType="Button"
-       BasedOn="{StaticResource ActionButtonBaseStyle}">
-
-        <Setter Property="Background"
-            Value="#EAF3FF"/>
-
-        <Setter Property="ToolTip"
-            Value="Editar registro"/>
-
-    </Style>
-
-    <!-- Boton para activar registros -->
-    <Style x:Key="ActivateActionButtonStyle"
-       TargetType="Button"
-       BasedOn="{StaticResource ActionButtonBaseStyle}">
-
-        <Setter Property="Background"
-            Value="#EDF8E7"/>
-
-        <Setter Property="ToolTip"
-            Value="Activar registro"/>
-
-    </Style>
-
-    <!-- Boton para desactivar registros -->
-    <Style x:Key="DeactivateActionButtonStyle"
-       TargetType="Button"
-       BasedOn="{StaticResource ActionButtonBaseStyle}">
-
-        <Setter Property="Background"
-            Value="#FEECEC"/>
-
-        <Setter Property="ToolTip"
-            Value="Desactivar registro"/>
-
-    </Style>
-
     <!-- Boton verde para acciones de creacion -->
     <Style x:Key="SuccessButtonStyle"
        TargetType="Button"
