@@ -1016,6 +1016,33 @@ public class PurchaseTicketTests
     }
 
     [Fact]
+    public void CalculateAmountBreakdown_ShouldMatchRegisteredAmount()
+    {
+        // Arrange: la ventana de importe muestra este calculo antes de guardar
+        var ticket = Ticket.CreateSingle(
+            "T-000002",
+            1,
+            1,
+            null,
+            "Juan Perez",
+            1234.56m);
+
+        // Act
+        var breakdown = Ticket.CalculateAmountBreakdown(1234.56m, 3, 3.33m);
+
+        ticket.RegisterAmount(3, 3.33m);
+
+        // Assert: lo mostrado es exactamente lo guardado
+        Assert.Equal(37.04m, breakdown.DiscountWeight);
+        Assert.Equal(1197.52m, breakdown.NetWeightAfterDiscount);
+        Assert.Equal(3987.75m, breakdown.Amount);
+
+        Assert.Equal(ticket.DiscountWeight, breakdown.DiscountWeight);
+        Assert.Equal(ticket.NetWeightAfterDiscount, breakdown.NetWeightAfterDiscount);
+        Assert.Equal(ticket.Amount, breakdown.Amount);
+    }
+
+    [Fact]
     public void ChangePricePerKg_ShouldRoundRecalculatedAmount()
     {
         // Arrange

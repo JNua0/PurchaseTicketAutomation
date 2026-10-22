@@ -192,6 +192,56 @@ public class PurchaseTicket
             licensePlate);
     }
 
+    public static void ValidateDiscount(int discount)
+    {
+        if (discount < 0 || discount > 99)
+            throw new ArgumentException(
+                "El descuento debe ser un número entero entre 0 y 99.",
+                nameof(discount));
+    }
+
+    public static void ValidatePricePerKg(decimal pricePerKg)
+    {
+        if (pricePerKg <= 0)
+            throw new ArgumentException("El precio por kilogramo debe ser mayor a cero.");
+
+        // La base de datos guarda dos decimales: con mas, el importe calculado
+        // no coincidiria con el precio guardado
+        if (decimal.Round(pricePerKg, 2) != pricePerKg)
+            throw new ArgumentException("El precio por kilogramo no puede tener más de dos decimales.");
+    }
+
+    // Publico para que la ventana de importe muestre exactamente lo que se
+    // guardara, sin repetir la formula. Se calcula con precision completa y
+    // solo se redondea el resultado (RN-41): con pesos enteros coincide con
+    // redondear cada paso; con decimales el importe puede diferir un centavo
+    // de multiplicar las cifras redondeadas, a cambio de ser el valor exacto
+    public static AmountBreakdown CalculateAmountBreakdown(
+        decimal netWeight,
+        int discount,
+        decimal pricePerKg)
+    {
+        decimal discountWeight =
+            CalculateDiscountWeight(
+                netWeight,
+                discount);
+
+        decimal netWeightAfterDiscount =
+            CalculateNetWeightAfterDiscount(
+                netWeight,
+                discountWeight);
+
+        decimal amount =
+            CalculateAmount(
+                netWeightAfterDiscount,
+                pricePerKg);
+
+        return new AmountBreakdown(
+            RoundToTwoDecimals(discountWeight),
+            RoundToTwoDecimals(netWeightAfterDiscount),
+            RoundToTwoDecimals(amount));
+    }
+
     public void Cancel()
     {
         if (Status == TicketStatus.Cancelled)
@@ -600,17 +650,6 @@ public class PurchaseTicket
             throw new ArgumentException("La tara debe ser menor al peso bruto.");
     }
 
-    private static void ValidatePricePerKg(decimal pricePerKg)
-    {
-        if (pricePerKg <= 0)
-            throw new ArgumentException("El precio por kilogramo debe ser mayor a cero.");
-
-        // La base de datos guarda dos decimales: con mas, el importe calculado
-        // no coincidiria con el precio guardado
-        if (decimal.Round(pricePerKg, 2) != pricePerKg)
-            throw new ArgumentException("El precio por kilogramo no puede tener más de dos decimales.");
-    }
-
     private static void ValidateTicketNumber(string ticketNumber)
     {
         if (string.IsNullOrWhiteSpace(ticketNumber))
@@ -646,14 +685,6 @@ public class PurchaseTicket
     {
         if (netWeight <= 0)
             throw new ArgumentException("El peso neto debe ser mayor a cero.");
-    }
-
-    private static void ValidateDiscount(int discount)
-    {
-        if (discount < 0 || discount > 99)
-            throw new ArgumentException(
-                "El descuento debe ser un número entero entre 0 y 99.",
-                nameof(discount));
     }
 
     private static decimal CalculateNetWeight(decimal grossWeight, decimal tareWeight)
@@ -697,28 +728,14 @@ public class PurchaseTicket
             ?? throw new InvalidOperationException(
                 "El ticket debe tener un precio por kilogramo.");
 
-        decimal discountWeight =
-            CalculateDiscountWeight(
-                netWeight,
-                discount);
+        var breakdown = CalculateAmountBreakdown(
+            netWeight,
+            discount,
+            pricePerKg);
 
-        decimal netWeightAfterDiscount =
-            CalculateNetWeightAfterDiscount(
-                netWeight,
-                discountWeight);
-
-        decimal amount =
-            CalculateAmount(
-                netWeightAfterDiscount,
-                pricePerKg);
-
-        // Se calcula con precision completa y solo se redondea lo que se guarda
-        // (RN-41). Con pesos enteros coincide con redondear cada paso; con un
-        // peso con decimales el importe puede diferir un centavo de multiplicar
-        // las cifras guardadas, a cambio de ser el valor exacto
-        DiscountWeight = RoundToTwoDecimals(discountWeight);
-        NetWeightAfterDiscount = RoundToTwoDecimals(netWeightAfterDiscount);
-        Amount = RoundToTwoDecimals(amount);
+        DiscountWeight = breakdown.DiscountWeight;
+        NetWeightAfterDiscount = breakdown.NetWeightAfterDiscount;
+        Amount = breakdown.Amount;
     }
 
     private void ValidateConventionalWeighing()
