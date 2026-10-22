@@ -38,7 +38,8 @@ public class GetPurchaseTickets
             query.Status,
             query.WeighingType,
             query.WeighedFrom,
-            query.WeighedTo);
+            query.WeighedTo,
+            query.OldestFirst);
 
         var items = result.Items
             .Select(item => new PurchaseTicketDto(

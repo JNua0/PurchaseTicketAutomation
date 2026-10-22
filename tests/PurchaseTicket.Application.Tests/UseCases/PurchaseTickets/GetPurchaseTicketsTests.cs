@@ -25,6 +25,7 @@ public class GetPurchaseTicketsTests
         public WeighingType? ReceivedWeighingType { get; private set; }
         public DateTime? ReceivedWeighedFrom { get; private set; }
         public DateTime? ReceivedWeighedTo { get; private set; }
+        public bool? ReceivedOldestFirst { get; private set; }
 
         public Task<PagedResult<PurchaseTicketListItem>> GetPagedAsync(
             int page,
@@ -33,7 +34,8 @@ public class GetPurchaseTicketsTests
             TicketStatus? status = null,
             WeighingType? weighingType = null,
             DateTime? weighedFrom = null,
-            DateTime? weighedTo = null)
+            DateTime? weighedTo = null,
+            bool oldestFirst = false)
         {
             ReceivedPage = page;
             ReceivedPageSize = pageSize;
@@ -42,6 +44,7 @@ public class GetPurchaseTicketsTests
             ReceivedWeighingType = weighingType;
             ReceivedWeighedFrom = weighedFrom;
             ReceivedWeighedTo = weighedTo;
+            ReceivedOldestFirst = oldestFirst;
 
             return Task.FromResult(Result);
         }
@@ -174,7 +177,8 @@ public class GetPurchaseTicketsTests
                 Status: TicketStatus.Completed,
                 WeighingType: WeighingType.Conventional,
                 WeighedFrom: new DateTime(2026, 10, 21, 6, 0, 0, DateTimeKind.Utc),
-                WeighedTo: new DateTime(2026, 10, 22, 6, 0, 0, DateTimeKind.Utc));
+                WeighedTo: new DateTime(2026, 10, 22, 6, 0, 0, DateTimeKind.Utc),
+                OldestFirst: true);
 
         // Act
         await useCase.ExecuteAsync(query);
@@ -207,6 +211,8 @@ public class GetPurchaseTicketsTests
         Assert.Equal(
             new DateTime(2026, 10, 22, 6, 0, 0, DateTimeKind.Utc),
             repository.ReceivedWeighedTo);
+
+        Assert.True(repository.ReceivedOldestFirst);
     }
 
     [Fact]

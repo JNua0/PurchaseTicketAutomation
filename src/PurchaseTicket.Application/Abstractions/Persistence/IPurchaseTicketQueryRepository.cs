@@ -13,5 +13,6 @@ public interface IPurchaseTicketQueryRepository
         TicketStatus? status = null,
         WeighingType? weighingType = null,
         DateTime? weighedFrom = null,
-        DateTime? weighedTo = null);
+        DateTime? weighedTo = null,
+        bool oldestFirst = false);
 }

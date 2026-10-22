@@ -24,7 +24,8 @@ public class PurchaseTicketQueryRepository
         TicketStatus? status = null,
         WeighingType? weighingType = null,
         DateTime? weighedFrom = null,
-        DateTime? weighedTo = null)
+        DateTime? weighedTo = null,
+        bool oldestFirst = false)
     {
         var query =
             from ticket in _context.PurchaseTickets.AsNoTracking()
@@ -86,11 +87,18 @@ public class PurchaseTicketQueryRepository
         var totalCount =
             await query.CountAsync();
 
+        // El Id desempata dos pesajes en el mismo instante, para que la
+        // paginacion no repita ni salte filas
+        var ordered = oldestFirst
+            ? query
+                .OrderBy(x => x.Ticket.DepartureAt ?? x.Ticket.CheckInAt)
+                .ThenBy(x => x.Ticket.Id)
+            : query
+                .OrderByDescending(x => x.Ticket.DepartureAt ?? x.Ticket.CheckInAt)
+                .ThenByDescending(x => x.Ticket.Id);
+
         var items =
-            await query
-                .OrderByDescending(x =>
-                    x.Ticket.DepartureAt ?? x.Ticket.CheckInAt)
-                .ThenByDescending(x => x.Ticket.Id)
+            await ordered
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(x => new PurchaseTicketListItem(
