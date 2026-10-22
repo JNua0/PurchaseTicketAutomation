@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PurchaseTicket.Domain.Entities;
+using PurchaseTicket.Domain.Enums;
 using PurchaseTicket.Infrastructure.Persistence.Repositories;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
@@ -128,5 +129,127 @@ public class PurchaseTicketQueryRepositoryTests : InfrastructureTestBase
         Assert.Equal(
             new[] { "1", "2" },
             result.Items.Select(t => t.TicketNumber));
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_ShouldOrderByLastWeighingAscending_WhenOldestFirst()
+    {
+        // Arrange
+        await SeedTicketsAsync();
+
+        var first =
+            await Context.PurchaseTickets
+                .SingleAsync(t => t.TicketNumber == "1");
+
+        first.RegisterTare(5000m);
+
+        await Context.SaveChangesAsync();
+
+        var repository =
+            new PurchaseTicketQueryRepository(Context);
+
+        // Act
+        var result =
+            await repository.GetPagedAsync(
+                page: 1,
+                pageSize: 10,
+                oldestFirst: true);
+
+        // Assert: el 2 lleva mas tiempo desde su ultimo pesaje
+        Assert.Equal(
+            new[] { "2", "1" },
+            result.Items.Select(t => t.TicketNumber));
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_ShouldFilterBySupplierAndMaterial()
+    {
+        // Arrange
+        await SeedTicketsAsync();
+
+        var south =
+            await Context.Suppliers.SingleAsync(s => s.Name == "Proveedor Sur");
+
+        var steel =
+            await Context.Materials.SingleAsync(m => m.Name == "Acero");
+
+        var repository =
+            new PurchaseTicketQueryRepository(Context);
+
+        // Act
+        var bySupplier =
+            await repository.GetPagedAsync(
+                page: 1,
+                pageSize: 10,
+                supplierId: south.Id);
+
+        var byMaterial =
+            await repository.GetPagedAsync(
+                page: 1,
+                pageSize: 10,
+                materialId: steel.Id);
+
+        var both =
+            await repository.GetPagedAsync(
+                page: 1,
+                pageSize: 10,
+                supplierId: south.Id,
+                materialId: steel.Id);
+
+        // Assert
+        Assert.Equal("2", Assert.Single(bySupplier.Items).TicketNumber);
+        Assert.Equal("1", Assert.Single(byMaterial.Items).TicketNumber);
+        Assert.Empty(both.Items);
+    }
+
+    [Fact]
+    public async Task GetDetailAsync_ShouldReturnAllData()
+    {
+        // Arrange
+        await SeedTicketsAsync();
+
+        var first =
+            await Context.PurchaseTickets
+                .SingleAsync(t => t.TicketNumber == "1");
+
+        first.RegisterTare(5000m);
+        first.RegisterAmount(3, 3.33m);
+
+        await Context.SaveChangesAsync();
+
+        var repository =
+            new PurchaseTicketQueryRepository(Context);
+
+        // Act
+        var detail = await repository.GetDetailAsync(first.Id);
+
+        // Assert: 20,000 kg netos, 600 de descuento, 19,400 x 3.33
+        Assert.NotNull(detail);
+        Assert.Equal("Proveedor Norte", detail.SupplierName);
+        Assert.Equal("Acero", detail.MaterialName);
+        Assert.Equal(25000m, detail.GrossWeight);
+        Assert.Equal(5000m, detail.TareWeight);
+        Assert.Equal(20000m, detail.NetWeight);
+        Assert.Equal(3, detail.Discount);
+        Assert.Equal(600m, detail.DiscountWeight);
+        Assert.Equal(19400m, detail.NetWeightAfterDiscount);
+        Assert.Equal(3.33m, detail.PricePerKg);
+        Assert.Equal(64602m, detail.Amount);
+        Assert.Equal(TicketStatus.Completed, detail.Status);
+        Assert.NotNull(detail.DepartureAt);
+    }
+
+    [Fact]
+    public async Task GetDetailAsync_ShouldReturnNullWhenTicketDoesNotExist()
+    {
+        // Arrange
+        var repository =
+            new PurchaseTicketQueryRepository(Context);
+
+        // Act
+        var detail = await repository.GetDetailAsync(999);
+
+        // Assert
+        Assert.Null(detail);
     }
 }

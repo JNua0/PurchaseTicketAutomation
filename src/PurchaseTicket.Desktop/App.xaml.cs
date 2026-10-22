@@ -18,6 +18,7 @@ using PurchaseTicket.Application.UseCases.PurchaseTickets.Correct;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateConventional;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateSingle;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Get;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.GetDetail;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Print;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterAmount;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterDepartureWeight;
@@ -155,6 +156,7 @@ public partial class App : System.Windows.Application
 
                 // Purchase ticket use cases
                 services.AddScoped<GetPurchaseTickets>();
+                services.AddScoped<GetPurchaseTicketDetail>();
                 services.AddScoped<CreateConventionalPurchaseTicket>();
                 services.AddScoped<CreateSinglePurchaseTicket>();
                 services.AddScoped<RegisterDepartureWeight>();

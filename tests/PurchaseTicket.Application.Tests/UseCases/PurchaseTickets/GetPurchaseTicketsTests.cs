@@ -26,6 +26,8 @@ public class GetPurchaseTicketsTests
         public DateTime? ReceivedWeighedFrom { get; private set; }
         public DateTime? ReceivedWeighedTo { get; private set; }
         public bool? ReceivedOldestFirst { get; private set; }
+        public int? ReceivedSupplierId { get; private set; }
+        public int? ReceivedMaterialId { get; private set; }
 
         public Task<PagedResult<PurchaseTicketListItem>> GetPagedAsync(
             int page,
@@ -35,7 +37,9 @@ public class GetPurchaseTicketsTests
             WeighingType? weighingType = null,
             DateTime? weighedFrom = null,
             DateTime? weighedTo = null,
-            bool oldestFirst = false)
+            bool oldestFirst = false,
+            int? supplierId = null,
+            int? materialId = null)
         {
             ReceivedPage = page;
             ReceivedPageSize = pageSize;
@@ -45,9 +49,14 @@ public class GetPurchaseTicketsTests
             ReceivedWeighedFrom = weighedFrom;
             ReceivedWeighedTo = weighedTo;
             ReceivedOldestFirst = oldestFirst;
+            ReceivedSupplierId = supplierId;
+            ReceivedMaterialId = materialId;
 
             return Task.FromResult(Result);
         }
+
+        public Task<PurchaseTicketDetail?> GetDetailAsync(int id)
+            => throw new NotImplementedException();
     }
 
     [Fact]
@@ -178,7 +187,9 @@ public class GetPurchaseTicketsTests
                 WeighingType: WeighingType.Conventional,
                 WeighedFrom: new DateTime(2026, 10, 21, 6, 0, 0, DateTimeKind.Utc),
                 WeighedTo: new DateTime(2026, 10, 22, 6, 0, 0, DateTimeKind.Utc),
-                OldestFirst: true);
+                OldestFirst: true,
+                SupplierId: 3,
+                MaterialId: 7);
 
         // Act
         await useCase.ExecuteAsync(query);
@@ -213,6 +224,8 @@ public class GetPurchaseTicketsTests
             repository.ReceivedWeighedTo);
 
         Assert.True(repository.ReceivedOldestFirst);
+        Assert.Equal(3, repository.ReceivedSupplierId);
+        Assert.Equal(7, repository.ReceivedMaterialId);
     }
 
     [Fact]
