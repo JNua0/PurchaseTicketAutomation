@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace PurchaseTicket.Desktop.Components.Forms;
 
@@ -15,6 +16,14 @@ public partial class FormActions : UserControl
             typeof(string),
             typeof(FormActions),
             new PropertyMetadata("Guardar"));
+
+    // Icono del boton principal; sin valor se usa SaveIcon
+    public static readonly DependencyProperty SaveButtonIconProperty =
+        DependencyProperty.Register(
+            nameof(SaveButtonIcon),
+            typeof(Geometry),
+            typeof(FormActions),
+            new PropertyMetadata(null));
 
     // Comando para guardar
     public static readonly DependencyProperty SaveCommandProperty =
@@ -53,6 +62,12 @@ public partial class FormActions : UserControl
     {
         get => (string)GetValue(SaveButtonTextProperty);
         set => SetValue(SaveButtonTextProperty, value);
+    }
+
+    public Geometry? SaveButtonIcon
+    {
+        get => (Geometry?)GetValue(SaveButtonIconProperty);
+        set => SetValue(SaveButtonIconProperty, value);
     }
 
     public ICommand? SaveCommand

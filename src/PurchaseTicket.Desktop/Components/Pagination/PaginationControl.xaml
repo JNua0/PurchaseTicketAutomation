@@ -1,6 +1,7 @@
 ﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Pagination.PaginationControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions"
              x:Name="Root">
 
     <!-- Controles de paginacion -->
@@ -80,10 +81,9 @@
                     VerticalAlignment="Center">
 
             <!-- Pagina anterior -->
-            <Button Content="Anterior"
-                    Command="{Binding PreviousPageCommand, ElementName=Root}"
-                    Style="{StaticResource SecondaryButtonStyle}"
-                    Width="95"/>
+            <actions:ActionButton Text="Anterior"
+                                  Variant="Simple"
+                                  Command="{Binding PreviousPageCommand, ElementName=Root}"/>
 
             <!-- Indicador de pagina actual -->
             <TextBlock Margin="15,0"
@@ -98,10 +98,9 @@
             </TextBlock>
 
             <!-- Pagina siguiente -->
-            <Button Content="Siguiente"
-                    Command="{Binding NextPageCommand, ElementName=Root}"
-                    Style="{StaticResource SecondaryButtonStyle}"
-                    Width="95"/>
+            <actions:ActionButton Text="Siguiente"
+                                  Variant="Simple"
+                                  Command="{Binding NextPageCommand, ElementName=Root}"/>
 
         </StackPanel>
 

@@ -1,6 +1,7 @@
 ﻿<UserControl x:Class="PurchaseTicket.Desktop.Views.Settings.SettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions"
              xmlns:layout="clr-namespace:PurchaseTicket.Desktop.Components.Layout"
              xmlns:settings="clr-namespace:PurchaseTicket.Desktop.Views.Settings">
 
@@ -41,33 +42,12 @@
                         </StackPanel>
 
                         <!-- Secundario: la accion principal de la pantalla es elegir el puerto -->
-                        <Button Grid.Column="1"
-                                Command="{Binding RefreshPortsCommand}"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Height="38"
-                                VerticalAlignment="Bottom">
-
-                            <StackPanel Orientation="Horizontal">
-
-                                <Path Data="{StaticResource RefreshIcon}"
-                                      Width="15"
-                                      Height="15"
-                                      Margin="0,0,8,0"
-                                      Stretch="Uniform"
-                                      Stroke="{StaticResource PrimaryTextBrush}"
-                                      StrokeThickness="2"
-                                      StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"
-                                      StrokeLineJoin="Round"
-                                      VerticalAlignment="Center"/>
-
-                                <TextBlock Text="Actualizar puertos"
-                                           FontWeight="SemiBold"
-                                           VerticalAlignment="Center"/>
-
-                            </StackPanel>
-
-                        </Button>
+                        <actions:ActionButton Grid.Column="1"
+                                              Text="Actualizar puertos"
+                                              Icon="{StaticResource RefreshIcon}"
+                                              Variant="Secondary"
+                                              Command="{Binding RefreshPortsCommand}"
+                                              VerticalAlignment="Bottom"/>
 
                     </Grid>
 
@@ -138,31 +118,12 @@
                                            TextWrapping="Wrap"
                                            Margin="0,8,0,0"/>
 
-                                <Button Command="{Binding EditHeaderCommand}"
-                                        Style="{StaticResource OutlinePrimaryButtonStyle}"
-                                        HorizontalAlignment="Left"
-                                        Margin="0,16,0,0">
-
-                                    <StackPanel Orientation="Horizontal">
-
-                                        <Path Data="{StaticResource EditIcon}"
-                                              Width="15"
-                                              Height="15"
-                                              Margin="0,0,8,0"
-                                              Stretch="Uniform"
-                                              Stroke="{StaticResource EcoBlueDarkBrush}"
-                                              StrokeThickness="2"
-                                              StrokeStartLineCap="Round"
-                                              StrokeEndLineCap="Round"
-                                              StrokeLineJoin="Round"
-                                              VerticalAlignment="Center"/>
-
-                                        <TextBlock Text="Editar encabezado"
-                                                   VerticalAlignment="Center"/>
-
-                                    </StackPanel>
-
-                                </Button>
+                                <actions:ActionButton Text="Editar encabezado"
+                                                      Icon="{StaticResource EditIcon}"
+                                                      Variant="Secondary"
+                                                      Command="{Binding EditHeaderCommand}"
+                                                      HorizontalAlignment="Left"
+                                                      Margin="0,16,0,0"/>
 
                             </StackPanel>
 

@@ -1,23 +1,22 @@
 ﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Forms.FormActions"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions"
              x:Name="Root">
 
     <!-- Acciones reutilizables del formulario -->
     <StackPanel Orientation="Horizontal"
                 HorizontalAlignment="Right">
 
-        <!-- Cancelar operacion -->
-        <Button Content="Cancelar"
-                Command="{Binding CancelCommand, ElementName=Root}"
-                IsCancel="True"
-                Width="110"
-                Height="38"
-                Margin="0,0,10,0">
+        <!-- Cancelar operacion con Esc -->
+        <actions:ActionButton Text="Cancelar"
+                              Variant="Simple"
+                              Command="{Binding CancelCommand, ElementName=Root}"
+                              IsCancel="True"
+                              Margin="0,0,10,0">
 
-            <Button.Style>
-                <Style TargetType="Button"
-                       BasedOn="{StaticResource SecondaryButtonStyle}">
+            <actions:ActionButton.Style>
+                <Style TargetType="actions:ActionButton">
 
                     <Style.Triggers>
 
@@ -33,17 +32,18 @@
                     </Style.Triggers>
 
                 </Style>
-            </Button.Style>
+            </actions:ActionButton.Style>
 
-        </Button>
+        </actions:ActionButton>
 
-        <!-- Guardar formulario -->
-        <Button Content="{Binding SaveButtonText, ElementName=Root}"
-                Command="{Binding SaveCommand, ElementName=Root}"
-                IsDefault="True"
-                Style="{StaticResource PrimaryButtonStyle}"
-                Width="140"
-                Height="38"/>
+        <!-- Guardar formulario con Enter; sin icono propio usa el de guardar -->
+        <actions:ActionButton Text="{Binding SaveButtonText, ElementName=Root}"
+                              Icon="{Binding SaveButtonIcon,
+                                             ElementName=Root,
+                                             TargetNullValue={StaticResource SaveIcon}}"
+                              Variant="Primary"
+                              Command="{Binding SaveCommand, ElementName=Root}"
+                              IsDefault="True"/>
 
     </StackPanel>
 

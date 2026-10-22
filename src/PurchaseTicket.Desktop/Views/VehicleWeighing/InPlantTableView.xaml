@@ -99,34 +99,14 @@
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Center">
 
-                            <Button Command="{Binding DataContext.RegisterTareCommand,
-                                                      RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                    CommandParameter="{Binding}"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    Height="34"
-                                    Padding="12,0"
-                                    Margin="0,0,8,0">
-
-                                <StackPanel Orientation="Horizontal">
-
-                                    <Path Data="{StaticResource ScaleIcon}"
-                                          Width="15"
-                                          Height="15"
-                                          Margin="0,0,6,0"
-                                          Stretch="Uniform"
-                                          Stroke="White"
-                                          StrokeThickness="2"
-                                          StrokeStartLineCap="Round"
-                                          StrokeEndLineCap="Round"
-                                          StrokeLineJoin="Round"
-                                          VerticalAlignment="Center"/>
-
-                                    <TextBlock Text="Registrar tara"
-                                               VerticalAlignment="Center"/>
-
-                                </StackPanel>
-
-                            </Button>
+                            <actions:ActionButton Text="Registrar tara"
+                                                  Icon="{StaticResource ScaleIcon}"
+                                                  Variant="Primary"
+                                                  IsCompact="True"
+                                                  Command="{Binding DataContext.RegisterTareCommand,
+                                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                  CommandParameter="{Binding}"
+                                                  Margin="0,0,8,0"/>
 
                             <!-- Editar ticket -->
                             <actions:RowActionButton Icon="{StaticResource EditIcon}"

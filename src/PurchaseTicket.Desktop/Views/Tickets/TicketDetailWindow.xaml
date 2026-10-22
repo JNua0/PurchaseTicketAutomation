@@ -1,6 +1,7 @@
 ﻿<Window x:Class="PurchaseTicket.Desktop.Views.Tickets.TicketDetailWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions"
         xmlns:forms="clr-namespace:PurchaseTicket.Desktop.Components.Forms"
         xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
         Title="Detalle del ticket"
@@ -342,14 +343,11 @@
              con el rojo de Cancelar ticket. Las operaciones van a la derecha -->
         <forms:DialogLayout.FooterContent>
 
-            <Button Content="Cerrar"
-                    Command="{Binding CloseCommand,
-                                      RelativeSource={RelativeSource AncestorType=Window}}"
-                    Style="{StaticResource OutlinePrimaryButtonStyle}"
-                    BorderBrush="{StaticResource SecondaryTextBrush}"
-                    Foreground="{StaticResource SecondaryTextBrush}"
-                    HorizontalAlignment="Left"
-                    MinWidth="110"/>
+            <actions:ActionButton Text="Cerrar"
+                                  Variant="Simple"
+                                  Command="{Binding CloseCommand,
+                                                    RelativeSource={RelativeSource AncestorType=Window}}"
+                                  HorizontalAlignment="Left"/>
 
         </forms:DialogLayout.FooterContent>
 
@@ -357,61 +355,31 @@
 
             <StackPanel Orientation="Horizontal">
 
-                <!-- Solo pendientes de pesaje o de importe; contorno rojo -->
-                <Button Command="{Binding CancelTicketCommand}"
-                        Style="{StaticResource OutlinePrimaryButtonStyle}"
-                        BorderBrush="{StaticResource ErrorBrush}"
-                        Margin="0,0,10,0"
-                        Visibility="{Binding CanCancel,
-                                             Converter={StaticResource BoolToVisibility}}">
+                <!-- Solo pendientes de pesaje o de importe -->
+                <actions:ActionButton Text="Cancelar ticket"
+                                      Icon="{StaticResource DeactivateIcon}"
+                                      Variant="Danger"
+                                      Command="{Binding CancelTicketCommand}"
+                                      Margin="0,0,10,0"
+                                      Visibility="{Binding CanCancel,
+                                                           Converter={StaticResource BoolToVisibility}}"/>
 
-                    <StackPanel Orientation="Horizontal">
+                <!-- Todos menos los cancelados; imprime solo el pesaje -->
+                <actions:ActionButton Text="Reimprimir"
+                                      Icon="{StaticResource PrintIcon}"
+                                      Variant="Secondary"
+                                      Command="{Binding ReprintCommand}"
+                                      Visibility="{Binding CanReprint,
+                                                           Converter={StaticResource BoolToVisibility}}"/>
 
-                        <Path Data="{StaticResource DeactivateIcon}"
-                              Width="15"
-                              Height="15"
-                              Margin="0,0,8,0"
-                              Stretch="Uniform"
-                              Stroke="{StaticResource ErrorBrush}"
-                              StrokeThickness="2"
-                              StrokeStartLineCap="Round"
-                              StrokeEndLineCap="Round"
-                              VerticalAlignment="Center"/>
-
-                        <TextBlock Text="Cancelar ticket"
-                                   Foreground="{StaticResource ErrorBrush}"
-                                   VerticalAlignment="Center"/>
-
-                    </StackPanel>
-
-                </Button>
-
-                <!-- Todos menos los cancelados; imprime solo el pesaje. Contorno azul -->
-                <Button Command="{Binding ReprintCommand}"
-                        Style="{StaticResource OutlinePrimaryButtonStyle}"
-                        Visibility="{Binding CanReprint,
-                                             Converter={StaticResource BoolToVisibility}}">
-
-                    <StackPanel Orientation="Horizontal">
-
-                        <Path Data="{StaticResource PrintIcon}"
-                              Width="15"
-                              Height="15"
-                              Margin="0,0,8,0"
-                              Stretch="Uniform"
-                              Stroke="{StaticResource EcoBlueDarkBrush}"
-                              StrokeThickness="1.8"
-                              StrokeStartLineCap="Round"
-                              StrokeEndLineCap="Round"
-                              StrokeLineJoin="Round"
-                              VerticalAlignment="Center"/>
-
-                        <TextBlock Text="Reimprimir"
-                                   VerticalAlignment="Center"/>
-
-                    </StackPanel>
-
-                </Button>
+                <!-- Accion principal: todos menos los cancelados -->
+                <actions:ActionButton Text="Corregir"
+                                      Icon="{StaticResource EditIcon}"
+                                      Variant="Primary"
+                                      Command="{Binding CorrectCommand}"
+                                      Margin="10,0,0,0"
+                                      Visibility="{Binding CanCorrect,
+                                                           Converter={StaticResource BoolToVisibility}}"/>
 
             </StackPanel>
 

@@ -1,39 +1,10 @@
 ﻿<UserControl x:Class="PurchaseTicket.Desktop.Components.Forms.WeightCaptureField"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions"
              xmlns:forms="clr-namespace:PurchaseTicket.Desktop.Components.Forms"
              xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
              x:Name="Root">
-
-    <UserControl.Resources>
-
-        <!-- Contenido compartido por los dos botones de lectura. El icono toma
-             el color del texto del boton, blanco o azul segun su estilo -->
-        <DataTemplate x:Key="ReadButtonContent">
-
-            <StackPanel Orientation="Horizontal">
-
-                <Path Data="{StaticResource RefreshIcon}"
-                      Width="15"
-                      Height="15"
-                      Margin="0,0,8,0"
-                      Stretch="Uniform"
-                      Stroke="{Binding Foreground,
-                                       RelativeSource={RelativeSource AncestorType=Button}}"
-                      StrokeThickness="2"
-                      StrokeStartLineCap="Round"
-                      StrokeEndLineCap="Round"
-                      StrokeLineJoin="Round"
-                      VerticalAlignment="Center"/>
-
-                <TextBlock Text="{Binding}"
-                           VerticalAlignment="Center"/>
-
-            </StackPanel>
-
-        </DataTemplate>
-
-    </UserControl.Resources>
 
     <!-- Captura de un peso: lectura del indicador o captura manual en un solo control.
          El estado y sus textos los decide WeightCaptureViewModel; aqui solo se muestran -->
@@ -192,22 +163,22 @@
                                                  Converter={StaticResource BoolToVisibility}}"/>
 
                     <!-- Sin peso: la lectura es el siguiente paso, boton relleno -->
-                    <Button Content="{Binding Capture.ReadButtonText, ElementName=Root}"
-                            ContentTemplate="{StaticResource ReadButtonContent}"
-                            Command="{Binding Capture.ReadCommand, ElementName=Root}"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Visibility="{Binding Capture.IsReadPrimary,
-                                                 ElementName=Root,
-                                                 Converter={StaticResource BoolToVisibility}}"/>
+                    <actions:ActionButton Text="{Binding Capture.ReadButtonText, ElementName=Root}"
+                                          Icon="{StaticResource RefreshIcon}"
+                                          Variant="Primary"
+                                          Command="{Binding Capture.ReadCommand, ElementName=Root}"
+                                          Visibility="{Binding Capture.IsReadPrimary,
+                                                               ElementName=Root,
+                                                               Converter={StaticResource BoolToVisibility}}"/>
 
                     <!-- Con peso: leer de nuevo es opcional, boton de contorno -->
-                    <Button Content="{Binding Capture.ReadButtonText, ElementName=Root}"
-                            ContentTemplate="{StaticResource ReadButtonContent}"
-                            Command="{Binding Capture.ReadCommand, ElementName=Root}"
-                            Style="{StaticResource OutlinePrimaryButtonStyle}"
-                            Visibility="{Binding Capture.IsReadSecondary,
-                                                 ElementName=Root,
-                                                 Converter={StaticResource BoolToVisibility}}"/>
+                    <actions:ActionButton Text="{Binding Capture.ReadButtonText, ElementName=Root}"
+                                          Icon="{StaticResource RefreshIcon}"
+                                          Variant="Secondary"
+                                          Command="{Binding Capture.ReadCommand, ElementName=Root}"
+                                          Visibility="{Binding Capture.IsReadSecondary,
+                                                               ElementName=Root,
+                                                               Converter={StaticResource BoolToVisibility}}"/>
 
                 </StackPanel>
 

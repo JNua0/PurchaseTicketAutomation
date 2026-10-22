@@ -1,0 +1,267 @@
+﻿<Window x:Class="PurchaseTicket.Desktop.Views.Tickets.CorrectTicketWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:forms="clr-namespace:PurchaseTicket.Desktop.Components.Forms"
+        xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
+        Title="Corregir ticket"
+        Width="760"
+        SizeToContent="Height"
+        MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource ContentBrush}"
+        Closing="Window_Closing">
+
+    <Window.Resources>
+
+        <!-- "Sin cambio" o "Antes 5,000" debajo de un campo -->
+        <Style x:Key="ChangeHintStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="12"/>
+            <Setter Property="Margin"
+                    Value="0,4,0,0"/>
+            <!-- Lo que cambio se resalta en ambar; "Sin cambio" queda en gris -->
+            <Setter Property="Foreground"
+                    Value="{StaticResource WarningTextBrush}"/>
+            <Style.Triggers>
+                <Trigger Property="Text"
+                         Value="Sin cambio">
+                    <Setter Property="Foreground"
+                            Value="{StaticResource SecondaryTextBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Cada campo de peso o precio: mismo ancho, en una sola fila -->
+        <Style x:Key="WeightFieldStyle"
+               TargetType="StackPanel">
+            <Setter Property="Width"
+                    Value="150"/>
+            <Setter Property="Margin"
+                    Value="0,0,16,0"/>
+        </Style>
+
+    </Window.Resources>
+
+    <forms:DialogLayout Title="Corregir ticket"
+                        Description="{Binding Description}">
+
+        <forms:DialogLayout.HeaderContent>
+
+            <feedback:StatusBadge Text="{Binding StatusText}"
+                                  Kind="{Binding StatusKind}"/>
+
+        </forms:DialogLayout.HeaderContent>
+
+        <forms:DialogLayout.BodyContent>
+
+            <StackPanel>
+
+                <!-- Que se puede corregir en este estado -->
+                <Border Padding="14,10"
+                        CornerRadius="8"
+                        Background="{StaticResource InfoSoftBrush}">
+
+                    <TextBlock Text="{Binding ScopeNote}"
+                               FontSize="13"
+                               TextWrapping="Wrap"
+                               Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                </Border>
+
+                <!-- Campos bloqueados mientras se guarda -->
+                <StackPanel>
+
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSaving}"
+                                             Value="True">
+                                    <Setter Property="IsEnabled"
+                                            Value="False"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <!-- Datos de la operacion: no en un convencional pendiente de importe -->
+                    <StackPanel Visibility="{Binding CanEditGeneral,
+                                                     Converter={StaticResource BoolToVisibility}}">
+
+                        <TextBlock Text="OPERACIÓN"
+                                   Style="{StaticResource FormSectionTitleStyle}"/>
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="14"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <forms:FormComboField Grid.Row="0"
+                                                  Grid.Column="0"
+                                                  Label="Proveedor"
+                                                  IsRequired="True"
+                                                  Placeholder="Selecciona un proveedor"
+                                                  ItemsSource="{Binding Suppliers}"
+                                                  DisplayMemberPath="Name"
+                                                  SelectedValuePath="Id"
+                                                  SelectedValue="{Binding SelectedSupplierId, Mode=TwoWay}"/>
+
+                            <forms:FormComboField Grid.Row="0"
+                                                  Grid.Column="2"
+                                                  Label="Material"
+                                                  IsRequired="True"
+                                                  Placeholder="Selecciona un material"
+                                                  ItemsSource="{Binding Materials}"
+                                                  DisplayMemberPath="Name"
+                                                  SelectedValuePath="Id"
+                                                  SelectedValue="{Binding SelectedMaterialId, Mode=TwoWay}"/>
+
+                            <forms:FormTextField Grid.Row="2"
+                                                 Grid.Column="0"
+                                                 Label="Placas"
+                                                 Text="{Binding LicensePlate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 CharacterCasing="Upper"
+                                                 MaxLength="7"/>
+
+                            <forms:FormTextField Grid.Row="2"
+                                                 Grid.Column="2"
+                                                 Label="Chofer"
+                                                 IsRequired="True"
+                                                 Text="{Binding Transporter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 MaxLength="50"/>
+
+                        </Grid>
+
+                    </StackPanel>
+
+                    <!-- Pesos, siempre a mano; descuento y precio solo en un completado -->
+                    <StackPanel Visibility="{Binding ShowsWeightsSection,
+                                                     Converter={StaticResource BoolToVisibility}}">
+
+                        <TextBlock Text="{Binding WeightsSectionTitle}"
+                                   Style="{StaticResource FormSectionTitleStyle}"/>
+
+                        <WrapPanel>
+
+                            <StackPanel Style="{StaticResource WeightFieldStyle}"
+                                        Visibility="{Binding CanEditGrossWeight,
+                                                             Converter={StaticResource BoolToVisibility}}">
+                                <forms:FormTextField Label="Peso bruto (kg)"
+                                                     IsRequired="True"
+                                                     Text="{Binding GrossWeightText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     MaxLength="9"/>
+                                <TextBlock Text="{Binding GrossWeightHint}"
+                                           Style="{StaticResource ChangeHintStyle}"/>
+                            </StackPanel>
+
+                            <StackPanel Style="{StaticResource WeightFieldStyle}"
+                                        Visibility="{Binding CanEditTareWeight,
+                                                             Converter={StaticResource BoolToVisibility}}">
+                                <forms:FormTextField Label="Tara (kg)"
+                                                     IsRequired="True"
+                                                     Text="{Binding TareWeightText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     MaxLength="9"/>
+                                <TextBlock Text="{Binding TareWeightHint}"
+                                           Style="{StaticResource ChangeHintStyle}"/>
+                            </StackPanel>
+
+                            <StackPanel Style="{StaticResource WeightFieldStyle}"
+                                        Visibility="{Binding CanEditNetWeight,
+                                                             Converter={StaticResource BoolToVisibility}}">
+                                <forms:FormTextField Label="Peso neto (kg)"
+                                                     IsRequired="True"
+                                                     Text="{Binding NetWeightText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     MaxLength="9"/>
+                                <TextBlock Text="{Binding NetWeightHint}"
+                                           Style="{StaticResource ChangeHintStyle}"/>
+                            </StackPanel>
+
+                            <StackPanel Style="{StaticResource WeightFieldStyle}"
+                                        Visibility="{Binding CanEditAmount,
+                                                             Converter={StaticResource BoolToVisibility}}">
+                                <forms:FormTextField Label="Descuento (%)"
+                                                     IsRequired="True"
+                                                     Text="{Binding DiscountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     MaxLength="2"/>
+                                <TextBlock Text="{Binding DiscountHint}"
+                                           Style="{StaticResource ChangeHintStyle}"/>
+                            </StackPanel>
+
+                            <StackPanel Style="{StaticResource WeightFieldStyle}"
+                                        Visibility="{Binding CanEditAmount,
+                                                             Converter={StaticResource BoolToVisibility}}">
+                                <forms:FormTextField Label="Precio por kg ($)"
+                                                     IsRequired="True"
+                                                     Text="{Binding PricePerKgText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     MaxLength="12"/>
+                                <TextBlock Text="{Binding PricePerKgHint}"
+                                           Style="{StaticResource ChangeHintStyle}"/>
+                            </StackPanel>
+
+                        </WrapPanel>
+
+                    </StackPanel>
+
+                    <!-- El calculo con los valores capturados, igual al que se guardara -->
+                    <StackPanel Margin="0,16,0,0"
+                                Visibility="{Binding ShowsBreakdown,
+                                                     Converter={StaticResource BoolToVisibility}}">
+
+                        <forms:CalculationBreakdown Steps="{Binding Breakdown}"
+                                                    IsVertical="True"/>
+
+                        <TextBlock Text="{Binding AmountComparison}"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource WarningTextBrush}"
+                                   HorizontalAlignment="Right"
+                                   Margin="0,8,0,0"
+                                   Visibility="{Binding ShowsAmountComparison,
+                                                        Converter={StaticResource BoolToVisibility}}"/>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+                <!-- Errores generales, como no haber cambiado nada -->
+                <feedback:QueryStatus Margin="0,14,0,0"
+                                      IsLoading="{Binding IsLoadingCatalogs}"
+                                      LoadingMessage="Cargando proveedores y materiales..."
+                                      ErrorMessage="{Binding ErrorMessage}"/>
+
+            </StackPanel>
+
+        </forms:DialogLayout.BodyContent>
+
+        <!-- RN-25 y RN-30: la correccion no cambia el estado ni reimprime -->
+        <forms:DialogLayout.FooterContent>
+
+            <TextBlock Text="El estado no cambia. Reimprime después si hace falta"
+                       FontSize="13"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource SecondaryTextBrush}"/>
+
+        </forms:DialogLayout.FooterContent>
+
+        <forms:DialogLayout.Actions>
+
+            <forms:FormActions SaveCommand="{Binding SaveCommand}"
+                               CancelCommand="{Binding CancelCommand,
+                                                       RelativeSource={RelativeSource AncestorType=Window}}"
+                               IsSaving="{Binding IsSaving}"/>
+
+        </forms:DialogLayout.Actions>
+
+    </forms:DialogLayout>
+
+</Window>

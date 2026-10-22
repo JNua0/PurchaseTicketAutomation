@@ -93,34 +93,14 @@
                                     HorizontalAlignment="Center">
 
                             <!-- Accion principal de la pantalla -->
-                            <Button Command="{Binding DataContext.RegisterAmountCommand,
-                                                      RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                    CommandParameter="{Binding}"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    Height="34"
-                                    Padding="12,0"
-                                    Margin="0,0,8,0">
-
-                                <StackPanel Orientation="Horizontal">
-
-                                    <Path Data="{StaticResource MoneyIcon}"
-                                          Width="15"
-                                          Height="15"
-                                          Margin="0,0,6,0"
-                                          Stretch="Uniform"
-                                          Stroke="White"
-                                          StrokeThickness="2"
-                                          StrokeStartLineCap="Round"
-                                          StrokeEndLineCap="Round"
-                                          StrokeLineJoin="Round"
-                                          VerticalAlignment="Center"/>
-
-                                    <TextBlock Text="Registrar importe"
-                                               VerticalAlignment="Center"/>
-
-                                </StackPanel>
-
-                            </Button>
+                            <actions:ActionButton Text="Registrar importe"
+                                                  Icon="{StaticResource MoneyIcon}"
+                                                  Variant="Primary"
+                                                  IsCompact="True"
+                                                  Command="{Binding DataContext.RegisterAmountCommand,
+                                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                  CommandParameter="{Binding}"
+                                                  Margin="0,0,8,0"/>
 
                             <!-- Cancelar ticket -->
                             <actions:RowActionButton Icon="{StaticResource DeactivateIcon}"

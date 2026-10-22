@@ -211,6 +211,13 @@
         M 7,14 H 17 V 21 H 7 Z
     </Geometry>
 
+    <!-- Disquete: guardar un formulario -->
+    <Geometry x:Key="SaveIcon">
+        M 5,3 H 16 L 19,6 V 21 H 5 Z
+        M 8,3 V 8 H 15 V 3
+        M 8,21 V 14 H 16 V 21
+    </Geometry>
+
     <!-- Bascula de dos platos: registrar un pesaje -->
     <Geometry x:Key="ScaleIcon">
         M 12,3 V 6
