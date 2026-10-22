@@ -153,6 +153,8 @@ public partial class App : System.Windows.Application
                 services.AddTransient<TicketsViewModel>();
                 services.AddTransient<TicketDetailViewModel>();
                 services.AddTransient<TicketDetailWindow>();
+                services.AddTransient<CorrectTicketViewModel>();
+                services.AddTransient<CorrectTicketWindow>();
                 services.AddTransient<ITicketsDialogService, TicketsDialogService>();
 
                 // Active catalogs

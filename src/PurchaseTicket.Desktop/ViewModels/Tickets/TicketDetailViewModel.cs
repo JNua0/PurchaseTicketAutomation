@@ -20,6 +20,8 @@ public sealed class TicketDetailViewModel : ObservableObject
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ITicketActionsService _ticketActions;
+    private readonly ITicketsDialogService _dialogs;
+    private readonly INotificationService _notifications;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<TicketDetailViewModel> _logger;
 
@@ -34,16 +36,21 @@ public sealed class TicketDetailViewModel : ObservableObject
     public TicketDetailViewModel(
         IServiceScopeFactory scopeFactory,
         ITicketActionsService ticketActions,
+        ITicketsDialogService dialogs,
+        INotificationService notifications,
         TimeProvider timeProvider,
         ILogger<TicketDetailViewModel> logger)
     {
         _scopeFactory = scopeFactory;
         _ticketActions = ticketActions;
+        _dialogs = dialogs;
+        _notifications = notifications;
         _timeProvider = timeProvider;
         _logger = logger;
 
         ReprintCommand = new AsyncRelayCommand(ReprintAsync, () => CanReprint && !IsBusy);
         CancelTicketCommand = new AsyncRelayCommand(CancelTicketAsync, () => CanCancel && !IsBusy);
+        CorrectCommand = new AsyncRelayCommand(CorrectAsync, () => CanCorrect && !IsBusy);
     }
 
     // Propiedades
@@ -134,6 +141,10 @@ public sealed class TicketDetailViewModel : ObservableObject
     public bool CanReprint =>
         _detail is not null && _detail.Status != TicketStatus.Cancelled;
 
+    // Cancelado no se corrige (RN-28); en el resto, la ventana decide que campos
+    public bool CanCorrect =>
+        _detail is not null && _detail.Status != TicketStatus.Cancelled;
+
     public bool CanCancel =>
         _detail is not null
         && _detail.Status is TicketStatus.WeighingPending or TicketStatus.AmountPending;
@@ -169,6 +180,8 @@ public sealed class TicketDetailViewModel : ObservableObject
     public AsyncRelayCommand ReprintCommand { get; }
 
     public AsyncRelayCommand CancelTicketCommand { get; }
+
+    public AsyncRelayCommand CorrectCommand { get; }
 
     // Metodos publicos
 
@@ -291,9 +304,22 @@ public sealed class TicketDetailViewModel : ObservableObject
         }
     }
 
+    // RN-30: la correccion no reimprime; el operador decide si reimprimir despues
+    private async Task CorrectAsync()
+    {
+        if (_detail is null || !_dialogs.ShowCorrectDialog(_detail))
+            return;
+
+        _notifications.ShowSuccess($"Ticket folio {_detail.TicketNumber} corregido.");
+
+        HasChanges = true;
+        await LoadAsync();
+    }
+
     private void NotifyCommands()
     {
         ReprintCommand?.NotifyCanExecuteChanged();
         CancelTicketCommand?.NotifyCanExecuteChanged();
+        CorrectCommand?.NotifyCanExecuteChanged();
     }
 }
