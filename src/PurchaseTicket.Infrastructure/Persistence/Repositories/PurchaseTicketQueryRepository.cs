@@ -175,4 +175,32 @@ public class PurchaseTicketQueryRepository
 
         return await query.SingleOrDefaultAsync();
     }
+
+    public async Task<IReadOnlyList<CatalogOption>> GetSuppliersInUseAsync()
+    {
+        return await _context.Suppliers
+            .AsNoTracking()
+            .Where(supplier => _context.PurchaseTickets
+                .Any(ticket => ticket.SupplierId == supplier.Id))
+            .OrderBy(supplier => supplier.Name)
+            .Select(supplier => new CatalogOption(
+                supplier.Id,
+                supplier.Name,
+                supplier.IsActive))
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<CatalogOption>> GetMaterialsInUseAsync()
+    {
+        return await _context.Materials
+            .AsNoTracking()
+            .Where(material => _context.PurchaseTickets
+                .Any(ticket => ticket.MaterialId == material.Id))
+            .OrderBy(material => material.Name)
+            .Select(material => new CatalogOption(
+                material.Id,
+                material.Name,
+                material.IsActive))
+            .ToListAsync();
+    }
 }

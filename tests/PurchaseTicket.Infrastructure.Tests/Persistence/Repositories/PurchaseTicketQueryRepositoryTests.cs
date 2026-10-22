@@ -252,4 +252,42 @@ public class PurchaseTicketQueryRepositoryTests : InfrastructureTestBase
         // Assert
         Assert.Null(detail);
     }
+
+    [Fact]
+    public async Task GetSuppliersAndMaterialsInUseAsync_ShouldIncludeInactiveWithTickets()
+    {
+        // Arrange: el seed crea tickets para Norte/Acero y Sur/Cobre
+        await SeedTicketsAsync();
+
+        var unused = new Supplier("Proveedor Sin Tickets");
+        var unusedMaterial = new Material("Vidrio");
+
+        Context.Suppliers.Add(unused);
+        Context.Materials.Add(unusedMaterial);
+
+        var south =
+            await Context.Suppliers.SingleAsync(s => s.Name == "Proveedor Sur");
+
+        south.Deactivate();
+
+        await Context.SaveChangesAsync();
+
+        var repository =
+            new PurchaseTicketQueryRepository(Context);
+
+        // Act
+        var suppliers = await repository.GetSuppliersInUseAsync();
+        var materials = await repository.GetMaterialsInUseAsync();
+
+        // Assert: sin los que no tienen tickets, ordenados y con su estado
+        Assert.Equal(
+            new[] { "Proveedor Norte", "Proveedor Sur" },
+            suppliers.Select(s => s.Name));
+
+        Assert.False(suppliers[1].IsActive);
+
+        Assert.Equal(
+            new[] { "Acero", "Cobre" },
+            materials.Select(m => m.Name));
+    }
 }

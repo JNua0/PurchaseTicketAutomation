@@ -57,6 +57,11 @@ public class GetPurchaseTicketsTests
 
         public Task<PurchaseTicketDetail?> GetDetailAsync(int id)
             => throw new NotImplementedException();
+        public Task<IReadOnlyList<CatalogOption>> GetSuppliersInUseAsync()
+            => throw new NotImplementedException();
+
+        public Task<IReadOnlyList<CatalogOption>> GetMaterialsInUseAsync()
+            => throw new NotImplementedException();
     }
 
     [Fact]
