@@ -7,6 +7,7 @@ using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Get;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.GetFilterOptions;
 using PurchaseTicket.Desktop.Commands;
+using PurchaseTicket.Desktop.Services;
 using PurchaseTicket.Desktop.ViewModels.Base;
 using PurchaseTicket.Domain.Enums;
 
@@ -22,6 +23,7 @@ public class TicketsViewModel : PagedListViewModel<TicketListItem>
     private static readonly FilterOption<int> AllSuppliers = new(null, "Todos");
     private static readonly FilterOption<int> AllMaterials = new(null, "Todos");
 
+    private readonly ITicketsDialogService _dialogs;
     private readonly TimeProvider _timeProvider;
 
     private FilterOption<TicketPeriod> _selectedPeriod;
@@ -47,10 +49,12 @@ public class TicketsViewModel : PagedListViewModel<TicketListItem>
 
     public TicketsViewModel(
         IServiceScopeFactory scopeFactory,
+        ITicketsDialogService dialogs,
         TimeProvider timeProvider,
         ILogger<TicketsViewModel> logger)
         : base(scopeFactory, logger)
     {
+        _dialogs = dialogs;
         _timeProvider = timeProvider;
 
         _selectedPeriod = PeriodOptions[0];
@@ -66,6 +70,10 @@ public class TicketsViewModel : PagedListViewModel<TicketListItem>
 
         RemoveFilterCommand = new AsyncRelayCommand<ActiveFilter>(
             RemoveFilterAsync,
+            _ => CanInteract());
+
+        OpenDetailCommand = new AsyncRelayCommand<TicketListItem>(
+            OpenDetailAsync,
             _ => CanInteract());
     }
 
@@ -220,6 +228,9 @@ public class TicketsViewModel : PagedListViewModel<TicketListItem>
     // La × de una etiqueta
     public AsyncRelayCommand<ActiveFilter> RemoveFilterCommand { get; }
 
+    // Boton "Ver detalle" o doble clic en la fila
+    public AsyncRelayCommand<TicketListItem> OpenDetailCommand { get; }
+
     // Propiedades protegidas
 
     protected override bool HasExtraFilters => HasActiveFilters;
@@ -283,6 +294,7 @@ public class TicketsViewModel : PagedListViewModel<TicketListItem>
 
         ClearFiltersCommand?.NotifyCanExecuteChanged();
         RemoveFilterCommand?.NotifyCanExecuteChanged();
+        OpenDetailCommand?.NotifyCanExecuteChanged();
     }
 
     // Metodos privados
@@ -463,6 +475,17 @@ public class TicketsViewModel : PagedListViewModel<TicketListItem>
             // Sin opciones la lista sigue funcionando, solo sin esos dos filtros
             Logger.LogError(ex, "No fue posible cargar las opciones de los filtros de tickets.");
         }
+    }
+
+    private async Task OpenDetailAsync(TicketListItem ticket)
+    {
+        if (!_dialogs.ShowDetailDialog(ticket.Id))
+            return;
+
+        // Por ejemplo, se cancelo desde el detalle: la fila debe mostrarlo
+        await ReloadAfterActionAsync(
+            CurrentPage,
+            "No fue posible actualizar el listado.");
     }
 
     // Quitar una etiqueta es elegir "Todos" en ese filtro: el setter recarga

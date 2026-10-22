@@ -1,0 +1,422 @@
+﻿<Window x:Class="PurchaseTicket.Desktop.Views.Tickets.TicketDetailWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:forms="clr-namespace:PurchaseTicket.Desktop.Components.Forms"
+        xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
+        Title="Detalle del ticket"
+        Width="680"
+        SizeToContent="Height"
+        MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource ContentBrush}"
+        Closing="Window_Closing">
+
+    <Window.Resources>
+
+        <!-- Tarjeta de un bloque, igual que DetailList -->
+        <Style x:Key="DetailCardStyle"
+               TargetType="Border">
+            <Setter Property="Background"
+                    Value="{StaticResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource BorderBrushLight}"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="CornerRadius"
+                    Value="12"/>
+            <Setter Property="Padding"
+                    Value="18,12,18,0"/>
+        </Style>
+
+        <!-- El margen inferior separa las filas; el de la tarjeta compensa la ultima -->
+        <Style x:Key="DetailFieldStyle"
+               TargetType="StackPanel">
+            <Setter Property="Margin"
+                    Value="0,0,16,12"/>
+        </Style>
+
+        <Style x:Key="DetailLabelStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="12"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource SecondaryTextBrush}"/>
+        </Style>
+
+        <Style x:Key="DetailValueStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="14"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource PrimaryTextBrush}"/>
+            <Setter Property="TextTrimming"
+                    Value="CharacterEllipsis"/>
+            <Setter Property="Margin"
+                    Value="0,3,0,0"/>
+        </Style>
+
+        <!-- El peso neto, el dato que mas se consulta -->
+        <Style x:Key="DetailEmphasisValueStyle"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource DetailValueStyle}">
+            <Setter Property="FontSize"
+                    Value="16"/>
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+        </Style>
+
+        <Style x:Key="DetailSectionTitleStyle"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource FormSectionTitleStyle}">
+            <Setter Property="Margin"
+                    Value="0,16,0,8"/>
+        </Style>
+
+    </Window.Resources>
+
+    <forms:DialogLayout Title="{Binding Title}"
+                        Description="{Binding Description}">
+
+        <forms:DialogLayout.HeaderContent>
+
+            <feedback:StatusBadge Text="{Binding StatusText}"
+                                  Kind="{Binding StatusKind}"
+                                  Visibility="{Binding HasDetail,
+                                                       Converter={StaticResource BoolToVisibility}}"/>
+
+        </forms:DialogLayout.HeaderContent>
+
+        <forms:DialogLayout.BodyContent>
+
+            <StackPanel>
+
+                <!-- Carga y errores, como un ticket que ya no existe -->
+                <feedback:QueryStatus IsLoading="{Binding IsLoading}"
+                                      LoadingMessage="Cargando ticket..."
+                                      ErrorMessage="{Binding ErrorMessage}"/>
+
+                <StackPanel Visibility="{Binding HasDetail,
+                                                 Converter={StaticResource BoolToVisibility}}">
+
+                <!-- Operacion: el proveedor a doble ancho, porque suele ser largo -->
+                <TextBlock Text="OPERACIÓN"
+                           Style="{StaticResource DetailSectionTitleStyle}"
+                           Margin="0,0,0,8"/>
+
+                <Border Style="{StaticResource DetailCardStyle}">
+                    <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="2"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Proveedor"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding SupplierName}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="2"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Material"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding MaterialName}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1"
+                                Grid.Column="0"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Modalidad"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding WeighingTypeText}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1"
+                                Grid.Column="1"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Placas"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding LicensePlateText}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1"
+                                Grid.Column="2"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Chofer"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding Transporter}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Pesaje: los pesos arriba, que es lo que mas se consulta -->
+                <TextBlock Text="PESAJE"
+                           Style="{StaticResource DetailSectionTitleStyle}"/>
+
+                <Border Style="{StaticResource DetailCardStyle}"
+                    Visibility="{Binding IsConventional, Converter={StaticResource BoolToVisibility}}">
+                    <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="0"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Peso bruto"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding GrossWeightText}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="1"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Tara"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding TareWeightText}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="2"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Peso neto"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding NetWeightText}"
+                                   Style="{StaticResource DetailEmphasisValueStyle}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1"
+                                Grid.Column="0"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Entrada"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding CheckInText}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="2"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Salida"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding DepartureText}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource DetailCardStyle}"
+                    Visibility="{Binding IsSingle, Converter={StaticResource BoolToVisibility}}">
+                    <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="0"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Pesaje"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding CheckInText}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="2"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Peso neto"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding NetWeightText}"
+                                   Style="{StaticResource DetailEmphasisValueStyle}"/>
+                    </StackPanel>
+                    </Grid>
+                </Border>
+
+                <TextBlock Text="IMPORTE"
+                           Style="{StaticResource DetailSectionTitleStyle}"/>
+
+                <Border Style="{StaticResource DetailCardStyle}"
+                    Visibility="{Binding HasAmount, Converter={StaticResource BoolToVisibility}}">
+                    <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="0"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Descuento"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding DiscountText}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="1"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Peso neto total"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding NetWeightAfterDiscountText}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="2"
+                                Style="{StaticResource DetailFieldStyle}">
+                        <TextBlock Text="Precio por kg"
+                                   Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding PricePerKgText}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Sin importe: un aviso en lugar de una tarjeta vacia -->
+                <TextBlock Text="{Binding AmountPendingText}"
+                           FontSize="14"
+                           Foreground="{StaticResource SecondaryTextBrush}">
+
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasAmount}"
+                                             Value="True">
+                                    <Setter Property="Visibility"
+                                            Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+
+                </TextBlock>
+
+                <!-- Importe destacado, solo en los completados -->
+                <Border Margin="0,12,0,0"
+                        Padding="18,10"
+                        CornerRadius="12"
+                        Background="{StaticResource InfoSoftBrush}"
+                        Visibility="{Binding HasAmount,
+                                             Converter={StaticResource BoolToVisibility}}">
+
+                    <Grid>
+
+                        <TextBlock Text="Importe"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource InfoBrush}"
+                                   VerticalAlignment="Center"/>
+
+                        <TextBlock Text="{Binding AmountText}"
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource InfoBrush}"
+                                   HorizontalAlignment="Right"/>
+
+                    </Grid>
+
+                </Border>
+
+                </StackPanel>
+
+            </StackPanel>
+
+        </forms:DialogLayout.BodyContent>
+
+        <!-- Cerrar a la izquierda, con contorno gris: se distingue sin competir
+             con el rojo de Cancelar ticket. Las operaciones van a la derecha -->
+        <forms:DialogLayout.FooterContent>
+
+            <Button Content="Cerrar"
+                    Command="{Binding CloseCommand,
+                                      RelativeSource={RelativeSource AncestorType=Window}}"
+                    Style="{StaticResource OutlinePrimaryButtonStyle}"
+                    BorderBrush="{StaticResource SecondaryTextBrush}"
+                    Foreground="{StaticResource SecondaryTextBrush}"
+                    HorizontalAlignment="Left"
+                    MinWidth="110"/>
+
+        </forms:DialogLayout.FooterContent>
+
+        <forms:DialogLayout.Actions>
+
+            <StackPanel Orientation="Horizontal">
+
+                <!-- Solo pendientes de pesaje o de importe; contorno rojo -->
+                <Button Command="{Binding CancelTicketCommand}"
+                        Style="{StaticResource OutlinePrimaryButtonStyle}"
+                        BorderBrush="{StaticResource ErrorBrush}"
+                        Margin="0,0,10,0"
+                        Visibility="{Binding CanCancel,
+                                             Converter={StaticResource BoolToVisibility}}">
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <Path Data="{StaticResource DeactivateIcon}"
+                              Width="15"
+                              Height="15"
+                              Margin="0,0,8,0"
+                              Stretch="Uniform"
+                              Stroke="{StaticResource ErrorBrush}"
+                              StrokeThickness="2"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"
+                              VerticalAlignment="Center"/>
+
+                        <TextBlock Text="Cancelar ticket"
+                                   Foreground="{StaticResource ErrorBrush}"
+                                   VerticalAlignment="Center"/>
+
+                    </StackPanel>
+
+                </Button>
+
+                <!-- Todos menos los cancelados; imprime solo el pesaje. Contorno azul -->
+                <Button Command="{Binding ReprintCommand}"
+                        Style="{StaticResource OutlinePrimaryButtonStyle}"
+                        Visibility="{Binding CanReprint,
+                                             Converter={StaticResource BoolToVisibility}}">
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <Path Data="{StaticResource PrintIcon}"
+                              Width="15"
+                              Height="15"
+                              Margin="0,0,8,0"
+                              Stretch="Uniform"
+                              Stroke="{StaticResource EcoBlueDarkBrush}"
+                              StrokeThickness="1.8"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"
+                              StrokeLineJoin="Round"
+                              VerticalAlignment="Center"/>
+
+                        <TextBlock Text="Reimprimir"
+                                   VerticalAlignment="Center"/>
+
+                    </StackPanel>
+
+                </Button>
+
+            </StackPanel>
+
+        </forms:DialogLayout.Actions>
+
+    </forms:DialogLayout>
+
+</Window>

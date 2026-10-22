@@ -44,6 +44,7 @@ using PurchaseTicket.Desktop.Views.Amounts;
 using PurchaseTicket.Desktop.Views.Materials;
 using PurchaseTicket.Desktop.Views.Settings;
 using PurchaseTicket.Desktop.Views.Suppliers;
+using PurchaseTicket.Desktop.Views.Tickets;
 using PurchaseTicket.Desktop.Views.VehicleWeighing;
 using PurchaseTicket.Infrastructure.Communication.Serial;
 using PurchaseTicket.Infrastructure.Persistence;
@@ -150,6 +151,9 @@ public partial class App : System.Windows.Application
 
                 // Tickets
                 services.AddTransient<TicketsViewModel>();
+                services.AddTransient<TicketDetailViewModel>();
+                services.AddTransient<TicketDetailWindow>();
+                services.AddTransient<ITicketsDialogService, TicketsDialogService>();
 
                 // Active catalogs
                 services.AddScoped<GetActiveSuppliers>();

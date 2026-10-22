@@ -9,6 +9,27 @@
               ItemsSource="{Binding Items}"
               SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
 
+        <!-- Doble clic o Enter sobre la fila seleccionada abren su detalle -->
+        <DataGrid.InputBindings>
+            <MouseBinding Gesture="LeftDoubleClick"
+                          Command="{Binding OpenDetailCommand}"
+                          CommandParameter="{Binding SelectedItem,
+                                                     RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+            <KeyBinding Key="Enter"
+                        Command="{Binding OpenDetailCommand}"
+                        CommandParameter="{Binding SelectedItem,
+                                                   RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+        </DataGrid.InputBindings>
+
+        <!-- Sin boton por fila: el aviso dice como abrir el detalle -->
+        <DataGrid.RowStyle>
+            <Style TargetType="DataGridRow"
+                   BasedOn="{StaticResource AppDataGridRowStyle}">
+                <Setter Property="ToolTip"
+                        Value="Doble clic para ver el detalle"/>
+            </Style>
+        </DataGrid.RowStyle>
+
         <DataGrid.Columns>
 
             <!-- Folio -->
