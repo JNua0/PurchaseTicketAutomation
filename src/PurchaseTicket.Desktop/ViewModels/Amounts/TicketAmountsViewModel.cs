@@ -17,6 +17,7 @@ public class TicketAmountsViewModel : PagedListViewModel<AmountListItem>
 {
     // Campos
 
+    private readonly IAmountDialogService _amountDialogService;
     private readonly INotificationService _notifications;
     private readonly IConfirmationDialogService _confirmationDialogService;
     private readonly TimeProvider _timeProvider;
@@ -26,15 +27,21 @@ public class TicketAmountsViewModel : PagedListViewModel<AmountListItem>
 
     public TicketAmountsViewModel(
         IServiceScopeFactory scopeFactory,
+        IAmountDialogService amountDialogService,
         INotificationService notifications,
         IConfirmationDialogService confirmationDialogService,
         TimeProvider timeProvider,
         ILogger<TicketAmountsViewModel> logger)
         : base(scopeFactory, logger)
     {
+        _amountDialogService = amountDialogService;
         _notifications = notifications;
         _confirmationDialogService = confirmationDialogService;
         _timeProvider = timeProvider;
+
+        RegisterAmountCommand = new AsyncRelayCommand<AmountListItem>(
+            RegisterAmountAsync,
+            CanActOn);
 
         CancelTicketCommand = new AsyncRelayCommand<AmountListItem>(
             CancelTicketAsync,
@@ -63,6 +70,8 @@ public class TicketAmountsViewModel : PagedListViewModel<AmountListItem>
             : $"{PendingCount} pendientes de importe";
 
     // Comandos
+
+    public AsyncRelayCommand<AmountListItem> RegisterAmountCommand { get; }
 
     public AsyncRelayCommand<AmountListItem> CancelTicketCommand { get; }
 
@@ -120,6 +129,7 @@ public class TicketAmountsViewModel : PagedListViewModel<AmountListItem>
     {
         base.NotifyCommandsCanExecuteChanged();
 
+        RegisterAmountCommand?.NotifyCanExecuteChanged();
         CancelTicketCommand?.NotifyCanExecuteChanged();
     }
 
@@ -141,6 +151,25 @@ public class TicketAmountsViewModel : PagedListViewModel<AmountListItem>
     private bool CanActOn(AmountListItem ticket)
     {
         return ticket is not null && CanInteract();
+    }
+
+    private async Task RegisterAmountAsync(AmountListItem ticket)
+    {
+        var registration =
+            _amountDialogService.ShowRegisterAmountDialog(ticket);
+
+        if (registration is null)
+            return;
+
+        _notifications.ShowSuccess(
+            $"Importe registrado en el folio {registration.TicketNumber}: " +
+            $"${registration.Amount:N2}. El ticket quedó completado.");
+
+        // El ticket sale de la lista: ya no esta pendiente de importe
+        await ReloadAfterActionAsync(
+            CurrentPage,
+            "El importe se registró correctamente, " +
+            "pero no fue posible actualizar el listado.");
     }
 
     // Mismo flujo que en Pesaje. Si la pantalla Tickets lo necesita tambien,

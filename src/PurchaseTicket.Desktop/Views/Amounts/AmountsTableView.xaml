@@ -82,8 +82,8 @@
             <!-- Acciones: sin reimpresion, el ticket solo imprime pesos -->
             <DataGridTemplateColumn Header="Acciones"
                                     HeaderStyle="{StaticResource CenteredColumnHeaderStyle}"
-                                    Width="120"
-                                    MinWidth="120"
+                                    Width="230"
+                                    MinWidth="230"
                                     CanUserResize="False">
 
                 <DataGridTemplateColumn.CellTemplate>
@@ -91,6 +91,36 @@
 
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Center">
+
+                            <!-- Accion principal de la pantalla -->
+                            <Button Command="{Binding DataContext.RegisterAmountCommand,
+                                                      RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Height="34"
+                                    Padding="12,0"
+                                    Margin="0,0,8,0">
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <Path Data="{StaticResource MoneyIcon}"
+                                          Width="15"
+                                          Height="15"
+                                          Margin="0,0,6,0"
+                                          Stretch="Uniform"
+                                          Stroke="White"
+                                          StrokeThickness="2"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round"
+                                          StrokeLineJoin="Round"
+                                          VerticalAlignment="Center"/>
+
+                                    <TextBlock Text="Registrar importe"
+                                               VerticalAlignment="Center"/>
+
+                                </StackPanel>
+
+                            </Button>
 
                             <!-- Cancelar ticket -->
                             <actions:RowActionButton Icon="{StaticResource DeactivateIcon}"

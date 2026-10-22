@@ -37,6 +37,7 @@ using PurchaseTicket.Desktop.ViewModels.Materials;
 using PurchaseTicket.Desktop.ViewModels.Settings;
 using PurchaseTicket.Desktop.ViewModels.Suppliers;
 using PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
+using PurchaseTicket.Desktop.Views.Amounts;
 using PurchaseTicket.Desktop.Views.Materials;
 using PurchaseTicket.Desktop.Views.Settings;
 using PurchaseTicket.Desktop.Views.Suppliers;
@@ -140,6 +141,9 @@ public partial class App : System.Windows.Application
 
                 // Importes de tickets
                 services.AddTransient<TicketAmountsViewModel>();
+                services.AddTransient<RegisterAmountViewModel>();
+                services.AddTransient<RegisterAmountWindow>();
+                services.AddTransient<IAmountDialogService, AmountDialogService>();
 
                 // Active catalogs
                 services.AddScoped<GetActiveSuppliers>();
