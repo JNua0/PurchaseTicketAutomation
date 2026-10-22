@@ -3,8 +3,134 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Name="Root">
 
-    <!-- Como se obtiene un resultado, paso a paso: bruto − tara = neto.
-         En Importes servira para neto − descuento = final × precio = importe -->
+    <!-- Como se obtiene un resultado, paso a paso. En una fila: bruto − tara = neto.
+         Vertical, con IsVertical, para calculos largos como el del importe -->
+    <UserControl.Resources>
+
+        <ItemsPanelTemplate x:Key="HorizontalPanel">
+            <UniformGrid Rows="1"/>
+        </ItemsPanelTemplate>
+
+        <ItemsPanelTemplate x:Key="VerticalPanel">
+            <StackPanel/>
+        </ItemsPanelTemplate>
+
+        <!-- Un paso por columna: etiqueta arriba y valor abajo -->
+        <DataTemplate x:Key="HorizontalStepTemplate">
+
+            <StackPanel VerticalAlignment="Bottom">
+
+                <TextBlock x:Name="StepLabel"
+                           Text="{Binding Label}"
+                           FontSize="12"
+                           Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                <TextBlock x:Name="StepValue"
+                           Text="{Binding Value}"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource PrimaryTextBrush}"
+                           Margin="0,3,0,0"/>
+
+            </StackPanel>
+
+            <!-- El resultado se ve mas grande y en azul -->
+            <DataTemplate.Triggers>
+
+                <DataTrigger Binding="{Binding IsResult}"
+                             Value="True">
+                    <Setter TargetName="StepLabel"
+                            Property="Foreground"
+                            Value="{StaticResource InfoBrush}"/>
+                    <Setter TargetName="StepLabel"
+                            Property="FontWeight"
+                            Value="SemiBold"/>
+                    <Setter TargetName="StepValue"
+                            Property="Foreground"
+                            Value="{StaticResource InfoBrush}"/>
+                    <Setter TargetName="StepValue"
+                            Property="FontSize"
+                            Value="22"/>
+                    <Setter TargetName="StepValue"
+                            Property="FontWeight"
+                            Value="Bold"/>
+                </DataTrigger>
+
+            </DataTemplate.Triggers>
+
+        </DataTemplate>
+
+        <!-- Un paso por renglon: etiqueta a la izquierda y valor a la derecha -->
+        <DataTemplate x:Key="VerticalStepTemplate">
+
+            <Border x:Name="StepRow"
+                    Padding="0,4"
+                    BorderBrush="{StaticResource BorderBrushLight}">
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="StepLabel"
+                               Grid.Column="0"
+                               Text="{Binding Label}"
+                               FontSize="14"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                    <TextBlock x:Name="StepValue"
+                               Grid.Column="1"
+                               Text="{Binding Value}"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Margin="16,0,0,0"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                </Grid>
+
+            </Border>
+
+            <!-- El resultado va separado por una linea, mas grande y en azul -->
+            <DataTemplate.Triggers>
+
+                <DataTrigger Binding="{Binding IsResult}"
+                             Value="True">
+                    <Setter TargetName="StepRow"
+                            Property="BorderThickness"
+                            Value="0,1,0,0"/>
+                    <Setter TargetName="StepRow"
+                            Property="Margin"
+                            Value="0,6,0,0"/>
+                    <Setter TargetName="StepRow"
+                            Property="Padding"
+                            Value="0,10,0,0"/>
+                    <Setter TargetName="StepLabel"
+                            Property="Foreground"
+                            Value="{StaticResource InfoBrush}"/>
+                    <Setter TargetName="StepLabel"
+                            Property="FontWeight"
+                            Value="SemiBold"/>
+                    <Setter TargetName="StepValue"
+                            Property="Foreground"
+                            Value="{StaticResource InfoBrush}"/>
+                    <Setter TargetName="StepValue"
+                            Property="FontSize"
+                            Value="26"/>
+                    <Setter TargetName="StepValue"
+                            Property="FontWeight"
+                            Value="Bold"/>
+                </DataTrigger>
+
+            </DataTemplate.Triggers>
+
+        </DataTemplate>
+
+    </UserControl.Resources>
+
     <Border Background="{StaticResource InfoSoftBrush}"
             CornerRadius="12"
             Padding="18,12">
@@ -12,57 +138,28 @@
         <ItemsControl ItemsSource="{Binding Steps, ElementName=Root}"
                       Focusable="False">
 
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <UniformGrid Rows="1"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
+            <ItemsControl.Style>
+                <Style TargetType="ItemsControl">
 
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
+                    <Setter Property="ItemsPanel"
+                            Value="{StaticResource HorizontalPanel}"/>
+                    <Setter Property="ItemTemplate"
+                            Value="{StaticResource HorizontalStepTemplate}"/>
 
-                    <StackPanel VerticalAlignment="Bottom">
+                    <Style.Triggers>
 
-                        <TextBlock x:Name="StepLabel"
-                                   Text="{Binding Label}"
-                                   FontSize="12"
-                                   Foreground="{StaticResource PrimaryTextBrush}"/>
-
-                        <TextBlock x:Name="StepValue"
-                                   Text="{Binding Value}"
-                                   FontSize="16"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource PrimaryTextBrush}"
-                                   Margin="0,3,0,0"/>
-
-                    </StackPanel>
-
-                    <!-- El resultado se ve mas grande y en azul -->
-                    <DataTemplate.Triggers>
-
-                        <DataTrigger Binding="{Binding IsResult}"
+                        <DataTrigger Binding="{Binding IsVertical, ElementName=Root}"
                                      Value="True">
-                            <Setter TargetName="StepLabel"
-                                    Property="Foreground"
-                                    Value="{StaticResource InfoBrush}"/>
-                            <Setter TargetName="StepLabel"
-                                    Property="FontWeight"
-                                    Value="SemiBold"/>
-                            <Setter TargetName="StepValue"
-                                    Property="Foreground"
-                                    Value="{StaticResource InfoBrush}"/>
-                            <Setter TargetName="StepValue"
-                                    Property="FontSize"
-                                    Value="22"/>
-                            <Setter TargetName="StepValue"
-                                    Property="FontWeight"
-                                    Value="Bold"/>
+                            <Setter Property="ItemsPanel"
+                                    Value="{StaticResource VerticalPanel}"/>
+                            <Setter Property="ItemTemplate"
+                                    Value="{StaticResource VerticalStepTemplate}"/>
                         </DataTrigger>
 
-                    </DataTemplate.Triggers>
+                    </Style.Triggers>
 
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
+                </Style>
+            </ItemsControl.Style>
 
         </ItemsControl>
 

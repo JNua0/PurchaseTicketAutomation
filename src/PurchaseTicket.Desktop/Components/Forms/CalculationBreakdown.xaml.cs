@@ -15,6 +15,14 @@ public partial class CalculationBreakdown : UserControl
             typeof(CalculationBreakdown),
             new PropertyMetadata(null));
 
+    // Un paso por renglon en lugar de una sola fila; para mas de tres pasos
+    public static readonly DependencyProperty IsVerticalProperty =
+        DependencyProperty.Register(
+            nameof(IsVertical),
+            typeof(bool),
+            typeof(CalculationBreakdown),
+            new PropertyMetadata(false));
+
     // Constructor
 
     public CalculationBreakdown()
@@ -29,5 +37,11 @@ public partial class CalculationBreakdown : UserControl
     {
         get => (IEnumerable?)GetValue(StepsProperty);
         set => SetValue(StepsProperty, value);
+    }
+
+    public bool IsVertical
+    {
+        get => (bool)GetValue(IsVerticalProperty);
+        set => SetValue(IsVerticalProperty, value);
     }
 }
