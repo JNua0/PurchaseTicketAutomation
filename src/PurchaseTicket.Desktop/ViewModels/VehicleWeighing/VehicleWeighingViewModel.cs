@@ -235,7 +235,7 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
             return;
 
         _notifications.ShowSuccess(
-            $"Ticket folio {ticket.TicketNumber} actualizado.");
+            $"Ticket folio {ticket.TicketNumber} corregido.");
 
         await ReloadAfterActionAsync(
             CurrentPage,
@@ -292,8 +292,8 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
             return;
 
         _notifications.ShowSuccess(
-            $"Tara registrada en el folio {registration.TicketNumber}. " +
-            $"Peso neto: {registration.NetWeight:N0} kg.");
+            $"Tara registrada en el folio {registration.TicketNumber}: " +
+            $"peso neto {registration.NetWeight:N0} kg.");
 
         if (registration.PrintWarning is not null)
         {
@@ -317,7 +317,7 @@ public class VehicleWeighingViewModel : PagedListViewModel<WeighingListItem>
             return;
 
         _notifications.ShowSuccess(
-            $"Pesaje registrado con folio {registration.TicketNumber}.");
+            $"Pesaje registrado en el folio {registration.TicketNumber}.");
 
         // El registro si se hizo: el problema de impresion va en un aviso
         // aparte que espera a que el operador lo lea y lo cierre

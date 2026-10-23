@@ -147,6 +147,9 @@ public class SupplierFormViewModel : ValidatableObject
 
     public AsyncRelayCommand SaveCommand { get; }
 
+    // Nombre con el que quedo guardado, ya normalizado; lo usa el aviso de la lista
+    public string SavedName { get; private set; } = string.Empty;
+
     // Propiedades privadas
 
     // El telefono es opcional: un campo vacio se envia como null
@@ -158,11 +161,11 @@ public class SupplierFormViewModel : ValidatableObject
     // Se compara ya normalizado: "aceros del norte" es el mismo nombre que
     // "Aceros Del Norte". Un valor que no cumple la regla cuenta como cambio
     private bool IsNameChanged =>
-        !TryNormalize(() => Supplier.NormalizeName(Name), out string? name)
+        !DomainRule.TryNormalize(() => Supplier.NormalizeName(Name), out string? name)
         || name != _originalName;
 
     private bool IsPhoneNumberChanged =>
-        !TryNormalize(() => Supplier.NormalizePhoneNumber(PhoneNumber), out string? phoneNumber)
+        !DomainRule.TryNormalize(() => Supplier.NormalizePhoneNumber(PhoneNumber), out string? phoneNumber)
         || phoneNumber != _originalPhoneNumber;
 
     // Metodos publicos
@@ -199,23 +202,6 @@ public class SupplierFormViewModel : ValidatableObject
     }
 
     // Metodos privados
-
-    // La regla del dominio sin lanzar excepcion: false si el valor no la cumple
-    private static bool TryNormalize(Func<string?> rule, out string? value)
-    {
-        try
-        {
-            value = rule();
-
-            return true;
-        }
-        catch (ArgumentException)
-        {
-            value = null;
-
-            return false;
-        }
-    }
 
     // Siempre habilitado, como en los demas formularios: los errores se
     // muestran al intentar guardar
@@ -256,6 +242,7 @@ public class SupplierFormViewModel : ValidatableObject
             else
                 await CreateAsync(scope.ServiceProvider);
 
+            SavedName = Supplier.NormalizeName(Name);
             saved = true;
         }
         catch (NameAlreadyExistsException ex)

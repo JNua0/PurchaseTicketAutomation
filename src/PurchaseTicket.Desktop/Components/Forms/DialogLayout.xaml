@@ -40,10 +40,10 @@
 
         </Grid>
 
-        <!-- Cuerpo: secciones del formulario. La barra de desplazamiento solo
-             aparece si la pantalla es mas baja que el formulario -->
+        <!-- Cuerpo: secciones del formulario. Sin barra de desplazamiento: si la
+             pantalla es mas baja que el formulario, se desplaza con la rueda del raton -->
         <ScrollViewer Grid.Row="1"
-                      VerticalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Hidden"
                       HorizontalScrollBarVisibility="Disabled"
                       Focusable="False">
 

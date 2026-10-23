@@ -16,6 +16,16 @@
     <forms:DialogLayout Title="{Binding Title}"
                         Description="{Binding Description}">
 
+        <!-- Al editar: el estado del ticket, como en Corregir ticket -->
+        <forms:DialogLayout.HeaderContent>
+
+            <feedback:StatusBadge Text="{Binding StatusText}"
+                                  Kind="{Binding StatusKind}"
+                                  Visibility="{Binding IsEditMode,
+                                                       Converter={StaticResource BoolToVisibility}}"/>
+
+        </forms:DialogLayout.HeaderContent>
+
         <!-- Campos del formulario -->
         <forms:DialogLayout.BodyContent>
 
@@ -88,24 +98,41 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <forms:FormComboField Grid.Column="0"
-                                              Label="Proveedor"
-                                              IsRequired="True"
-                                              Placeholder="Selecciona un proveedor"
-                                              ItemsSource="{Binding Suppliers}"
-                                              DisplayMemberPath="Name"
-                                              SelectedValuePath="Id"
-                                              SelectedValue="{Binding SelectedSupplierId, Mode=TwoWay}"
-                                              Margin="0,0,14,0"/>
+                        <!-- Al editar, debajo de cada campo: "Sin cambio" o "Antes ..." -->
+                        <StackPanel Grid.Column="0"
+                                    Margin="0,0,14,0">
 
-                        <forms:FormComboField Grid.Column="1"
-                                              Label="Material"
-                                              IsRequired="True"
-                                              Placeholder="Selecciona un material"
-                                              ItemsSource="{Binding Materials}"
-                                              DisplayMemberPath="Name"
-                                              SelectedValuePath="Id"
-                                              SelectedValue="{Binding SelectedMaterialId, Mode=TwoWay}"/>
+                            <forms:FormComboField Label="Proveedor"
+                                                  IsRequired="True"
+                                                  Placeholder="Selecciona un proveedor"
+                                                  ItemsSource="{Binding Suppliers}"
+                                                  DisplayMemberPath="Name"
+                                                  SelectedValuePath="Id"
+                                                  SelectedValue="{Binding SelectedSupplierId, Mode=TwoWay}"/>
+
+                            <TextBlock Text="{Binding SupplierHint}"
+                                       Style="{StaticResource ChangeHintStyle}"
+                                       Visibility="{Binding IsEditMode,
+                                                            Converter={StaticResource BoolToVisibility}}"/>
+
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+
+                            <forms:FormComboField Label="Material"
+                                                  IsRequired="True"
+                                                  Placeholder="Selecciona un material"
+                                                  ItemsSource="{Binding Materials}"
+                                                  DisplayMemberPath="Name"
+                                                  SelectedValuePath="Id"
+                                                  SelectedValue="{Binding SelectedMaterialId, Mode=TwoWay}"/>
+
+                            <TextBlock Text="{Binding MaterialHint}"
+                                       Style="{StaticResource ChangeHintStyle}"
+                                       Visibility="{Binding IsEditMode,
+                                                            Converter={StaticResource BoolToVisibility}}"/>
+
+                        </StackPanel>
 
                     </Grid>
 
@@ -117,23 +144,39 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Obligatorias en el convencional, opcionales en el unico -->
-                        <forms:FormTextField Grid.Column="0"
-                                             Label="Placas"
-                                             IsRequired="{Binding IsConventional}"
-                                             Text="{Binding LicensePlate,
-                                                            Mode=TwoWay,
-                                                            UpdateSourceTrigger=PropertyChanged}"
-                                             MaxLength="7"
-                                             CharacterCasing="Upper"
-                                             Margin="0,0,14,0"/>
+                        <StackPanel Grid.Column="0"
+                                    Margin="0,0,14,0">
 
-                        <forms:FormTextField Grid.Column="1"
-                                             Label="Transportista"
-                                             IsRequired="True"
-                                             Text="{Binding Transporter,
-                                                            Mode=TwoWay,
-                                                            UpdateSourceTrigger=PropertyChanged}"
-                                             MaxLength="50"/>
+                            <forms:FormTextField Label="Placas"
+                                                 IsRequired="{Binding IsConventional}"
+                                                 Text="{Binding LicensePlate,
+                                                                Mode=TwoWay,
+                                                                UpdateSourceTrigger=PropertyChanged}"
+                                                 MaxLength="7"
+                                                 CharacterCasing="Upper"/>
+
+                            <TextBlock Text="{Binding LicensePlateHint}"
+                                       Style="{StaticResource ChangeHintStyle}"
+                                       Visibility="{Binding IsEditMode,
+                                                            Converter={StaticResource BoolToVisibility}}"/>
+
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+
+                            <forms:FormTextField Label="Transportista"
+                                                 IsRequired="True"
+                                                 Text="{Binding Transporter,
+                                                                Mode=TwoWay,
+                                                                UpdateSourceTrigger=PropertyChanged}"
+                                                 MaxLength="50"/>
+
+                            <TextBlock Text="{Binding TransporterHint}"
+                                       Style="{StaticResource ChangeHintStyle}"
+                                       Visibility="{Binding IsEditMode,
+                                                            Converter={StaticResource BoolToVisibility}}"/>
+
+                        </StackPanel>
 
                     </Grid>
 
@@ -143,6 +186,11 @@
 
                     <forms:WeightCaptureField Label="{Binding WeightLabel}"
                                               Capture="{Binding Weight}"/>
+
+                    <TextBlock Text="{Binding WeightHint}"
+                               Style="{StaticResource ChangeHintStyle}"
+                               Visibility="{Binding IsEditMode,
+                                                    Converter={StaticResource BoolToVisibility}}"/>
 
                 </StackPanel>
 

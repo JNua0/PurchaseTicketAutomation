@@ -124,24 +124,16 @@ public class MaterialFormViewModel : ValidatableObject
 
     public AsyncRelayCommand SaveCommand { get; }
 
+    // Nombre con el que quedo guardado, ya normalizado; lo usa el aviso de la lista
+    public string SavedName { get; private set; } = string.Empty;
+
     // Propiedades privadas
 
     // Se compara ya normalizado: "acero" es el mismo nombre que "Acero".
     // Un nombre que no cumple la regla cuenta como cambio
-    private bool IsNameChanged
-    {
-        get
-        {
-            try
-            {
-                return Material.NormalizeName(Name) != _originalName;
-            }
-            catch (ArgumentException)
-            {
-                return true;
-            }
-        }
-    }
+    private bool IsNameChanged =>
+        !DomainRule.TryNormalize(() => Material.NormalizeName(Name), out string? name)
+        || name != _originalName;
 
     // Metodos publicos
 
@@ -212,6 +204,7 @@ public class MaterialFormViewModel : ValidatableObject
             else
                 await CreateAsync(scope.ServiceProvider);
 
+            SavedName = Material.NormalizeName(Name);
             saved = true;
         }
         catch (NameAlreadyExistsException ex)

@@ -120,10 +120,10 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
 
     private async Task NewSupplierAsync()
     {
-        if (!_supplierDialogService.ShowCreateDialog())
+        if (_supplierDialogService.ShowCreateDialog() is not string name)
             return;
 
-        _notifications.ShowSuccess("Proveedor registrado correctamente.");
+        _notifications.ShowSuccess($"Proveedor \"{name}\" registrado.");
 
         await ReloadAfterActionAsync(
             page: 1,
@@ -133,13 +133,12 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
 
     private async Task EditSupplierAsync(SupplierDto supplier)
     {
-        bool saved = _supplierDialogService.ShowEditDialog(supplier);
-
-        if (!saved)
+        // El nombre nuevo, no el de la fila: pudo cambiar al editar
+        if (_supplierDialogService.ShowEditDialog(supplier) is not string name)
             return;
 
         _notifications.ShowSuccess(
-            $"Proveedor \"{supplier.Name}\" actualizado correctamente.");
+            $"Proveedor \"{name}\" actualizado.");
 
         await ReloadAfterActionAsync(
             CurrentPage,
@@ -224,7 +223,7 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
             : "activado";
 
         _notifications.ShowSuccess(
-            $"Proveedor \"{supplier.Name}\" {result} correctamente.");
+            $"Proveedor \"{supplier.Name}\" {result}.");
 
         await ReloadAfterActionAsync(
             CurrentPage,
