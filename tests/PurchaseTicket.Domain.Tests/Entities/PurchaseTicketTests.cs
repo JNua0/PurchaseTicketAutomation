@@ -64,6 +64,8 @@ public class PurchaseTicketTests
         Assert.Null(ticket.PricePerKg);
         Assert.Null(ticket.Amount);
         Assert.Null(ticket.DepartureAt);
+        Assert.Null(ticket.AmountRegisteredAt);
+        Assert.Null(ticket.CancelledAt);
         Assert.Null(ticket.UpdatedAt);
     }
 
@@ -2590,5 +2592,76 @@ public class PurchaseTicketTests
         // Assert
         Assert.Equal("Pedro Lopez", ticket.Transporter);
         Assert.NotNull(ticket.UpdatedAt);
+    }
+
+    [Fact]
+    public void RegisterAmount_ShouldSetAmountRegisteredAt()
+    {
+        // Arrange
+        var ticket = Ticket.CreateSingle(
+            "T-000002",
+            1,
+            1,
+            null,
+            "Juan Perez",
+            500m);
+
+        var before = DateTime.UtcNow;
+
+        // Act
+        ticket.RegisterAmount(2, 5m);
+
+        // Assert
+        Assert.NotNull(ticket.AmountRegisteredAt);
+        Assert.InRange(ticket.AmountRegisteredAt!.Value, before, DateTime.UtcNow);
+        Assert.Null(ticket.CancelledAt);
+    }
+
+    [Fact]
+    public void ChangePricePerKg_ShouldKeepAmountRegisteredAtWhenTicketIsCompleted()
+    {
+        // Arrange
+        var ticket = Ticket.CreateSingle(
+            "T-000002",
+            1,
+            1,
+            null,
+            "Juan Perez",
+            500m);
+
+        ticket.RegisterAmount(2, 5m);
+
+        DateTime? registeredAt = ticket.AmountRegisteredAt;
+
+        // Act
+        ticket.ChangePricePerKg(6m);
+        ticket.ChangeDiscount(3);
+
+        // Assert
+        Assert.Equal(registeredAt, ticket.AmountRegisteredAt);
+    }
+
+    [Fact]
+    public void Cancel_ShouldSetCancelledAt()
+    {
+        // Arrange
+        var ticket = Ticket.CreateConventional(
+            "T-000001",
+            1,
+            1,
+            "ABC1234",
+            "Juan Perez",
+            25000m);
+
+        var before = DateTime.UtcNow;
+
+        // Act
+        ticket.Cancel();
+
+        // Assert
+        Assert.NotNull(ticket.CancelledAt);
+        Assert.InRange(ticket.CancelledAt!.Value, before, DateTime.UtcNow);
+        Assert.Equal(ticket.CancelledAt, ticket.UpdatedAt);
+        Assert.Null(ticket.AmountRegisteredAt);
     }
 }
