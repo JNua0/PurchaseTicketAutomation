@@ -3,30 +3,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Name="Root">
 
-    <!-- Campo de busqueda reutilizable: Enter busca y Esc limpia -->
-    <StackPanel>
+    <!-- Campo de busqueda reutilizable: Enter busca y Esc limpia.
+         Sin etiqueta arriba: Label se muestra dentro del campo mientras esta vacio -->
+    <Grid>
 
-        <!-- Etiqueta y ayuda de teclado -->
-        <Grid Margin="0,0,0,7">
-
-            <TextBlock Text="{Binding Label, ElementName=Root}"
-                       FontSize="14"
-                       FontWeight="SemiBold"
-                       Foreground="{StaticResource PrimaryTextBrush}"/>
-
-            <TextBlock Text="Enter para buscar · Esc para limpiar"
-                       HorizontalAlignment="Right"
-                       VerticalAlignment="Bottom"
-                       FontSize="12"
-                       Foreground="{StaticResource SecondaryTextBrush}"/>
-
-        </Grid>
-
-        <!-- Entrada de texto -->
-        <TextBox Text="{Binding SearchText,
+        <!-- Entrada de texto; deja espacio a la lupa y a la ayuda de teclado -->
+        <TextBox x:Name="SearchTextBox"
+                 Text="{Binding SearchText,
                                 ElementName=Root,
                                 Mode=TwoWay,
                                 UpdateSourceTrigger=PropertyChanged}"
+                 AutomationProperties.Name="{Binding Label, ElementName=Root}"
+                 Padding="36,0,232,0"
                  KeyDown="SearchTextBox_KeyDown">
 
             <TextBox.Style>
@@ -51,6 +39,54 @@
 
         </TextBox>
 
-    </StackPanel>
+        <!-- Lupa -->
+        <Path Data="{StaticResource SearchIcon}"
+              Width="15"
+              Height="15"
+              Margin="13,0,0,0"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Center"
+              Stretch="Uniform"
+              Stroke="{StaticResource SecondaryTextBrush}"
+              StrokeThickness="2"
+              StrokeStartLineCap="Round"
+              StrokeEndLineCap="Round"
+              IsHitTestVisible="False"/>
+
+        <!-- Texto guia mientras no se escribe nada -->
+        <TextBlock Text="{Binding Label, ElementName=Root}"
+                   Margin="38,0,232,0"
+                   VerticalAlignment="Center"
+                   FontSize="14"
+                   TextTrimming="CharacterEllipsis"
+                   Foreground="{StaticResource SecondaryTextBrush}"
+                   IsHitTestVisible="False">
+
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility"
+                            Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Text, ElementName=SearchTextBox}"
+                                     Value="">
+                            <Setter Property="Visibility"
+                                    Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+
+        </TextBlock>
+
+        <!-- Ayuda de teclado dentro del campo, a la derecha -->
+        <TextBlock Text="Enter para buscar · Esc para limpiar"
+                   Margin="0,0,12,0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   FontSize="12"
+                   Foreground="{StaticResource SecondaryTextBrush}"
+                   IsHitTestVisible="False"/>
+
+    </Grid>
 
 </UserControl>

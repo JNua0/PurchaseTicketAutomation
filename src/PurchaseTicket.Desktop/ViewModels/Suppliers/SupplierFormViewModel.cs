@@ -2,14 +2,17 @@
 using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Common;
 using PurchaseTicket.Application.UseCases.Suppliers.Create;
+using PurchaseTicket.Application.UseCases.Suppliers.Get;
 using PurchaseTicket.Application.UseCases.Suppliers.Update;
 using PurchaseTicket.Desktop.Commands;
+using PurchaseTicket.Desktop.Components.Feedback;
 using PurchaseTicket.Desktop.ViewModels.Base;
 using PurchaseTicket.Domain.Entities;
 
 namespace PurchaseTicket.Desktop.ViewModels.Suppliers;
 
-// Formulario para registrar o editar un proveedor
+// Formulario para registrar o editar un proveedor. Al editar, cada campo
+// avisa si cambio ("Antes ...") y solo se guarda si hay algun cambio
 public class SupplierFormViewModel : ValidatableObject
 {
     // Campos
@@ -20,6 +23,11 @@ public class SupplierFormViewModel : ValidatableObject
     private string _name = string.Empty;
     private string _phoneNumber = string.Empty;
     private string _errorMessage = string.Empty;
+    private bool _isActive;
+
+    // Lo guardado al abrir para editar, ya normalizado como en la base de datos
+    private string _originalName = string.Empty;
+    private string? _originalPhoneNumber;
     private bool _isSaving;
 
     // Se activa tras el primer intento de guardar; desde ahi se valida al escribir
@@ -56,6 +64,7 @@ public class SupplierFormViewModel : ValidatableObject
             // Estas propiedades se calculan a partir de SupplierId
             OnPropertyChanged(nameof(IsEditMode));
             OnPropertyChanged(nameof(WindowTitle));
+            OnPropertyChanged(nameof(Description));
             OnPropertyChanged(nameof(SaveButtonText));
         }
     }
@@ -65,8 +74,16 @@ public class SupplierFormViewModel : ValidatableObject
     public string WindowTitle =>
         IsEditMode ? "Editar proveedor" : "Nuevo proveedor";
 
+    public string Description =>
+        IsEditMode ? $"Proveedor ID {SupplierId}" : "Información del proveedor";
+
     public string SaveButtonText =>
         IsEditMode ? "Guardar cambios" : "Registrar";
+
+    // Estado en el encabezado; solo al editar
+    public string StatusText => _isActive ? "Activo" : "Inactivo";
+
+    public StatusKind StatusKind => _isActive ? StatusKind.Success : StatusKind.Error;
 
     public string Name
     {
@@ -76,7 +93,7 @@ public class SupplierFormViewModel : ValidatableObject
             if (!SetProperty(ref _name, value))
                 return;
 
-            SaveCommand.NotifyCanExecuteChanged();
+            OnPropertyChanged(nameof(NameHint));
 
             if (_validateOnChange)
                 ValidateName();
@@ -88,10 +105,26 @@ public class SupplierFormViewModel : ValidatableObject
         get => _phoneNumber;
         set
         {
-            if (SetProperty(ref _phoneNumber, value) && _validateOnChange)
+            if (!SetProperty(ref _phoneNumber, value))
+                return;
+
+            OnPropertyChanged(nameof(PhoneNumberHint));
+
+            if (_validateOnChange)
                 ValidatePhoneNumber();
         }
     }
+
+    // "Sin cambio" o "Antes ..." debajo de cada campo; vacio al registrar
+    public string NameHint =>
+        IsEditMode ? ChangeHint.Describe(IsNameChanged, _originalName) : string.Empty;
+
+    public string PhoneNumberHint =>
+        IsEditMode
+            ? ChangeHint.Describe(
+                IsPhoneNumberChanged,
+                _originalPhoneNumber is null ? "sin teléfono" : DisplayFormat.PhoneNumber(_originalPhoneNumber))
+            : string.Empty;
 
     // Errores que no pertenecen a un campo, como fallas de conexion
     public string ErrorMessage
@@ -122,37 +155,73 @@ public class SupplierFormViewModel : ValidatableObject
             ? null
             : PhoneNumber;
 
+    // Se compara ya normalizado: "aceros del norte" es el mismo nombre que
+    // "Aceros Del Norte". Un valor que no cumple la regla cuenta como cambio
+    private bool IsNameChanged =>
+        !TryNormalize(() => Supplier.NormalizeName(Name), out string? name)
+        || name != _originalName;
+
+    private bool IsPhoneNumberChanged =>
+        !TryNormalize(() => Supplier.NormalizePhoneNumber(PhoneNumber), out string? phoneNumber)
+        || phoneNumber != _originalPhoneNumber;
+
     // Metodos publicos
 
     public void InitializeForCreate()
     {
         SupplierId = null;
+        _originalName = string.Empty;
+        _originalPhoneNumber = null;
         Name = string.Empty;
         PhoneNumber = string.Empty;
 
         ResetValidation();
     }
 
-    public void InitializeForEdit(
-        int supplierId,
-        string name,
-        string? phoneNumber)
+    public void InitializeForEdit(SupplierDto supplier)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(supplierId);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(supplier.Id);
 
-        SupplierId = supplierId;
-        Name = name;
-        PhoneNumber = phoneNumber ?? string.Empty;
+        _originalName = supplier.Name;
+        _originalPhoneNumber = supplier.PhoneNumber;
+        _isActive = supplier.IsActive;
+
+        SupplierId = supplier.Id;
+        Name = supplier.Name;
+        PhoneNumber = supplier.PhoneNumber ?? string.Empty;
+
+        OnPropertyChanged(nameof(StatusText));
+        OnPropertyChanged(nameof(StatusKind));
+        OnPropertyChanged(nameof(NameHint));
+        OnPropertyChanged(nameof(PhoneNumberHint));
 
         ResetValidation();
     }
 
     // Metodos privados
 
+    // La regla del dominio sin lanzar excepcion: false si el valor no la cumple
+    private static bool TryNormalize(Func<string?> rule, out string? value)
+    {
+        try
+        {
+            value = rule();
+
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            value = null;
+
+            return false;
+        }
+    }
+
+    // Siempre habilitado, como en los demas formularios: los errores se
+    // muestran al intentar guardar
     private bool CanSave()
     {
-        return !IsSaving
-            && !string.IsNullOrWhiteSpace(Name);
+        return !IsSaving;
     }
 
     private async Task SaveAsync()
@@ -166,6 +235,13 @@ public class SupplierFormViewModel : ValidatableObject
         // Las reglas se revisan antes de ir a la base de datos
         if (!ValidateAll())
             return;
+
+        if (IsEditMode && !IsNameChanged && !IsPhoneNumberChanged)
+        {
+            ErrorMessage = "No hay cambios que guardar.";
+
+            return;
+        }
 
         IsSaving = true;
 

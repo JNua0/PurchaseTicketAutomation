@@ -2,5 +2,6 @@
 
 public interface IConfirmationDialogService
 {
-    bool Confirm(string title, string message);
+    // True si el usuario confirma; Esc, la X o Cancelar devuelven false
+    bool Confirm(ConfirmationRequest request);
 }

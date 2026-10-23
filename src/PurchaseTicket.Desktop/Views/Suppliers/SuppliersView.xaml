@@ -28,9 +28,10 @@
                     <layout:PageHeader.Actions>
 
                         <!-- Accion para registrar proveedores -->
-                        <actions:CreateActionButton
-                            Text="Nuevo proveedor"
-                            Command="{Binding NewSupplierCommand}"/>
+                        <actions:ActionButton Text="Nuevo proveedor"
+                                              Icon="{StaticResource PlusIcon}"
+                                              Variant="Success"
+                                              Command="{Binding NewSupplierCommand}"/>
 
                     </layout:PageHeader.Actions>
 

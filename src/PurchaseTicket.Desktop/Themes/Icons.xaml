@@ -211,6 +211,16 @@
         M 7,14 H 17 V 21 H 7 Z
     </Geometry>
 
+    <!-- Lupa: campo de busqueda -->
+    <Geometry x:Key="SearchIcon">
+        M 11,4
+        A 7,7 0 1 0 11,18
+        A 7,7 0 1 0 11,4
+        Z
+        M 20,20
+        L 16,16
+    </Geometry>
+
     <!-- Disquete: guardar un formulario -->
     <Geometry x:Key="SaveIcon">
         M 5,3 H 16 L 19,6 V 21 H 5 Z

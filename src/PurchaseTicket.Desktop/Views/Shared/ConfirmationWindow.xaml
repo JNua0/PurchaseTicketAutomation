@@ -1,0 +1,92 @@
+﻿<Window x:Class="PurchaseTicket.Desktop.Views.Shared.ConfirmationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions"
+        Title="{Binding Request.Title}"
+        Width="480"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource ContentBrush}">
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Icono, pregunta y lo que pasara -->
+        <Grid Grid.Row="0"
+              Margin="28,28,28,24">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Width="44"
+                    Height="44"
+                    CornerRadius="22"
+                    VerticalAlignment="Top"
+                    Background="{Binding IconBackground}">
+
+                <Path Data="{Binding IconData}"
+                      Width="22"
+                      Height="22"
+                      Stretch="Uniform"
+                      Stroke="{Binding IconBrush}"
+                      StrokeThickness="1.8"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      StrokeLineJoin="Round"/>
+
+            </Border>
+
+            <StackPanel Grid.Column="1"
+                        Margin="16,0,0,0">
+
+                <TextBlock Text="{Binding Request.Title}"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           TextWrapping="Wrap"
+                           Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                <TextBlock Text="{Binding Request.Message}"
+                           FontSize="14"
+                           LineHeight="21"
+                           TextWrapping="Wrap"
+                           Margin="0,8,0,0"
+                           Foreground="{StaticResource PrimaryTextBrush}"/>
+
+            </StackPanel>
+
+        </Grid>
+
+        <!-- Sin boton por defecto: Enter no confirma por accidente. Esc cancela -->
+        <Border Grid.Row="1"
+                BorderBrush="{StaticResource BorderBrushLight}"
+                BorderThickness="0,1,0,0"
+                Padding="28,18,28,24">
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+
+                <actions:ActionButton Text="{Binding Request.CancelText}"
+                                      Variant="Simple"
+                                      Command="{Binding CancelCommand}"
+                                      IsCancel="True"
+                                      Margin="0,0,10,0"/>
+
+                <actions:ActionButton Text="{Binding Request.ConfirmText}"
+                                      Variant="{Binding ConfirmVariant}"
+                                      Command="{Binding ConfirmCommand}"/>
+
+            </StackPanel>
+
+        </Border>
+
+    </Grid>
+
+</Window>

@@ -30,16 +30,11 @@
                 SearchCommand="{Binding SearchCommand}"
                 IsLoading="{Binding IsLoading}"/>
 
-            <!-- Selector de vista: recarga al cambiar -->
+            <!-- Selector de vista: recarga al cambiar. Sin etiqueta, igual que la busqueda -->
             <StackPanel Grid.Column="1">
 
-                <TextBlock Text="Mostrar"
-                           FontSize="14"
-                           FontWeight="SemiBold"
-                           Foreground="{StaticResource PrimaryTextBrush}"
-                           Margin="0,0,0,7"/>
-
                 <ListBox ItemsSource="{Binding ViewOptions}"
+                         AutomationProperties.Name="Mostrar"
                          SelectedValuePath="Value"
                          SelectedValue="{Binding SelectedView, Mode=TwoWay}">
 

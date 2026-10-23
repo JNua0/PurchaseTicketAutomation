@@ -4,62 +4,52 @@
              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              x:Name="Root">
 
-    <!-- Filtro de estado reutilizable -->
-    <StackPanel>
+    <!-- Filtro de estado reutilizable: Todos, Activos o Inactivos en un
+         selector segmentado. Label no se muestra; lo usan los lectores de pantalla -->
+    <ListBox SelectedValue="{Binding SelectedStatus,
+                                     ElementName=Root,
+                                     Mode=TwoWay}"
+             SelectedValuePath="Tag"
+             AutomationProperties.Name="{Binding Label, ElementName=Root}">
 
-        <!-- Etiqueta del filtro -->
-        <TextBlock Text="{Binding Label, ElementName=Root}"
-                   FontSize="14"
-                   FontWeight="SemiBold"
-                   Foreground="{StaticResource PrimaryTextBrush}"
-                   Margin="0,0,0,7"/>
+        <ListBox.Style>
+            <Style TargetType="ListBox"
+                   BasedOn="{StaticResource SegmentedSelectorStyle}">
 
-        <!-- Selector de estado -->
-        <ComboBox SelectedValue="{Binding SelectedStatus,
-                                          ElementName=Root,
-                                          Mode=TwoWay}"
-                  SelectedValuePath="Tag">
+                <Style.Triggers>
 
-            <ComboBox.Style>
-                <Style TargetType="ComboBox"
-                       BasedOn="{StaticResource ComboBoxStyle}">
+                    <!-- Deshabilitar durante la carga -->
+                    <DataTrigger Binding="{Binding IsLoading, ElementName=Root}"
+                                 Value="True">
 
-                    <Style.Triggers>
+                        <Setter Property="IsEnabled"
+                                Value="False"/>
 
-                        <!-- Deshabilitar durante la carga -->
-                        <DataTrigger Binding="{Binding IsLoading, ElementName=Root}"
-                                     Value="True">
+                    </DataTrigger>
 
-                            <Setter Property="IsEnabled"
-                                    Value="False"/>
+                </Style.Triggers>
 
-                        </DataTrigger>
+            </Style>
+        </ListBox.Style>
 
-                    </Style.Triggers>
+        <!-- Todos los registros -->
+        <ListBoxItem Content="Todos"
+                     Tag="{x:Null}"/>
 
-                </Style>
-            </ComboBox.Style>
+        <!-- Registros activos -->
+        <ListBoxItem Content="Activos">
+            <ListBoxItem.Tag>
+                <sys:Boolean>True</sys:Boolean>
+            </ListBoxItem.Tag>
+        </ListBoxItem>
 
-            <!-- Todos los registros -->
-            <ComboBoxItem Content="Todos"
-                          Tag="{x:Null}"/>
+        <!-- Registros inactivos -->
+        <ListBoxItem Content="Inactivos">
+            <ListBoxItem.Tag>
+                <sys:Boolean>False</sys:Boolean>
+            </ListBoxItem.Tag>
+        </ListBoxItem>
 
-            <!-- Registros activos -->
-            <ComboBoxItem Content="Activos">
-                <ComboBoxItem.Tag>
-                    <sys:Boolean>True</sys:Boolean>
-                </ComboBoxItem.Tag>
-            </ComboBoxItem>
-
-            <!-- Registros inactivos -->
-            <ComboBoxItem Content="Inactivos">
-                <ComboBoxItem.Tag>
-                    <sys:Boolean>False</sys:Boolean>
-                </ComboBoxItem.Tag>
-            </ComboBoxItem>
-
-        </ComboBox>
-
-    </StackPanel>
+    </ListBox>
 
 </UserControl>

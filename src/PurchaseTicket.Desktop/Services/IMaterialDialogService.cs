@@ -1,4 +1,6 @@
-﻿namespace PurchaseTicket.Desktop.Services;
+﻿using PurchaseTicket.Application.UseCases.Materials.Get;
+
+namespace PurchaseTicket.Desktop.Services;
 
 public interface IMaterialDialogService
 {
@@ -6,7 +8,5 @@ public interface IMaterialDialogService
     bool ShowCreateDialog();
 
     // Mostrar formulario para editar un material
-    bool ShowEditDialog(
-        int materialId,
-        string name);
+    bool ShowEditDialog(MaterialDto material);
 }

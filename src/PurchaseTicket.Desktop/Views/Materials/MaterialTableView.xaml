@@ -9,6 +9,34 @@
               ItemsSource="{Binding Items}"
               SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
 
+        <!-- Doble clic o Enter en una fila abre la edicion, como el detalle en Tickets -->
+        <DataGrid.InputBindings>
+            <MouseBinding Gesture="LeftDoubleClick"
+                          Command="{Binding EditMaterialCommand}"
+                          CommandParameter="{Binding SelectedItem,
+                                                     RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+            <KeyBinding Key="Enter"
+                        Command="{Binding EditMaterialCommand}"
+                        CommandParameter="{Binding SelectedItem,
+                                                   RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+        </DataGrid.InputBindings>
+
+        <!-- Los inactivos en gris para distinguirlos de un vistazo -->
+        <DataGrid.RowStyle>
+            <Style TargetType="DataGridRow"
+                   BasedOn="{StaticResource AppDataGridRowStyle}">
+                <Setter Property="ToolTip"
+                        Value="Doble clic para editar"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsActive}"
+                                 Value="False">
+                        <Setter Property="Foreground"
+                                Value="{StaticResource SecondaryTextBrush}"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </DataGrid.RowStyle>
+
         <DataGrid.Columns>
 
             <!-- Identificador del material -->

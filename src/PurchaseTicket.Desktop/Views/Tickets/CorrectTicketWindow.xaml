@@ -14,25 +14,6 @@
 
     <Window.Resources>
 
-        <!-- "Sin cambio" o "Antes 5,000" debajo de un campo -->
-        <Style x:Key="ChangeHintStyle"
-               TargetType="TextBlock">
-            <Setter Property="FontSize"
-                    Value="12"/>
-            <Setter Property="Margin"
-                    Value="0,4,0,0"/>
-            <!-- Lo que cambio se resalta en ambar; "Sin cambio" queda en gris -->
-            <Setter Property="Foreground"
-                    Value="{StaticResource WarningTextBrush}"/>
-            <Style.Triggers>
-                <Trigger Property="Text"
-                         Value="Sin cambio">
-                    <Setter Property="Foreground"
-                            Value="{StaticResource SecondaryTextBrush}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
         <!-- Cada campo de peso o precio: mismo ancho, en una sola fila -->
         <Style x:Key="WeightFieldStyle"
                TargetType="StackPanel">

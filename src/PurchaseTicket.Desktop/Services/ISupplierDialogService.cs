@@ -1,11 +1,10 @@
-﻿namespace PurchaseTicket.Desktop.Services;
+﻿using PurchaseTicket.Application.UseCases.Suppliers.Get;
+
+namespace PurchaseTicket.Desktop.Services;
 
 public interface ISupplierDialogService
 {
     bool ShowCreateDialog();
 
-    bool ShowEditDialog(
-        int supplierId,
-        string name,
-        string? phoneNumber);
+    bool ShowEditDialog(SupplierDto supplier);
 }
