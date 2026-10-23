@@ -123,7 +123,7 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
         if (_supplierDialogService.ShowCreateDialog() is not string name)
             return;
 
-        _notifications.ShowSuccess($"Proveedor \"{name}\" registrado correctamente.");
+        _notifications.ShowSuccess($"Proveedor \"{name}\" registrado.");
 
         await ReloadAfterActionAsync(
             page: 1,
@@ -138,7 +138,7 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
             return;
 
         _notifications.ShowSuccess(
-            $"Proveedor \"{name}\" actualizado correctamente.");
+            $"Proveedor \"{name}\" actualizado.");
 
         await ReloadAfterActionAsync(
             CurrentPage,
@@ -223,7 +223,7 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
             : "activado";
 
         _notifications.ShowSuccess(
-            $"Proveedor \"{supplier.Name}\" {result} correctamente.");
+            $"Proveedor \"{supplier.Name}\" {result}.");
 
         await ReloadAfterActionAsync(
             CurrentPage,

@@ -131,20 +131,9 @@ public class MaterialFormViewModel : ValidatableObject
 
     // Se compara ya normalizado: "acero" es el mismo nombre que "Acero".
     // Un nombre que no cumple la regla cuenta como cambio
-    private bool IsNameChanged
-    {
-        get
-        {
-            try
-            {
-                return Material.NormalizeName(Name) != _originalName;
-            }
-            catch (ArgumentException)
-            {
-                return true;
-            }
-        }
-    }
+    private bool IsNameChanged =>
+        !DomainRule.TryNormalize(() => Material.NormalizeName(Name), out string? name)
+        || name != _originalName;
 
     // Metodos publicos
 

@@ -10,8 +10,10 @@ using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateSingle;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Results;
 using PurchaseTicket.Application.UseCases.Suppliers.GetActive;
 using PurchaseTicket.Desktop.Commands;
+using PurchaseTicket.Desktop.Components.Feedback;
 using PurchaseTicket.Desktop.Services;
 using PurchaseTicket.Desktop.ViewModels.Base;
+using PurchaseTicket.Desktop.ViewModels.Tickets;
 using PurchaseTicket.Domain.Enums;
 using PurchaseTicket.Domain.Exceptions;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
@@ -120,6 +122,39 @@ public class CreateWeighingViewModel : ValidatableObject
     public string SaveButtonText =>
         IsEditMode ? "Guardar cambios" : "Registrar pesaje";
 
+    // Estado del ticket en el encabezado; solo al editar
+    public string StatusText =>
+        _editingTicket is { } ticket ? TicketStatusDisplay.Text(ticket.Status) : string.Empty;
+
+    public StatusKind StatusKind =>
+        _editingTicket is { } ticket ? TicketStatusDisplay.Kind(ticket.Status) : StatusKind.Neutral;
+
+    // "Sin cambio" o "Antes ..." debajo de cada campo; vacios al registrar
+    public string SupplierHint =>
+        _editingTicket is { } ticket
+            ? ChangeHint.Describe(SelectedSupplierId != ticket.SupplierId, ticket.SupplierName)
+            : string.Empty;
+
+    public string MaterialHint =>
+        _editingTicket is { } ticket
+            ? ChangeHint.Describe(SelectedMaterialId != ticket.MaterialId, ticket.MaterialName)
+            : string.Empty;
+
+    public string LicensePlateHint =>
+        _editingTicket is { } ticket
+            ? ChangeHint.Describe(IsLicensePlateChanged(ticket), ticket.LicensePlate ?? "sin placas")
+            : string.Empty;
+
+    public string TransporterHint =>
+        _editingTicket is { } ticket
+            ? ChangeHint.Describe(IsTransporterChanged(ticket), ticket.Transporter)
+            : string.Empty;
+
+    public string WeightHint =>
+        _editingTicket is { } ticket && OriginalWeight(ticket) is decimal original
+            ? ChangeHint.Describe(Weight.Weight != original, DisplayFormat.WholeKg(original))
+            : string.Empty;
+
     // Un ticket no cambia de modalidad: bruto y neto no son intercambiables
     public bool CanChangeWeighingType => !IsEditMode;
 
@@ -140,7 +175,12 @@ public class CreateWeighingViewModel : ValidatableObject
         get => _selectedSupplierId;
         set
         {
-            if (SetProperty(ref _selectedSupplierId, value) && _validateOnChange)
+            if (!SetProperty(ref _selectedSupplierId, value))
+                return;
+
+            OnPropertyChanged(nameof(SupplierHint));
+
+            if (_validateOnChange)
                 ValidateSupplier();
         }
     }
@@ -150,7 +190,12 @@ public class CreateWeighingViewModel : ValidatableObject
         get => _selectedMaterialId;
         set
         {
-            if (SetProperty(ref _selectedMaterialId, value) && _validateOnChange)
+            if (!SetProperty(ref _selectedMaterialId, value))
+                return;
+
+            OnPropertyChanged(nameof(MaterialHint));
+
+            if (_validateOnChange)
                 ValidateMaterial();
         }
     }
@@ -160,7 +205,12 @@ public class CreateWeighingViewModel : ValidatableObject
         get => _licensePlate;
         set
         {
-            if (SetProperty(ref _licensePlate, value) && _validateOnChange)
+            if (!SetProperty(ref _licensePlate, value))
+                return;
+
+            OnPropertyChanged(nameof(LicensePlateHint));
+
+            if (_validateOnChange)
                 ValidateLicensePlate();
         }
     }
@@ -170,7 +220,12 @@ public class CreateWeighingViewModel : ValidatableObject
         get => _transporter;
         set
         {
-            if (SetProperty(ref _transporter, value) && _validateOnChange)
+            if (!SetProperty(ref _transporter, value))
+                return;
+
+            OnPropertyChanged(nameof(TransporterHint));
+
+            if (_validateOnChange)
                 ValidateTransporter();
         }
     }
@@ -240,6 +295,11 @@ public class CreateWeighingViewModel : ValidatableObject
             Weight.SetManualWeight(value);
 
         OnPropertyChanged(nameof(IsEditMode));
+        OnPropertyChanged(nameof(StatusText));
+        OnPropertyChanged(nameof(StatusKind));
+        OnPropertyChanged(nameof(LicensePlateHint));
+        OnPropertyChanged(nameof(TransporterHint));
+        OnPropertyChanged(nameof(WeightHint));
         OnPropertyChanged(nameof(Title));
         OnPropertyChanged(nameof(Description));
         OnPropertyChanged(nameof(SaveButtonText));
@@ -291,6 +351,33 @@ public class CreateWeighingViewModel : ValidatableObject
     }
 
     // Metodos privados
+
+    // El peso que se corrige: bruto en el convencional, neto en el unico
+    private static decimal? OriginalWeight(WeighingListItem ticket)
+    {
+        return ticket.WeighingType == WeighingType.Conventional
+            ? ticket.GrossWeight
+            : ticket.NetWeight;
+    }
+
+    // Se compara ya normalizado, como en BuildCorrection: "abc123" es "ABC123".
+    // Un valor que no cumple la regla cuenta como cambio
+    private bool IsLicensePlateChanged(WeighingListItem ticket)
+    {
+        string? plate;
+
+        bool isValid = IsConventional
+            ? DomainRule.TryNormalize(() => Ticket.NormalizeLicensePlate(LicensePlate), out plate)
+            : DomainRule.TryNormalize(() => Ticket.NormalizeOptionalLicensePlate(LicensePlate), out plate);
+
+        return !isValid || plate != ticket.LicensePlate;
+    }
+
+    private bool IsTransporterChanged(WeighingListItem ticket)
+    {
+        return !DomainRule.TryNormalize(() => Ticket.NormalizeTransporter(Transporter), out string? transporter)
+            || transporter != ticket.Transporter;
+    }
 
     private bool CanSave()
     {
@@ -371,7 +458,7 @@ public class CreateWeighingViewModel : ValidatableObject
 
         if (command is null)
         {
-            ErrorMessage = "No hay cambios por guardar.";
+            ErrorMessage = "No hay cambios que guardar.";
             return;
         }
 
@@ -451,11 +538,7 @@ public class CreateWeighingViewModel : ValidatableObject
                 ? Transporter
                 : null;
 
-        decimal? originalWeight = IsConventional
-            ? ticket.GrossWeight
-            : ticket.NetWeight;
-
-        bool changeWeight = weight != originalWeight;
+        bool changeWeight = weight != OriginalWeight(ticket);
 
         bool hasChanges =
             supplierId is not null
@@ -614,6 +697,9 @@ public class CreateWeighingViewModel : ValidatableObject
     {
         if (e.PropertyName == nameof(WeightCaptureViewModel.IsReading))
             NotifyBusyChanged();
+
+        if (e.PropertyName == nameof(WeightCaptureViewModel.Weight))
+            OnPropertyChanged(nameof(WeightHint));
     }
 
     private void NotifyBusyChanged()

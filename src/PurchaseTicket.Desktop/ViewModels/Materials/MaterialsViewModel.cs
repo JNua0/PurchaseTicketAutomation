@@ -125,7 +125,7 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
         if (_materialDialogService.ShowCreateDialog() is not string name)
             return;
 
-        _notifications.ShowSuccess($"Material \"{name}\" registrado correctamente.");
+        _notifications.ShowSuccess($"Material \"{name}\" registrado.");
 
         await ReloadAfterActionAsync(
             page: 1,
@@ -140,7 +140,7 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
             return;
 
         _notifications.ShowSuccess(
-            $"Material \"{name}\" actualizado correctamente.");
+            $"Material \"{name}\" actualizado.");
 
         await ReloadAfterActionAsync(
             CurrentPage,
@@ -225,7 +225,7 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
             : "activado";
 
         _notifications.ShowSuccess(
-            $"Material \"{material.Name}\" {result} correctamente.");
+            $"Material \"{material.Name}\" {result}.");
 
         await ReloadAfterActionAsync(
             CurrentPage,

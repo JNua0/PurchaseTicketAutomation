@@ -25,6 +25,9 @@ public sealed class TicketHeaderFormViewModel : ValidatableObject
     private string _email = string.Empty;
     private string _errorMessage = string.Empty;
 
+    // La vista previa al abrir: si no cambia, no hay nada que guardar
+    private string _originalPreview = string.Empty;
+
     // Se activa tras el primer intento de guardar; desde ahi se valida al escribir
     private bool _validateOnChange;
 
@@ -109,6 +112,8 @@ public sealed class TicketHeaderFormViewModel : ValidatableObject
         PhoneNumber = header.PhoneNumber;
         Email = header.Email;
 
+        _originalPreview = Preview;
+
         _validateOnChange = false;
         ErrorMessage = string.Empty;
         ClearErrors();
@@ -170,6 +175,14 @@ public sealed class TicketHeaderFormViewModel : ValidatableObject
             return;
 
         var header = BuildHeader();
+
+        // Se compara lo que se imprimiria: espacios de mas al final no cuentan
+        if (header.ToPreview() == _originalPreview)
+        {
+            ErrorMessage = "No hay cambios que guardar.";
+
+            return;
+        }
 
         try
         {

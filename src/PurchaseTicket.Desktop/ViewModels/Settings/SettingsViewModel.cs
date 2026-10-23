@@ -170,7 +170,7 @@ public sealed class SettingsViewModel : ObservableObject
 
         TicketHeader = saved;
 
-        _notifications.ShowSuccess("Encabezado guardado. Se usará en los próximos tickets.");
+        _notifications.ShowSuccess("Encabezado guardado: se usará en los próximos tickets.");
     }
 
     private async Task RefreshPortsAsync()
