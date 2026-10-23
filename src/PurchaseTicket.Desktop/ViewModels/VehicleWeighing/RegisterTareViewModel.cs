@@ -78,13 +78,13 @@ public class RegisterTareViewModel : ObservableObject
             // Es solo para mostrar: la regla real la valida el dominio al registrar
             string netWeight =
                 tareWeight is decimal tare && tare < grossWeight
-                    ? FormatKg(grossWeight - tare)
+                    ? DisplayFormat.WholeKg(grossWeight - tare)
                     : "—";
 
             return
             [
-                new("Peso bruto", FormatKg(grossWeight)),
-                new("− Tara", tareWeight is decimal value ? FormatKg(value) : "—"),
+                new("Peso bruto", DisplayFormat.WholeKg(grossWeight)),
+                new("− Tara", tareWeight is decimal value ? DisplayFormat.WholeKg(value) : "—"),
                 new("= Peso neto", netWeight, IsResult: true)
             ];
         }
@@ -141,7 +141,7 @@ public class RegisterTareViewModel : ObservableObject
             new("Placas", ticket.LicensePlate ?? "Sin placas"),
             new("Chofer", ticket.Transporter),
             new("Entrada", ticket.CheckInAt.ToString("dd/MM/yyyy HH:mm", CultureInfo.CurrentCulture)),
-            new("Peso bruto", FormatKg(GrossWeight))
+            new("Peso bruto", DisplayFormat.WholeKg(GrossWeight))
         ];
 
         OnPropertyChanged(nameof(Description));
@@ -149,11 +149,6 @@ public class RegisterTareViewModel : ObservableObject
     }
 
     // Metodos privados
-
-    private static string FormatKg(decimal weight)
-    {
-        return $"{weight.ToString("N0", CultureInfo.CurrentCulture)} kg";
-    }
 
     private bool CanSave()
     {

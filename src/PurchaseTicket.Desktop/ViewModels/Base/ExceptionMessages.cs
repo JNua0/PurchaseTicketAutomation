@@ -14,4 +14,19 @@ public static class ExceptionMessages
             $" (Parameter '{ex.ParamName}')",
             string.Empty);
     }
+
+    // Ejecuta una regla del dominio y devuelve su mensaje si no se cumple
+    public static string? FromRule(Action rule)
+    {
+        try
+        {
+            rule();
+
+            return null;
+        }
+        catch (ArgumentException ex)
+        {
+            return ForUser(ex);
+        }
+    }
 }

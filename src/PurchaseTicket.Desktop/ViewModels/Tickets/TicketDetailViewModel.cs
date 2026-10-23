@@ -119,14 +119,14 @@ public sealed class TicketDetailViewModel : ObservableObject
 
     public string DiscountText =>
         _detail?.Discount is int discount && _detail.DiscountWeight is decimal weight
-            ? $"{discount} % · {FormatKgWithDecimals(weight)}"
+            ? $"{discount} % · {DisplayFormat.DecimalKg(weight)}"
             : string.Empty;
 
     public string NetWeightAfterDiscountText =>
-        _detail?.NetWeightAfterDiscount is decimal weight ? FormatKgWithDecimals(weight) : string.Empty;
+        _detail?.NetWeightAfterDiscount is decimal weight ? DisplayFormat.DecimalKg(weight) : string.Empty;
 
     public string PricePerKgText =>
-        _detail?.PricePerKg is decimal price ? FormatMoney(price) : string.Empty;
+        _detail?.PricePerKg is decimal price ? DisplayFormat.Money(price) : string.Empty;
 
     // Sin importe: aun no se registra, o ya no se registrara
     public string AmountPendingText =>
@@ -135,7 +135,7 @@ public sealed class TicketDetailViewModel : ObservableObject
             : "Pendiente: se registra en Importes.";
 
     public string AmountText =>
-        _detail?.Amount is decimal amount ? FormatMoney(amount) : string.Empty;
+        _detail?.Amount is decimal amount ? DisplayFormat.Money(amount) : string.Empty;
 
     // Cancelado no se imprime (RN-28); Completado no se cancela (RN-26)
     public bool CanReprint =>
@@ -227,18 +227,8 @@ public sealed class TicketDetailViewModel : ObservableObject
     private static string FormatKg(decimal? weight)
     {
         return weight is decimal value
-            ? $"{value.ToString("N0", CultureInfo.CurrentCulture)} kg"
+            ? DisplayFormat.WholeKg(value)
             : "Pendiente";
-    }
-
-    private static string FormatKgWithDecimals(decimal value)
-    {
-        return $"{value.ToString("N2", CultureInfo.CurrentCulture)} kg";
-    }
-
-    private static string FormatMoney(decimal amount)
-    {
-        return $"${amount.ToString("N2", CultureInfo.CurrentCulture)}";
     }
 
     private string FormatDateTime(DateTime utc)

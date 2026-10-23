@@ -40,16 +40,7 @@ public abstract class ValidatableObject : ObservableObject, INotifyDataErrorInfo
     // Asi la interfaz reutiliza las reglas en lugar de copiarlas.
     protected static string? ValidateRule(Action rule)
     {
-        try
-        {
-            rule();
-
-            return null;
-        }
-        catch (ArgumentException ex)
-        {
-            return GetUserMessage(ex);
-        }
+        return ExceptionMessages.FromRule(rule);
     }
 
     // Atajo para los formularios; la regla vive en ExceptionMessages

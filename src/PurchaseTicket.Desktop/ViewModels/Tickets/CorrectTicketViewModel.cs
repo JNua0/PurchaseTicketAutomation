@@ -25,14 +25,6 @@ public sealed class CorrectTicketViewModel : ValidatableObject
 {
     // Campos
 
-    // Permite escribir "$3.50" o "1,250.00"; no permite negativos ni exponentes
-    private const NumberStyles PriceStyles =
-        NumberStyles.AllowLeadingWhite
-        | NumberStyles.AllowTrailingWhite
-        | NumberStyles.AllowCurrencySymbol
-        | NumberStyles.AllowThousands
-        | NumberStyles.AllowDecimalPoint;
-
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<CorrectTicketViewModel> _logger;
 
@@ -184,9 +176,9 @@ public sealed class CorrectTicketViewModel : ValidatableObject
     public string NetWeightHint => DescribeChange(ParseWeight(NetWeightText), _ticket?.NetWeight, FormatWeight);
 
     public string DiscountHint =>
-        DescribeChange(ParseDiscount(DiscountText), _ticket?.Discount, value => value.ToString(CultureInfo.CurrentCulture));
+        DescribeChange(AmountInput.ParseDiscount(DiscountText), _ticket?.Discount, value => value.ToString(CultureInfo.CurrentCulture));
 
-    public string PricePerKgHint => DescribeChange(ParsePricePerKg(PricePerKgText), _ticket?.PricePerKg, FormatMoney);
+    public string PricePerKgHint => DescribeChange(AmountInput.ParsePricePerKg(PricePerKgText), _ticket?.PricePerKg, DisplayFormat.Money);
 
     // El calculo con los valores capturados; un dato invalido se muestra como "—"
     public bool ShowsBreakdown => CanEditTareWeight || CanEditAmount;
@@ -222,19 +214,19 @@ public sealed class CorrectTicketViewModel : ValidatableObject
 
             steps.Add(new(
                 discount is int shown ? $"− Descuento ({shown} %)" : "− Descuento",
-                breakdown is null ? "—" : FormatKgWithDecimals(breakdown.DiscountWeight)));
+                breakdown is null ? "—" : DisplayFormat.DecimalKg(breakdown.DiscountWeight)));
 
             steps.Add(new(
                 "= Peso neto total",
-                breakdown is null ? "—" : FormatKgWithDecimals(breakdown.NetWeightAfterDiscount)));
+                breakdown is null ? "—" : DisplayFormat.DecimalKg(breakdown.NetWeightAfterDiscount)));
 
             steps.Add(new(
                 "× Precio por kg",
-                pricePerKg is decimal price ? FormatMoney(price) : "—"));
+                pricePerKg is decimal price ? DisplayFormat.Money(price) : "—"));
 
             steps.Add(new(
                 "= Importe nuevo",
-                breakdown is null ? "—" : FormatMoney(breakdown.Amount),
+                breakdown is null ? "—" : DisplayFormat.Money(breakdown.Amount),
                 IsResult: true));
 
             return steps;
@@ -252,13 +244,13 @@ public sealed class CorrectTicketViewModel : ValidatableObject
             decimal? newAmount = NewAmount;
 
             if (newAmount is not decimal value)
-                return $"Importe guardado: {FormatMoney(saved)}";
+                return $"Importe guardado: {DisplayFormat.Money(saved)}";
 
             decimal difference = value - saved;
 
             return difference == 0
-                ? $"Importe guardado: {FormatMoney(saved)} · sin cambio"
-                : $"Importe guardado: {FormatMoney(saved)} · diferencia {(difference > 0 ? "+" : "−")}{FormatMoney(Math.Abs(difference))}";
+                ? $"Importe guardado: {DisplayFormat.Money(saved)} · sin cambio"
+                : $"Importe guardado: {DisplayFormat.Money(saved)} · diferencia {(difference > 0 ? "+" : "−")}{DisplayFormat.Money(Math.Abs(difference))}";
         }
     }
 
@@ -309,17 +301,9 @@ public sealed class CorrectTicketViewModel : ValidatableObject
                 : null)
             : ParseWeight(NetWeightText);
 
-    private int? ValidDiscount =>
-        ParseDiscount(DiscountText) is int discount
-        && ValidateRule(() => Ticket.ValidateDiscount(discount)) is null
-            ? discount
-            : null;
+    private int? ValidDiscount => AmountInput.ValidDiscount(DiscountText);
 
-    private decimal? ValidPricePerKg =>
-        ParsePricePerKg(PricePerKgText) is decimal price
-        && ValidateRule(() => Ticket.ValidatePricePerKg(price)) is null
-            ? price
-            : null;
+    private decimal? ValidPricePerKg => AmountInput.ValidPricePerKg(PricePerKgText);
 
     private decimal? NewAmount =>
         EffectiveNetWeight is decimal net && ValidDiscount is int discount && ValidPricePerKg is decimal price
@@ -341,7 +325,7 @@ public sealed class CorrectTicketViewModel : ValidatableObject
         _tareWeightText = FormatWeightInput(ticket.TareWeight);
         _netWeightText = FormatWeightInput(ticket.NetWeight);
         _discountText = ticket.Discount?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-        _pricePerKgText = ticket.PricePerKg?.ToString("0.00", CultureInfo.CurrentCulture) ?? string.Empty;
+        _pricePerKgText = AmountInput.FormatPriceInput(ticket.PricePerKg);
 
         _validateOnChange = false;
         ErrorMessage = string.Empty;
@@ -413,21 +397,6 @@ public sealed class CorrectTicketViewModel : ValidatableObject
             : null;
     }
 
-    // Solo digitos: sin signo, decimales ni separadores (RN-38)
-    private static int? ParseDiscount(string text)
-    {
-        return int.TryParse(text.Trim(), NumberStyles.None, CultureInfo.CurrentCulture, out int discount)
-            ? discount
-            : null;
-    }
-
-    private static decimal? ParsePricePerKg(string text)
-    {
-        return decimal.TryParse(text, PriceStyles, CultureInfo.CurrentCulture, out decimal price)
-            ? price
-            : null;
-    }
-
     private static string FormatWeightInput(decimal? weight)
     {
         return weight?.ToString("N0", CultureInfo.CurrentCulture) ?? string.Empty;
@@ -440,17 +409,7 @@ public sealed class CorrectTicketViewModel : ValidatableObject
 
     private static string FormatKgOrDash(decimal? weight)
     {
-        return weight is decimal value ? FormatKgWithDecimals(value) : "—";
-    }
-
-    private static string FormatKgWithDecimals(decimal weight)
-    {
-        return $"{weight.ToString("N2", CultureInfo.CurrentCulture)} kg";
-    }
-
-    private static string FormatMoney(decimal amount)
-    {
-        return $"${amount.ToString("N2", CultureInfo.CurrentCulture)}";
+        return weight is decimal value ? DisplayFormat.DecimalKg(value) : "—";
     }
 
     private static string DescribeChange<T>(T? current, T? original, Func<T, string> format)
@@ -589,8 +548,8 @@ public sealed class CorrectTicketViewModel : ValidatableObject
         decimal? gross = Changed(CanEditGrossWeight, ParseWeight(GrossWeightText), ticket.GrossWeight);
         decimal? tare = Changed(CanEditTareWeight, ParseWeight(TareWeightText), ticket.TareWeight);
         decimal? net = Changed(CanEditNetWeight, ParseWeight(NetWeightText), ticket.NetWeight);
-        int? discount = Changed(CanEditAmount, ParseDiscount(DiscountText), ticket.Discount);
-        decimal? price = Changed(CanEditAmount, ParsePricePerKg(PricePerKgText), ticket.PricePerKg);
+        int? discount = Changed(CanEditAmount, AmountInput.ParseDiscount(DiscountText), ticket.Discount);
+        decimal? price = Changed(CanEditAmount, AmountInput.ParsePricePerKg(PricePerKgText), ticket.PricePerKg);
 
         bool hasChanges =
             supplierId is not null || materialId is not null || changeLicensePlate || transporter is not null
@@ -687,20 +646,14 @@ public sealed class CorrectTicketViewModel : ValidatableObject
 
     private bool ValidateDiscount()
     {
-        string? error = !CanEditAmount ? null
-            : string.IsNullOrWhiteSpace(DiscountText) ? "El descuento es obligatorio."
-            : ParseDiscount(DiscountText) is not int discount ? "El descuento debe ser un número entero entre 0 y 99."
-            : ValidateRule(() => Ticket.ValidateDiscount(discount));
+        string? error = CanEditAmount ? AmountInput.DiscountError(DiscountText) : null;
 
         return Apply(nameof(DiscountText), error);
     }
 
     private bool ValidatePricePerKg()
     {
-        string? error = !CanEditAmount ? null
-            : string.IsNullOrWhiteSpace(PricePerKgText) ? "El precio por kilogramo es obligatorio."
-            : ParsePricePerKg(PricePerKgText) is not decimal price ? "Escribe el precio como un número, por ejemplo 3.50."
-            : ValidateRule(() => Ticket.ValidatePricePerKg(price));
+        string? error = CanEditAmount ? AmountInput.PricePerKgError(PricePerKgText) : null;
 
         return Apply(nameof(PricePerKgText), error);
     }

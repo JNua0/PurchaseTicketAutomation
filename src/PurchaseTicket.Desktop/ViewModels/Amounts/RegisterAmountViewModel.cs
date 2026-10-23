@@ -19,14 +19,6 @@ public class RegisterAmountViewModel : ValidatableObject
 {
     // Campos
 
-    // Permite escribir "$3.50" o "1,250.00"; no permite negativos ni exponentes
-    private const NumberStyles PriceStyles =
-        NumberStyles.AllowLeadingWhite
-        | NumberStyles.AllowTrailingWhite
-        | NumberStyles.AllowCurrencySymbol
-        | NumberStyles.AllowThousands
-        | NumberStyles.AllowDecimalPoint;
-
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<RegisterAmountViewModel> _logger;
     private AmountListItem? _ticket;
@@ -121,19 +113,19 @@ public class RegisterAmountViewModel : ValidatableObject
 
             return
             [
-                new("Peso neto", FormatKg(netWeight)),
+                new("Peso neto", DisplayFormat.DecimalKg(netWeight)),
                 new(
                     discount is int shown ? $"− Descuento ({shown} %)" : "− Descuento",
-                    discountOnly is null ? "—" : FormatKg(discountOnly.DiscountWeight)),
+                    discountOnly is null ? "—" : DisplayFormat.DecimalKg(discountOnly.DiscountWeight)),
                 new(
                     "= Peso neto total",
-                    discountOnly is null ? "—" : FormatKg(discountOnly.NetWeightAfterDiscount)),
+                    discountOnly is null ? "—" : DisplayFormat.DecimalKg(discountOnly.NetWeightAfterDiscount)),
                 new(
                     "× Precio por kg",
-                    pricePerKg is decimal price ? FormatMoney(price) : "—"),
+                    pricePerKg is decimal price ? DisplayFormat.Money(price) : "—"),
                 new(
                     "= Importe",
-                    full is null ? "—" : FormatMoney(full.Amount),
+                    full is null ? "—" : DisplayFormat.Money(full.Amount),
                     IsResult: true)
             ];
         }
@@ -169,17 +161,9 @@ public class RegisterAmountViewModel : ValidatableObject
     private decimal NetWeight => _ticket?.NetWeight ?? 0;
 
     // El valor si se puede leer y cumple la regla; si no, null
-    private int? ValidDiscount =>
-        TryParseDiscount(out int discount)
-        && ValidateRule(() => Ticket.ValidateDiscount(discount)) is null
-            ? discount
-            : null;
+    private int? ValidDiscount => AmountInput.ValidDiscount(DiscountText);
 
-    private decimal? ValidPricePerKg =>
-        TryParsePricePerKg(out decimal pricePerKg)
-        && ValidateRule(() => Ticket.ValidatePricePerKg(pricePerKg)) is null
-            ? pricePerKg
-            : null;
+    private decimal? ValidPricePerKg => AmountInput.ValidPricePerKg(PricePerKgText);
 
     // Metodos publicos
 
@@ -209,35 +193,6 @@ public class RegisterAmountViewModel : ValidatableObject
 
     // Metodos privados
 
-    private static string FormatKg(decimal weight)
-    {
-        return $"{weight.ToString("N2", CultureInfo.CurrentCulture)} kg";
-    }
-
-    private static string FormatMoney(decimal amount)
-    {
-        return $"${amount.ToString("N2", CultureInfo.CurrentCulture)}";
-    }
-
-    private bool TryParseDiscount(out int discount)
-    {
-        // Solo digitos: sin signo, decimales ni separadores (RN-38)
-        return int.TryParse(
-            DiscountText.Trim(),
-            NumberStyles.None,
-            CultureInfo.CurrentCulture,
-            out discount);
-    }
-
-    private bool TryParsePricePerKg(out decimal pricePerKg)
-    {
-        return decimal.TryParse(
-            PricePerKgText,
-            PriceStyles,
-            CultureInfo.CurrentCulture,
-            out pricePerKg);
-    }
-
     private bool CanSave()
     {
         return _ticket is not null && !IsSaving;
@@ -252,11 +207,12 @@ public class RegisterAmountViewModel : ValidatableObject
         _validateOnChange = true;
 
         // Las reglas se revisan antes de ir a la base de datos
-        if (!ValidateAll())
+        if (!ValidateAll()
+            || ValidDiscount is not int discount
+            || ValidPricePerKg is not decimal pricePerKg)
+        {
             return;
-
-        TryParseDiscount(out int discount);
-        TryParsePricePerKg(out decimal pricePerKg);
+        }
 
         IsSaving = true;
 
@@ -324,10 +280,7 @@ public class RegisterAmountViewModel : ValidatableObject
 
     private bool ValidateDiscount()
     {
-        string? error =
-            string.IsNullOrWhiteSpace(DiscountText) ? "El descuento es obligatorio."
-            : !TryParseDiscount(out int discount) ? "El descuento debe ser un número entero entre 0 y 99."
-            : ValidateRule(() => Ticket.ValidateDiscount(discount));
+        string? error = AmountInput.DiscountError(DiscountText);
 
         SetError(nameof(DiscountText), error);
 
@@ -336,10 +289,7 @@ public class RegisterAmountViewModel : ValidatableObject
 
     private bool ValidatePricePerKg()
     {
-        string? error =
-            string.IsNullOrWhiteSpace(PricePerKgText) ? "El precio por kilogramo es obligatorio."
-            : !TryParsePricePerKg(out decimal pricePerKg) ? "Escribe el precio como un número, por ejemplo 3.50."
-            : ValidateRule(() => Ticket.ValidatePricePerKg(pricePerKg));
+        string? error = AmountInput.PricePerKgError(PricePerKgText);
 
         SetError(nameof(PricePerKgText), error);
 
