@@ -21,6 +21,9 @@ public class GetTicketFilterOptionsTests
         public Task<IReadOnlyList<CatalogOption>> GetMaterialsInUseAsync()
             => Task.FromResult(Materials);
 
+        public Task<DayWeighingTotals> GetDayTotalsAsync(DateTime from, DateTime to)
+            => throw new NotImplementedException();
+
         public Task<PurchaseTicketDetail?> GetDetailAsync(int id)
             => throw new NotImplementedException();
 

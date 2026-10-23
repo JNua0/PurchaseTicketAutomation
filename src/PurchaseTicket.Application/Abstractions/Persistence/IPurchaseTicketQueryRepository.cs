@@ -25,4 +25,7 @@ public interface IPurchaseTicketQueryRepository
     Task<IReadOnlyList<CatalogOption>> GetSuppliersInUseAsync();
 
     Task<IReadOnlyList<CatalogOption>> GetMaterialsInUseAsync();
+
+    // Totales de los tickets cuyo ultimo pesaje cae en [from, to), en UTC
+    Task<DayWeighingTotals> GetDayTotalsAsync(DateTime from, DateTime to);
 }

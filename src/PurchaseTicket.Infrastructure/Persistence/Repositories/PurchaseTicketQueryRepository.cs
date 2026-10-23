@@ -141,6 +141,27 @@ public class PurchaseTicketQueryRepository
             totalCount);
     }
 
+    public async Task<DayWeighingTotals> GetDayTotalsAsync(DateTime from, DateTime to)
+    {
+        // Mismo criterio de "ultimo pesaje" que el filtro de fechas de GetPagedAsync
+        var totals = await _context.PurchaseTickets
+            .AsNoTracking()
+            .Where(ticket =>
+                ticket.Status != TicketStatus.Cancelled &&
+                (ticket.DepartureAt ?? ticket.CheckInAt) >= from &&
+                (ticket.DepartureAt ?? ticket.CheckInAt) < to)
+            .GroupBy(_ => 1)
+            .Select(group => new DayWeighingTotals(
+                group.Count(),
+                group.Count(ticket => ticket.WeighingType == WeighingType.Conventional),
+                group.Count(ticket => ticket.WeighingType == WeighingType.Single),
+                group.Sum(ticket => ticket.NetWeight) ?? 0m))
+            .SingleOrDefaultAsync();
+
+        // Sin tickets en el rango no hay grupo
+        return totals ?? new DayWeighingTotals(0, 0, 0, 0m);
+    }
+
     public async Task<PurchaseTicketDetail?> GetDetailAsync(int id)
     {
         var query =

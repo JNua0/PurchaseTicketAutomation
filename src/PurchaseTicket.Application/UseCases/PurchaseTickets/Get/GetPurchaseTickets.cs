@@ -44,23 +44,7 @@ public class GetPurchaseTickets
             query.MaterialId);
 
         var items = result.Items
-            .Select(item => new PurchaseTicketDto(
-                item.Id,
-                item.TicketNumber,
-                item.CheckInAt,
-                item.DepartureAt,
-                item.SupplierId,
-                item.MaterialId,
-                item.SupplierName,
-                item.MaterialName,
-                item.LicensePlate,
-                item.Transporter,
-                item.GrossWeight,
-                item.NetWeight,
-                item.FinalWeight,
-                item.Amount,
-                item.WeighingType,
-                item.Status))
+            .Select(PurchaseTicketDto.From)
             .ToList();
 
         return new PagedResult<PurchaseTicketDto>(

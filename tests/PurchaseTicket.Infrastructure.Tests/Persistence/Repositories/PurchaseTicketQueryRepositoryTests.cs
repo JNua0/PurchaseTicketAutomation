@@ -290,4 +290,49 @@ public class PurchaseTicketQueryRepositoryTests : InfrastructureTestBase
             new[] { "Acero", "Cobre" },
             materials.Select(m => m.Name));
     }
+
+    [Fact]
+    public async Task GetDayTotalsAsync_ShouldCountTodayWeighingsWithoutCancelled()
+    {
+        // Arrange
+        var supplier = new Supplier("Proveedor Norte");
+        var material = new Material("Acero");
+
+        Context.Suppliers.Add(supplier);
+        Context.Materials.Add(material);
+
+        await Context.SaveChangesAsync();
+
+        // En planta: cuenta como pesaje, pero aun no tiene peso neto
+        var inPlant = Ticket.CreateConventional("1", supplier.Id, material.Id, "ABC123", "Juan Perez", 25000m);
+
+        var withTare = Ticket.CreateConventional("2", supplier.Id, material.Id, "XYZ789", "Pedro Lopez", 25000m);
+        withTare.RegisterTare(10000m);
+
+        var single = Ticket.CreateSingle("3", supplier.Id, material.Id, null, "Juan Perez", 500m);
+
+        var cancelled = Ticket.CreateSingle("4", supplier.Id, material.Id, null, "Juan Perez", 900m);
+        cancelled.Cancel();
+
+        Context.PurchaseTickets.AddRange(inPlant, withTare, single, cancelled);
+
+        await Context.SaveChangesAsync();
+
+        var repository = new PurchaseTicketQueryRepository(Context);
+
+        var now = DateTime.UtcNow;
+
+        // Act
+        var today = await repository.GetDayTotalsAsync(now.AddHours(-1), now.AddHours(1));
+        var tomorrow = await repository.GetDayTotalsAsync(now.AddDays(1), now.AddDays(2));
+
+        // Assert
+        Assert.Equal(3, today.TicketCount);
+        Assert.Equal(2, today.ConventionalCount);
+        Assert.Equal(1, today.SingleCount);
+        Assert.Equal(15500m, today.NetWeight);
+
+        Assert.Equal(0, tomorrow.TicketCount);
+        Assert.Equal(0m, tomorrow.NetWeight);
+    }
 }
