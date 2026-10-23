@@ -40,6 +40,12 @@ public class PurchaseTicket
 
     public DateTime? DepartureAt { get; private set; }
 
+    // Cuando se registro el importe y el ticket quedo completado. Corregir
+    // despues el importe no la cambia: el ticket se completo ese dia
+    public DateTime? AmountRegisteredAt { get; private set; }
+
+    public DateTime? CancelledAt { get; private set; }
+
     public decimal? GrossWeight { get; private set; }
 
     public decimal? TareWeight { get; private set; }
@@ -252,8 +258,11 @@ public class PurchaseTicket
             throw new BusinessRuleException(
                 "Un ticket completado no puede cancelarse.");
 
+        var now = DateTime.UtcNow;
+
         Status = TicketStatus.Cancelled;
-        UpdatedAt = DateTime.UtcNow;
+        CancelledAt = now;
+        UpdatedAt = now;
     }
 
     public void RegisterTare(decimal tareWeight)
@@ -292,6 +301,7 @@ public class PurchaseTicket
         RecalculateAmount();
 
         Status = TicketStatus.Completed;
+        AmountRegisteredAt = DateTime.UtcNow;
     }
 
     public void ChangeSupplier(int supplierId)

@@ -65,6 +65,14 @@ namespace PurchaseTicket.Infrastructure.Persistence.Migrations
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("amount");
 
+                    b.Property<DateTime?>("AmountRegisteredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("amount_registered_at");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cancelled_at");
+
                     b.Property<DateTime>("CheckInAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("check_in_at");

@@ -209,4 +209,72 @@ public class PurchaseTicketRepositoryTests : InfrastructureTestBase
         Assert.NotNull(
             persistedTicket.DepartureAt);
     }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldPersistAmountRegisteredAtAndCancelledAt()
+    {
+        // Arrange
+        var supplier =
+            new Supplier(
+                "Proveedor Uno",
+                null);
+
+        var material =
+            new Material("Acero");
+
+        Context.Suppliers.Add(supplier);
+        Context.Materials.Add(material);
+
+        await Context.SaveChangesAsync();
+
+        var completedTicket =
+            Ticket.CreateSingle(
+                ticketNumber: "T-0001",
+                supplierId: supplier.Id,
+                materialId: material.Id,
+                licensePlate: null,
+                transporter: "Juan Perez",
+                netWeight: 500m);
+
+        var cancelledTicket =
+            Ticket.CreateConventional(
+                ticketNumber: "T-0002",
+                supplierId: supplier.Id,
+                materialId: material.Id,
+                licensePlate: "ABC123",
+                transporter: "Juan Perez",
+                grossWeight: 10000m);
+
+        Context.PurchaseTickets.AddRange(completedTicket, cancelledTicket);
+        await Context.SaveChangesAsync();
+
+        completedTicket.RegisterAmount(2, 5m);
+        cancelledTicket.Cancel();
+
+        var repository =
+            new PurchaseTicketRepository(Context);
+
+        // Act
+        await repository.UpdateAsync(completedTicket);
+        await repository.UpdateAsync(cancelledTicket);
+
+        Context.ChangeTracker.Clear();
+
+        // Assert
+        var persistedCompleted =
+            await Context.PurchaseTickets
+                .AsNoTracking()
+                .SingleAsync(ticket => ticket.Id == completedTicket.Id);
+
+        var persistedCancelled =
+            await Context.PurchaseTickets
+                .AsNoTracking()
+                .SingleAsync(ticket => ticket.Id == cancelledTicket.Id);
+
+        Assert.NotNull(persistedCompleted.AmountRegisteredAt);
+        Assert.Null(persistedCompleted.CancelledAt);
+
+        Assert.NotNull(persistedCancelled.CancelledAt);
+        Assert.Null(persistedCancelled.AmountRegisteredAt);
+    }
 }

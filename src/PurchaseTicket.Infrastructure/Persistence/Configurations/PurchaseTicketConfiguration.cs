@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PurchaseTicket.Domain.Entities;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
@@ -60,6 +60,12 @@ public class PurchaseTicketConfiguration
 
         builder.Property(ticket => ticket.DepartureAt)
             .HasColumnName("departure_at");
+
+        builder.Property(ticket => ticket.AmountRegisteredAt)
+            .HasColumnName("amount_registered_at");
+
+        builder.Property(ticket => ticket.CancelledAt)
+            .HasColumnName("cancelled_at");
 
         builder.Property(ticket => ticket.GrossWeight)
             .HasColumnName("gross_weight")

@@ -39,6 +39,9 @@ public class GetPurchaseTicketDetailTests
 
         public Task<IReadOnlyList<CatalogOption>> GetMaterialsInUseAsync()
             => throw new NotImplementedException();
+
+        public Task<DayWeighingTotals> GetDayTotalsAsync(DateTime from, DateTime to)
+            => throw new NotImplementedException();
     }
 
     [Fact]
