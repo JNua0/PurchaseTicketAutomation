@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using PurchaseTicket.Application.UseCases.Materials.Get;
 using PurchaseTicket.Desktop.ViewModels.Materials;
 using PurchaseTicket.Desktop.Views.Materials;
 
@@ -32,7 +33,7 @@ public class MaterialDialogService : IMaterialDialogService
     }
 
     // Mostrar formulario para editar un material
-    public bool ShowEditDialog(int materialId, string name)
+    public bool ShowEditDialog(MaterialDto material)
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -41,7 +42,7 @@ public class MaterialDialogService : IMaterialDialogService
 
         var viewModel = (MaterialFormViewModel)window.DataContext;
 
-        viewModel.InitializeForEdit(materialId, name);
+        viewModel.InitializeForEdit(material);
 
         window.Owner = System.Windows.Application.Current.MainWindow;
 

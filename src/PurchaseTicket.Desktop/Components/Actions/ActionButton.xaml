@@ -126,6 +126,20 @@
                                 Value="{StaticResource ErrorSoftBrush}"/>
                     </DataTrigger>
 
+                    <!-- Success: relleno verde, crear un registro. Texto oscuro
+                         porque el blanco no se lee bien sobre el verde -->
+                    <DataTrigger Binding="{Binding Variant, ElementName=Root}"
+                                 Value="Success">
+                        <Setter Property="Background"
+                                Value="{StaticResource EcoGreenBrush}"/>
+                        <Setter Property="BorderBrush"
+                                Value="{StaticResource EcoGreenBrush}"/>
+                        <Setter Property="Foreground"
+                                Value="{StaticResource PrimaryTextBrush}"/>
+                        <Setter Property="Tag"
+                                Value="{StaticResource EcoGreenDarkBrush}"/>
+                    </DataTrigger>
+
                     <!-- Compacto: dentro de las filas de una tabla -->
                     <DataTrigger Binding="{Binding IsCompact, ElementName=Root}"
                                  Value="True">

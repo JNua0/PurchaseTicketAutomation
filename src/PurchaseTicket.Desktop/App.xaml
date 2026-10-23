@@ -1,7 +1,8 @@
 ﻿<Application x:Class="PurchaseTicket.Desktop.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:PurchaseTicket.Desktop">
+             xmlns:local="clr-namespace:PurchaseTicket.Desktop"
+             xmlns:converters="clr-namespace:PurchaseTicket.Desktop.Converters">
 
     <Application.Resources>
         <ResourceDictionary>
@@ -21,7 +22,10 @@
 
             <!-- Convierte true/false en Visible/Collapsed -->
             <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
-            
+
+            <!-- Telefono de 10 digitos como "911 234 5678"; sin telefono, "Sin registrar" -->
+            <converters:PhoneNumberDisplayConverter x:Key="PhoneNumberDisplay"/>
+
         </ResourceDictionary>
     </Application.Resources>
 

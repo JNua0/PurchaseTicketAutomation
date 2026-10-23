@@ -135,9 +135,7 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
 
     private async Task EditMaterialAsync(MaterialDto material)
     {
-        bool saved = _materialDialogService.ShowEditDialog(
-            material.Id,
-            material.Name);
+        bool saved = _materialDialogService.ShowEditDialog(material);
 
         if (!saved)
             return;
@@ -153,14 +151,22 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
 
     private async Task ChangeMaterialStatusAsync(MaterialDto material)
     {
-        string action = material.IsActive
-            ? "desactivar"
-            : "activar";
+        var request = material.IsActive
+            ? new ConfirmationRequest(
+                $"¿Desactivar el material {material.Name}?",
+                "Ya no aparecerá al registrar pesajes nuevos. Sus tickets no cambian " +
+                "y puedes activarlo de nuevo cuando quieras.",
+                "Desactivar",
+                ConfirmationKind.Danger,
+                "DeactivateIcon")
+            : new ConfirmationRequest(
+                $"¿Activar el material {material.Name}?",
+                "Volverá a aparecer al registrar pesajes nuevos.",
+                "Activar",
+                ConfirmationKind.Positive,
+                "ActivateIcon");
 
-        bool confirmed = _confirmationDialogService.Confirm(
-            "Confirmar cambio de estado",
-            $"¿Estás seguro de que deseas {action} el material " +
-            $"\"{material.Name}\"?");
+        bool confirmed = _confirmationDialogService.Confirm(request);
 
         if (!confirmed)
             return;

@@ -18,14 +18,14 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"
                                   MinWidth="150"/>
-                <ColumnDefinition Width="190"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <!-- Busqueda por nombre -->
             <filters:SearchBox
                 Grid.Column="0"
                 Margin="0,0,15,0"
-                Label="Buscar material"
+                Label="Buscar material por nombre"
                 SearchText="{Binding SearchText, Mode=TwoWay}"
                 SearchCommand="{Binding SearchCommand}"
                 IsLoading="{Binding IsLoading}"/>

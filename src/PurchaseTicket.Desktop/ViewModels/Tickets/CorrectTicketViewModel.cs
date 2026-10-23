@@ -418,7 +418,7 @@ public sealed class CorrectTicketViewModel : ValidatableObject
         if (original is not T saved)
             return string.Empty;
 
-        return Equals(current, saved) ? "Sin cambio" : $"Antes {format(saved)}";
+        return ChangeHint.Describe(!Equals(current, saved), format(saved));
     }
 
     // El valor nuevo solo si el campo se puede corregir y es distinto de lo guardado

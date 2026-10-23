@@ -13,5 +13,8 @@ public enum ActionButtonVariant
     Secondary,
 
     // Contorno rojo: acciones destructivas, como cancelar un ticket
-    Danger
+    Danger,
+
+    // Relleno verde: crear un registro desde el encabezado de una pantalla
+    Success
 }

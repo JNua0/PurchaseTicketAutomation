@@ -133,10 +133,7 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
 
     private async Task EditSupplierAsync(SupplierDto supplier)
     {
-        bool saved = _supplierDialogService.ShowEditDialog(
-            supplier.Id,
-            supplier.Name,
-            supplier.PhoneNumber);
+        bool saved = _supplierDialogService.ShowEditDialog(supplier);
 
         if (!saved)
             return;
@@ -152,14 +149,22 @@ public class SuppliersViewModel : PagedListViewModel<SupplierDto>
 
     private async Task ChangeSupplierStatusAsync(SupplierDto supplier)
     {
-        string action = supplier.IsActive
-            ? "desactivar"
-            : "activar";
+        var request = supplier.IsActive
+            ? new ConfirmationRequest(
+                $"¿Desactivar a {supplier.Name}?",
+                "Ya no aparecerá al registrar pesajes nuevos. Sus tickets no cambian " +
+                "y puedes activarlo de nuevo cuando quieras.",
+                "Desactivar",
+                ConfirmationKind.Danger,
+                "DeactivateUserIcon")
+            : new ConfirmationRequest(
+                $"¿Activar a {supplier.Name}?",
+                "Volverá a aparecer al registrar pesajes nuevos.",
+                "Activar",
+                ConfirmationKind.Positive,
+                "ActivateUserIcon");
 
-        bool confirmed = _confirmationDialogService.Confirm(
-            "Confirmar cambio de estado",
-            $"¿Estás seguro de que deseas {action} al proveedor " +
-            $"\"{supplier.Name}\"?");
+        bool confirmed = _confirmationDialogService.Confirm(request);
 
         if (!confirmed)
             return;

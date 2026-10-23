@@ -36,10 +36,13 @@ public sealed class TicketActionsService : ITicketActionsService
 
     public async Task<CancelTicketOutcome> CancelAsync(int ticketId, string ticketNumber)
     {
-        bool confirmed = _confirmationDialogService.Confirm(
+        // "Volver" en lugar de "Cancelar" para no confundirlo con "Cancelar ticket"
+        bool confirmed = _confirmationDialogService.Confirm(new ConfirmationRequest(
+            $"¿Cancelar el ticket folio {ticketNumber}?",
+            "El ticket queda como Cancelado: ya no se puede corregir ni reimprimir. " +
+            "Esta acción no se puede deshacer.",
             "Cancelar ticket",
-            $"¿Deseas cancelar el ticket folio {ticketNumber}? " +
-            "Esta acción no se puede deshacer.");
+            CancelText: "Volver"));
 
         if (!confirmed)
             return CancelTicketOutcome.NotConfirmed;

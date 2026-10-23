@@ -27,9 +27,10 @@
 
                     <layout:PageHeader.Actions>
 
-                        <actions:CreateActionButton
-                            Text="Nuevo pesaje"
-                            Command="{Binding NewWeighingCommand}"/>
+                        <actions:ActionButton Text="Nuevo pesaje"
+                                              Icon="{StaticResource PlusIcon}"
+                                              Variant="Success"
+                                              Command="{Binding NewWeighingCommand}"/>
 
                     </layout:PageHeader.Actions>
 

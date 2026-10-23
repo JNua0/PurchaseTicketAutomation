@@ -4,121 +4,105 @@
         xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
         xmlns:forms="clr-namespace:PurchaseTicket.Desktop.Components.Forms"
         Title="{Binding WindowTitle}"
-        Width="520"
-        MinWidth="480"
+        Width="560"
         SizeToContent="Height"
-        MaxHeight="650"
+        MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource ContentBrush}"
         Closing="Window_Closing">
 
-    <!-- Contenedor principal -->
-    <Grid Margin="25">
+    <!-- Misma estructura que las demas ventanas de formulario -->
+    <forms:DialogLayout Title="{Binding WindowTitle}"
+                        Description="{Binding Description}">
 
-        <Grid.RowDefinitions>
-            <!-- Encabezado -->
-            <RowDefinition Height="Auto"/>
+        <!-- Al editar: si el material esta activo o inactivo -->
+        <forms:DialogLayout.HeaderContent>
 
-            <!-- Campos y mensajes -->
-            <RowDefinition Height="Auto"/>
+            <feedback:StatusBadge Text="{Binding StatusText}"
+                                  Kind="{Binding StatusKind}"
+                                  Visibility="{Binding IsEditMode,
+                                                       Converter={StaticResource BoolToVisibility}}"/>
 
-            <!-- Botones -->
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+        </forms:DialogLayout.HeaderContent>
 
-        <!-- Encabezado reutilizable -->
-        <forms:FormHeader
-            Grid.Row="0"
-            Title="{Binding WindowTitle}"
-            Description="Información del material"
-            Margin="0,0,0,24"/>
+        <forms:DialogLayout.BodyContent>
 
-        <!-- Contenido del formulario -->
-        <StackPanel Grid.Row="1">
-
-            <!-- Campos editables -->
             <StackPanel>
 
-                <StackPanel.Style>
-                    <Style TargetType="StackPanel">
+                <!-- Campos bloqueados mientras se guarda -->
+                <StackPanel>
 
-                        <Style.Triggers>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSaving}"
+                                             Value="True">
+                                    <Setter Property="IsEnabled"
+                                            Value="False"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
 
-                            <!-- Bloquear campos durante el guardado -->
-                            <DataTrigger Binding="{Binding IsSaving}"
-                                         Value="True">
+                    <StackPanel>
+                        <forms:FormTextField Label="Nombre del material"
+                                             IsRequired="True"
+                                             FocusOnLoad="True"
+                                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             MaxLength="50"
+                                             CounterLimit="50"/>
 
-                                <Setter Property="IsEnabled"
-                                        Value="False"/>
+                        <!-- "Sin cambio" o "Antes ..."; vacio al registrar -->
+                        <TextBlock Text="{Binding NameHint}"
+                                   Style="{StaticResource ChangeHintStyle}"
+                                   Visibility="{Binding IsEditMode,
+                                                        Converter={StaticResource BoolToVisibility}}"/>
+                    </StackPanel>
 
-                            </DataTrigger>
+                </StackPanel>
 
-                        </Style.Triggers>
+                <!-- Indicador de guardado -->
+                <TextBlock Text="Guardando material..."
+                           FontSize="13"
+                           FontStyle="Italic"
+                           Margin="0,14,0,0"
+                           Foreground="{StaticResource SecondaryTextBrush}"
+                           Visibility="{Binding IsSaving,
+                                                Converter={StaticResource BoolToVisibility}}"/>
 
-                    </Style>
-                </StackPanel.Style>
-
-                <!-- Nombre del material -->
-                <forms:FormTextField
-                    Label="Nombre del material"
-                    IsRequired="True"
-                    FocusOnLoad="True"
-                    Text="{Binding Name,
-                                   Mode=TwoWay,
-                                   UpdateSourceTrigger=PropertyChanged}"
-                    MaxLength="50"
-                    Margin="0,0,0,15"/>
+                <!-- Errores generales, como no haber cambiado nada -->
+                <feedback:QueryStatus Margin="0,14,0,0"
+                                      ErrorMessage="{Binding ErrorMessage}"
+                                      IsLoading="False"/>
 
             </StackPanel>
 
-            <!-- Indicador de guardado -->
-            <TextBlock Text="Guardando material..."
+        </forms:DialogLayout.BodyContent>
+
+        <!-- Los tickets leen el nombre actual: un cambio se ve tambien en los ya registrados -->
+        <forms:DialogLayout.FooterContent>
+
+            <TextBlock Text="Los tickets muestran el nombre nuevo"
                        FontSize="13"
-                       FontStyle="Italic"
-                       Foreground="{StaticResource SecondaryTextBrush}">
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource SecondaryTextBrush}"
+                       Visibility="{Binding IsEditMode,
+                                            Converter={StaticResource BoolToVisibility}}"/>
 
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
+        </forms:DialogLayout.FooterContent>
 
-                        <Setter Property="Visibility"
-                                Value="Collapsed"/>
+        <forms:DialogLayout.Actions>
 
-                        <Style.Triggers>
+            <forms:FormActions SaveButtonText="{Binding SaveButtonText}"
+                               SaveCommand="{Binding SaveCommand}"
+                               CancelCommand="{Binding CancelCommand,
+                                                       RelativeSource={RelativeSource AncestorType=Window}}"
+                               IsSaving="{Binding IsSaving}"/>
 
-                            <DataTrigger Binding="{Binding IsSaving}"
-                                         Value="True">
+        </forms:DialogLayout.Actions>
 
-                                <Setter Property="Visibility"
-                                        Value="Visible"/>
-
-                            </DataTrigger>
-
-                        </Style.Triggers>
-
-                    </Style>
-                </TextBlock.Style>
-
-            </TextBlock>
-
-            <!-- Mensaje de error reutilizable -->
-            <feedback:QueryStatus
-                ErrorMessage="{Binding ErrorMessage}"
-                IsLoading="False"
-                Margin="0,10,0,0"/>
-
-        </StackPanel>
-
-        <!-- Acciones reutilizables -->
-        <forms:FormActions
-            Grid.Row="2"
-            Margin="0,20,0,0"
-            SaveButtonText="{Binding SaveButtonText}"
-            SaveCommand="{Binding SaveCommand}"
-            CancelCommand="{Binding CancelCommand,
-                                    RelativeSource={RelativeSource AncestorType=Window}}"
-            IsSaving="{Binding IsSaving}"/>
-
-    </Grid>
+    </forms:DialogLayout>
 
 </Window>

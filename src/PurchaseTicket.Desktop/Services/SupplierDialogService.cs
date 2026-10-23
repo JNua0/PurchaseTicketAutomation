@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using PurchaseTicket.Application.UseCases.Suppliers.Get;
 using PurchaseTicket.Desktop.ViewModels.Suppliers;
 using PurchaseTicket.Desktop.Views.Suppliers;
 
@@ -29,10 +30,7 @@ public class SupplierDialogService : ISupplierDialogService
         return window.ShowDialog() == true;
     }
 
-    public bool ShowEditDialog(
-        int supplierId,
-        string name,
-        string? phoneNumber)
+    public bool ShowEditDialog(SupplierDto supplier)
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -41,10 +39,7 @@ public class SupplierDialogService : ISupplierDialogService
 
         var viewModel = (SupplierFormViewModel)window.DataContext;
 
-        viewModel.InitializeForEdit(
-            supplierId,
-            name,
-            phoneNumber);
+        viewModel.InitializeForEdit(supplier);
 
         window.Owner = System.Windows.Application.Current.MainWindow;
 

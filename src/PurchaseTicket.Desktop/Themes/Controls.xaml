@@ -221,81 +221,6 @@
 
     </Style>
 
-    <!-- Boton principal reutilizable -->
-    <Style x:Key="PrimaryButtonStyle"
-       TargetType="Button">
-
-        <Setter Property="Height" Value="38"/>
-        <Setter Property="Padding" Value="18,0"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="FontWeight" Value="Medium"/>
-        <Setter Property="Background"
-            Value="{StaticResource EcoBlueBrush}"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Cursor" Value="Hand"/>
-
-        <Setter Property="Template">
-            <Setter.Value>
-
-                <ControlTemplate TargetType="Button">
-
-                    <Border x:Name="ButtonBorder"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="8">
-
-                        <ContentPresenter
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Margin="{TemplateBinding Padding}"/>
-
-                    </Border>
-
-                    <ControlTemplate.Triggers>
-
-                        <!-- Efecto al pasar el cursor -->
-                        <Trigger Property="IsMouseOver"
-                             Value="True">
-
-                            <Setter TargetName="ButtonBorder"
-                                Property="Background"
-                                Value="{StaticResource EcoBlueDarkBrush}"/>
-
-                        </Trigger>
-
-                        <!-- Efecto al presionar -->
-                        <Trigger Property="IsPressed"
-                             Value="True">
-
-                            <Setter TargetName="ButtonBorder"
-                                Property="Opacity"
-                                Value="0.85"/>
-
-                        </Trigger>
-
-                        <!-- Estado deshabilitado -->
-                        <Trigger Property="IsEnabled"
-                             Value="False">
-
-                            <Setter Property="Opacity"
-                                Value="0.45"/>
-
-                            <Setter Property="Cursor"
-                                Value="Arrow"/>
-
-                        </Trigger>
-
-                    </ControlTemplate.Triggers>
-
-                </ControlTemplate>
-
-            </Setter.Value>
-        </Setter>
-
-    </Style>
-
     <!-- Estilo base para botones de acciones -->
     <Style x:Key="ActionButtonBaseStyle"
        TargetType="Button">
@@ -361,70 +286,23 @@
     </Style>
 
 
-    <!-- Boton verde para acciones de creacion -->
-    <Style x:Key="SuccessButtonStyle"
-       TargetType="Button"
-       BasedOn="{StaticResource PrimaryButtonStyle}">
-
-        <Setter Property="Background"
-            Value="#84CC16"/>
-
+    <!-- "Sin cambio" o "Antes 5,000" debajo de un campo -->
+    <Style x:Key="ChangeHintStyle"
+           TargetType="TextBlock">
+        <Setter Property="FontSize"
+                Value="12"/>
+        <Setter Property="Margin"
+                Value="0,4,0,0"/>
+        <!-- Lo que cambio se resalta en ambar; "Sin cambio" queda en gris -->
         <Setter Property="Foreground"
-            Value="#544848"/>
-
-        <Setter Property="Template">
-            <Setter.Value>
-
-                <ControlTemplate TargetType="Button">
-
-                    <Border x:Name="ButtonBorder"
-                        Background="{TemplateBinding Background}"
-                        CornerRadius="12">
-
-                        <ContentPresenter HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"
-                                      Margin="{TemplateBinding Padding}"/>
-
-                    </Border>
-
-                    <ControlTemplate.Triggers>
-
-                        <!-- Hover verde oscuro -->
-                        <Trigger Property="IsMouseOver"
-                             Value="True">
-
-                            <Setter TargetName="ButtonBorder"
-                                Property="Background"
-                                Value="#65A30D"/>
-
-                        </Trigger>
-
-                        <!-- Boton presionado -->
-                        <Trigger Property="IsPressed"
-                             Value="True">
-
-                            <Setter TargetName="ButtonBorder"
-                                Property="Background"
-                                Value="#4D7C0F"/>
-
-                        </Trigger>
-
-                        <!-- Boton deshabilitado -->
-                        <Trigger Property="IsEnabled"
-                             Value="False">
-
-                            <Setter Property="Opacity"
-                                Value="0.5"/>
-
-                        </Trigger>
-
-                    </ControlTemplate.Triggers>
-
-                </ControlTemplate>
-
-            </Setter.Value>
-        </Setter>
-
+                Value="{StaticResource WarningTextBrush}"/>
+        <Style.Triggers>
+            <Trigger Property="Text"
+                     Value="Sin cambio">
+                <Setter Property="Foreground"
+                        Value="{StaticResource SecondaryTextBrush}"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!-- Titulo de seccion dentro de un formulario, como "DATOS DE LA OPERACIÓN" -->

@@ -28,9 +28,10 @@
                     <layout:PageHeader.Actions>
 
                         <!-- Accion para registrar materiales -->
-                        <actions:CreateActionButton
-                            Text="Nuevo material"
-                            Command="{Binding NewMaterialCommand}"/>
+                        <actions:ActionButton Text="Nuevo material"
+                                              Icon="{StaticResource PlusIcon}"
+                                              Variant="Success"
+                                              Command="{Binding NewMaterialCommand}"/>
 
                     </layout:PageHeader.Actions>
 
