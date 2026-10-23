@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.TicketNumbers;
+using PurchaseTicket.Application.UseCases.Home.GetSummary;
 using PurchaseTicket.Application.UseCases.Materials.Activate;
 using PurchaseTicket.Application.UseCases.Materials.Create;
 using PurchaseTicket.Application.UseCases.Materials.Deactivate;
@@ -101,6 +102,9 @@ public partial class App : System.Windows.Application
                 services.AddTransient<MainWindow>();
                 services.AddTransient<MainViewModel>();
                 services.AddTransient<HomeViewModel>();
+
+                // Resumen de Inicio
+                services.AddScoped<GetHomeSummary>();
 
                 // Supplier repositories
                 services.AddScoped<ISupplierRepository, SupplierRepository>();

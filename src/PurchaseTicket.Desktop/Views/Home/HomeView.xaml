@@ -1,7 +1,159 @@
 ﻿<UserControl x:Class="PurchaseTicket.Desktop.Views.Home.HomeView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:layout="clr-namespace:PurchaseTicket.Desktop.Components.Layout">
+             xmlns:layout="clr-namespace:PurchaseTicket.Desktop.Components.Layout"
+             xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
+             xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions"
+                          Loaded="OnLoaded"
+             Unloaded="OnUnloaded">
+
+    <UserControl.Resources>
+
+        <!-- Tarjetas y listas: el mismo marco blanco de las tablas -->
+        <Style x:Key="HomeCardStyle"
+               TargetType="Border">
+            <Setter Property="Background"
+                    Value="{StaticResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource BorderBrushLight}"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="CornerRadius"
+                    Value="12"/>
+            <Setter Property="Padding"
+                    Value="20,16"/>
+        </Style>
+
+        <!-- Icono de cada tarjeta, en un cuadro de color suave -->
+        <Style x:Key="CardIconBoxStyle"
+               TargetType="Border">
+            <Setter Property="Width"
+                    Value="34"/>
+            <Setter Property="Height"
+                    Value="34"/>
+            <Setter Property="CornerRadius"
+                    Value="9"/>
+            <Setter Property="Margin"
+                    Value="0,0,10,0"/>
+        </Style>
+
+        <Style x:Key="CardIconStyle"
+               TargetType="Path">
+            <Setter Property="Width"
+                    Value="18"/>
+            <Setter Property="Height"
+                    Value="18"/>
+            <Setter Property="Stretch"
+                    Value="Uniform"/>
+            <Setter Property="StrokeThickness"
+                    Value="1.8"/>
+            <Setter Property="StrokeStartLineCap"
+                    Value="Round"/>
+            <Setter Property="StrokeEndLineCap"
+                    Value="Round"/>
+            <Setter Property="StrokeLineJoin"
+                    Value="Round"/>
+        </Style>
+
+        <Style x:Key="CardLabelStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="14"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="VerticalAlignment"
+                    Value="Center"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource PrimaryTextBrush}"/>
+        </Style>
+
+        <Style x:Key="CardValueStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="30"/>
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource PrimaryTextBrush}"/>
+        </Style>
+
+        <Style x:Key="CardUnitStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="14"/>
+            <Setter Property="Margin"
+                    Value="8,0,0,4"/>
+            <Setter Property="VerticalAlignment"
+                    Value="Bottom"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource SecondaryTextBrush}"/>
+        </Style>
+
+        <Style x:Key="CardNoteStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="13"/>
+            <Setter Property="Margin"
+                    Value="0,8,0,0"/>
+            <Setter Property="TextTrimming"
+                    Value="CharacterEllipsis"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource SecondaryTextBrush}"/>
+        </Style>
+
+        <Style x:Key="ListTitleStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="17"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="VerticalAlignment"
+                    Value="Center"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource PrimaryTextBrush}"/>
+        </Style>
+
+        <!-- Cada fila de las listas, separada por una linea arriba -->
+        <Style x:Key="ListRowStyle"
+               TargetType="Border">
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource BorderBrushLight}"/>
+            <Setter Property="BorderThickness"
+                    Value="0,1,0,0"/>
+            <Setter Property="Padding"
+                    Value="0,9"/>
+        </Style>
+
+        <!-- Sin filas: el mensaje de lista vacia -->
+        <Style x:Key="EmptyListStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="14"/>
+            <Setter Property="Margin"
+                    Value="0,14,0,0"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource SecondaryTextBrush}"/>
+        </Style>
+
+        <!-- Estado de un dispositivo: la etiqueta abre Configuracion -->
+        <Style x:Key="DeviceButtonStyle"
+               TargetType="Button">
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Margin"
+                    Value="0,0,10,0"/>
+            <Setter Property="ToolTip"
+                    Value="Abrir Configuración"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </UserControl.Resources>
 
     <layout:PageLayout>
 
@@ -11,38 +163,391 @@
 
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Bloque 1: Encabezado -->
+                <!-- Bloque 1: Encabezado con la fecha, los dispositivos y Nuevo pesaje -->
                 <layout:PageHeader Grid.Row="0"
                                    Title="Inicio"
-                                   Description="Bienvenido a PurchaseTicket Automation"/>
+                                   Description="{Binding Description}">
 
-                <!-- Bloque 2: Contenido principal -->
-                <Border Grid.Row="1"
-                        Background="{StaticResource SurfaceBrush}"
-                        BorderBrush="{StaticResource BorderBrushLight}"
-                        BorderThickness="1"
-                        CornerRadius="12"
-                        Padding="20"
-                        VerticalAlignment="Top">
+                    <layout:PageHeader.Actions>
 
-                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
 
-                        <TextBlock Text="Panel principal"
-                                   FontSize="20"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource PrimaryTextBrush}"/>
+                            <!-- Pesaje no funciona sin ellos: es lo primero que conviene ver -->
+                            <Button Style="{StaticResource DeviceButtonStyle}"
+                                    Command="{Binding DataContext.ShowSettingsCommand,
+                                                      RelativeSource={RelativeSource AncestorType=Window}}">
+                                <feedback:StatusBadge Text="{Binding Indicator.Text}"
+                                                      Kind="{Binding Indicator.Kind}"/>
+                            </Button>
 
-                        <TextBlock Text="Selecciona una opción del menú lateral para comenzar."
-                                   Foreground="{StaticResource SecondaryTextBrush}"
-                                   TextWrapping="Wrap"
-                                   Margin="0,10,0,0"/>
+                            <Button Style="{StaticResource DeviceButtonStyle}"
+                                    Margin="0,0,16,0"
+                                    Command="{Binding DataContext.ShowSettingsCommand,
+                                                      RelativeSource={RelativeSource AncestorType=Window}}">
+                                <feedback:StatusBadge Text="{Binding Printer.Text}"
+                                                      Kind="{Binding Printer.Kind}"/>
+                            </Button>
 
-                    </StackPanel>
+                            <actions:ActionButton Text="Nuevo pesaje"
+                                                  Icon="{StaticResource PlusIcon}"
+                                                  Variant="Success"
+                                                  Command="{Binding NewWeighingCommand}"/>
 
-                </Border>
+                        </StackPanel>
+
+                    </layout:PageHeader.Actions>
+
+                </layout:PageHeader>
+
+                <!-- Si falla una actualizacion se conservan los ultimos datos -->
+                <feedback:QueryStatus Grid.Row="1"
+                                      Margin="0,0,0,14"
+                                      IsLoading="False"
+                                      ErrorMessage="{Binding ErrorMessage}"/>
+
+                <!-- Bloque 2: Tarjetas del dia -->
+                <UniformGrid Grid.Row="2"
+                             Rows="1"
+                             Margin="0,0,0,16">
+
+                    <!-- En planta: en ambar si hay vehiculos esperando -->
+                    <Border Margin="0,0,8,0">
+                        <Border.Style>
+                            <Style TargetType="Border"
+                                   BasedOn="{StaticResource HomeCardStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasInPlant}"
+                                                 Value="True">
+                                        <Setter Property="BorderBrush"
+                                                Value="{StaticResource WarningBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource CardIconBoxStyle}"
+                                        Background="{StaticResource WarningSoftBrush}">
+                                    <Path Data="{StaticResource TruckIcon}"
+                                          Style="{StaticResource CardIconStyle}"
+                                          Stroke="{StaticResource WarningTextBrush}"/>
+                                </Border>
+                                <TextBlock Text="En planta"
+                                           Style="{StaticResource CardLabelStyle}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,10,0,0">
+                                <TextBlock Text="{Binding InPlantCount}"
+                                           Style="{StaticResource CardValueStyle}"/>
+                                <TextBlock Text="{Binding InPlantUnit}"
+                                           Style="{StaticResource CardUnitStyle}"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding InPlantNote}"
+                                       Style="{StaticResource CardNoteStyle}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource HomeCardStyle}"
+                            Margin="8,0,8,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource CardIconBoxStyle}"
+                                        Background="{StaticResource InfoSoftBrush}">
+                                    <Path Data="{StaticResource TicketAmountIcon}"
+                                          Style="{StaticResource CardIconStyle}"
+                                          Stroke="{StaticResource InfoBrush}"/>
+                                </Border>
+                                <TextBlock Text="Pendientes de importe"
+                                           Style="{StaticResource CardLabelStyle}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,10,0,0">
+                                <TextBlock Text="{Binding AmountPendingCount}"
+                                           Style="{StaticResource CardValueStyle}"/>
+                                <TextBlock Text="{Binding AmountPendingUnit}"
+                                           Style="{StaticResource CardUnitStyle}"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding AmountPendingNote}"
+                                       Style="{StaticResource CardNoteStyle}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource HomeCardStyle}"
+                            Margin="8,0,8,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource CardIconBoxStyle}"
+                                        Background="{StaticResource NeutralSoftBrush}">
+                                    <Path Data="{StaticResource ScaleIcon}"
+                                          Style="{StaticResource CardIconStyle}"
+                                          Stroke="{StaticResource PrimaryTextBrush}"/>
+                                </Border>
+                                <TextBlock Text="Kilos de hoy"
+                                           Style="{StaticResource CardLabelStyle}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,10,0,0">
+                                <TextBlock Text="{Binding TodayNetWeightText}"
+                                           Style="{StaticResource CardValueStyle}"/>
+                                <TextBlock Text="kg"
+                                           Style="{StaticResource CardUnitStyle}"/>
+                            </StackPanel>
+                            <TextBlock Text="Peso neto, sin contar cancelados"
+                                       Style="{StaticResource CardNoteStyle}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource HomeCardStyle}"
+                            Margin="8,0,0,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource CardIconBoxStyle}"
+                                        Background="{StaticResource SuccessSoftBrush}">
+                                    <Path Data="{StaticResource TicketsIcon}"
+                                          Style="{StaticResource CardIconStyle}"
+                                          Stroke="{StaticResource SuccessBrush}"/>
+                                </Border>
+                                <TextBlock Text="Pesajes de hoy"
+                                           Style="{StaticResource CardLabelStyle}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,10,0,0">
+                                <TextBlock Text="{Binding TodayTicketCount}"
+                                           Style="{StaticResource CardValueStyle}"/>
+                                <TextBlock Text="{Binding TodayTicketUnit}"
+                                           Style="{StaticResource CardUnitStyle}"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding TodayBreakdown}"
+                                       Style="{StaticResource CardNoteStyle}"/>
+                        </StackPanel>
+                    </Border>
+
+                </UniformGrid>
+
+                <!-- Bloque 3: Lo que espera atencion, con la accion en cada fila -->
+                <Grid Grid.Row="3">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="1.15*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- En planta ahora -->
+                    <Border Grid.Column="0"
+                            Style="{StaticResource HomeCardStyle}"
+                            VerticalAlignment="Stretch">
+
+                        <StackPanel>
+
+                            <Grid Margin="0,0,0,10">
+                                <TextBlock Style="{StaticResource ListTitleStyle}">
+                                    <Run Text="En planta ahora"/>
+                                    <Run Text="·"
+                                         Foreground="{StaticResource SecondaryTextBrush}"
+                                         FontWeight="Normal"/>
+                                    <Run Text="{Binding InPlantListCount, Mode=OneWay}"
+                                         Foreground="{StaticResource SecondaryTextBrush}"
+                                         FontWeight="Normal"/>
+                                </TextBlock>
+
+                                <Button Content="Ver en Pesaje →"
+                                        Style="{StaticResource LinkButtonStyle}"
+                                        HorizontalAlignment="Right"
+                                        Command="{Binding DataContext.ShowVehicleWeighingCommand,
+                                                          RelativeSource={RelativeSource AncestorType=Window}}"/>
+                            </Grid>
+
+                            <ItemsControl ItemsSource="{Binding InPlant}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource ListRowStyle}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="52"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="96"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding Ticket.TicketNumber}"
+                                                           FontSize="14"
+                                                           FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                                                <StackPanel Grid.Column="1"
+                                                            VerticalAlignment="Center"
+                                                            Margin="0,0,10,0">
+                                                    <TextBlock Text="{Binding Ticket.LicensePlate}"
+                                                               FontSize="14"
+                                                               Foreground="{StaticResource PrimaryTextBrush}"/>
+                                                    <TextBlock Text="{Binding SupplierAndMaterial}"
+                                                               FontSize="12"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Foreground="{StaticResource SecondaryTextBrush}"/>
+                                                </StackPanel>
+
+                                                <!-- Mas de dos horas en planta: en ambar -->
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding Elapsed}"
+                                                           FontSize="14"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground"
+                                                                    Value="{StaticResource PrimaryTextBrush}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsLongStay}"
+                                                                             Value="True">
+                                                                    <Setter Property="Foreground"
+                                                                            Value="{StaticResource WarningTextBrush}"/>
+                                                                    <Setter Property="FontWeight"
+                                                                            Value="SemiBold"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+
+                                                <actions:ActionButton Grid.Column="3"
+                                                                      Text="Registrar tara"
+                                                                      Icon="{StaticResource ScaleIcon}"
+                                                                      Variant="Primary"
+                                                                      IsCompact="True"
+                                                                      Command="{Binding DataContext.RegisterTareCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                      CommandParameter="{Binding}"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="No hay vehículos en planta."
+                                       Style="{StaticResource EmptyListStyle}"
+                                       Visibility="{Binding IsInPlantEmpty,
+                                                            Converter={StaticResource BoolToVisibility}}"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    <!-- Pendientes de importe -->
+                    <Border Grid.Column="2"
+                            Style="{StaticResource HomeCardStyle}"
+                            VerticalAlignment="Stretch">
+
+                        <StackPanel>
+
+                            <Grid Margin="0,0,0,10">
+                                <TextBlock Style="{StaticResource ListTitleStyle}">
+                                    <Run Text="Pendientes de importe"/>
+                                    <Run Text="·"
+                                         Foreground="{StaticResource SecondaryTextBrush}"
+                                         FontWeight="Normal"/>
+                                    <Run Text="{Binding AmountPendingListCount, Mode=OneWay}"
+                                         Foreground="{StaticResource SecondaryTextBrush}"
+                                         FontWeight="Normal"/>
+                                </TextBlock>
+
+                                <Button Content="Ver en Importes →"
+                                        Style="{StaticResource LinkButtonStyle}"
+                                        HorizontalAlignment="Right"
+                                        Command="{Binding DataContext.ShowTicketAmountsCommand,
+                                                          RelativeSource={RelativeSource AncestorType=Window}}"/>
+                            </Grid>
+
+                            <ItemsControl ItemsSource="{Binding AmountPending}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource ListRowStyle}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="48"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding Ticket.TicketNumber}"
+                                                           FontSize="14"
+                                                           FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                                                <StackPanel Grid.Column="1"
+                                                            VerticalAlignment="Center"
+                                                            Margin="0,0,10,0">
+                                                    <TextBlock Text="{Binding Ticket.SupplierName}"
+                                                               FontSize="14"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Foreground="{StaticResource PrimaryTextBrush}"/>
+                                                    <TextBlock Text="{Binding Ticket.MaterialName}"
+                                                               FontSize="12"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Foreground="{StaticResource SecondaryTextBrush}"/>
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="2"
+                                                            VerticalAlignment="Center"
+                                                            Margin="0,0,14,0">
+                                                    <TextBlock Text="{Binding NetWeightText}"
+                                                               FontSize="14"
+                                                               FontWeight="SemiBold"
+                                                               HorizontalAlignment="Right"
+                                                               Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                                                    <!-- Pesado antes de hoy: en ambar -->
+                                                    <TextBlock Text="{Binding WeighedDate}"
+                                                               FontSize="12"
+                                                               HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground"
+                                                                        Value="{StaticResource SecondaryTextBrush}"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsFromPreviousDay}"
+                                                                                 Value="True">
+                                                                        <Setter Property="Foreground"
+                                                                                Value="{StaticResource WarningTextBrush}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+
+                                                <actions:ActionButton Grid.Column="3"
+                                                                      Text="Registrar importe"
+                                                                      Icon="{StaticResource MoneyIcon}"
+                                                                      Variant="Primary"
+                                                                      IsCompact="True"
+                                                                      Command="{Binding DataContext.RegisterAmountCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                      CommandParameter="{Binding}"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="No hay tickets pendientes de importe."
+                                       Style="{StaticResource EmptyListStyle}"
+                                       Visibility="{Binding IsAmountPendingEmpty,
+                                                            Converter={StaticResource BoolToVisibility}}"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </Grid>
 
             </Grid>
 

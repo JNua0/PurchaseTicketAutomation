@@ -63,19 +63,9 @@ public sealed record WeighingListItem(
             ticket.Status);
     }
 
-    // Metodos privados
-
-    // Npgsql ya devuelve UTC; esto solo protege de un DateTime sin tipo,
-    // que se interpretaria como hora local y desfasaria la conversion
-    private static DateTime AsUtc(DateTime value)
-    {
-        return value.Kind == DateTimeKind.Utc
-            ? value
-            : DateTime.SpecifyKind(value, DateTimeKind.Utc);
-    }
-
-    // "4 min", "3 h 01 min" o "1 d 2 h": basta para ver quien lleva mas tiempo
-    private static string FormatElapsed(TimeSpan elapsed)
+    // "4 min", "3 h 01 min" o "1 d 2 h": basta para ver quien lleva mas
+    // tiempo. Tambien lo usa Inicio en "En planta ahora"
+    public static string FormatElapsed(TimeSpan elapsed)
     {
         // Un reloj del equipo atrasado respecto al servidor daria negativo
         if (elapsed < TimeSpan.Zero)
@@ -88,5 +78,16 @@ public sealed record WeighingListItem(
             return $"{(int)elapsed.TotalHours} h {elapsed.Minutes:00} min";
 
         return $"{elapsed.Minutes} min";
+    }
+
+    // Metodos privados
+
+    // Npgsql ya devuelve UTC; esto solo protege de un DateTime sin tipo,
+    // que se interpretaria como hora local y desfasaria la conversion
+    private static DateTime AsUtc(DateTime value)
+    {
+        return value.Kind == DateTimeKind.Utc
+            ? value
+            : DateTime.SpecifyKind(value, DateTimeKind.Utc);
     }
 }
