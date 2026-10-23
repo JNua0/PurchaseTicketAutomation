@@ -16,7 +16,7 @@ public class MaterialDialogService : IMaterialDialogService
     }
 
     // Mostrar formulario para registrar un material
-    public bool ShowCreateDialog()
+    public string? ShowCreateDialog()
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -29,11 +29,11 @@ public class MaterialDialogService : IMaterialDialogService
 
         window.Owner = System.Windows.Application.Current.MainWindow;
 
-        return window.ShowDialog() == true;
+        return window.ShowDialog() == true ? viewModel.SavedName : null;
     }
 
     // Mostrar formulario para editar un material
-    public bool ShowEditDialog(MaterialDto material)
+    public string? ShowEditDialog(MaterialDto material)
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -46,6 +46,6 @@ public class MaterialDialogService : IMaterialDialogService
 
         window.Owner = System.Windows.Application.Current.MainWindow;
 
-        return window.ShowDialog() == true;
+        return window.ShowDialog() == true ? viewModel.SavedName : null;
     }
 }

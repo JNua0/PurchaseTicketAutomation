@@ -15,7 +15,7 @@ public class SupplierDialogService : ISupplierDialogService
         _scopeFactory = scopeFactory;
     }
 
-    public bool ShowCreateDialog()
+    public string? ShowCreateDialog()
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -27,10 +27,10 @@ public class SupplierDialogService : ISupplierDialogService
 
         window.Owner = System.Windows.Application.Current.MainWindow;
 
-        return window.ShowDialog() == true;
+        return window.ShowDialog() == true ? viewModel.SavedName : null;
     }
 
-    public bool ShowEditDialog(SupplierDto supplier)
+    public string? ShowEditDialog(SupplierDto supplier)
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -43,6 +43,6 @@ public class SupplierDialogService : ISupplierDialogService
 
         window.Owner = System.Windows.Application.Current.MainWindow;
 
-        return window.ShowDialog() == true;
+        return window.ShowDialog() == true ? viewModel.SavedName : null;
     }
 }

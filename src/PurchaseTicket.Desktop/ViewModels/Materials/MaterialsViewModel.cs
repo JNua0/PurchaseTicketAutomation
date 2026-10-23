@@ -122,10 +122,10 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
 
     private async Task NewMaterialAsync()
     {
-        if (!_materialDialogService.ShowCreateDialog())
+        if (_materialDialogService.ShowCreateDialog() is not string name)
             return;
 
-        _notifications.ShowSuccess("Material registrado correctamente.");
+        _notifications.ShowSuccess($"Material \"{name}\" registrado correctamente.");
 
         await ReloadAfterActionAsync(
             page: 1,
@@ -135,13 +135,12 @@ public class MaterialsViewModel : PagedListViewModel<MaterialDto>
 
     private async Task EditMaterialAsync(MaterialDto material)
     {
-        bool saved = _materialDialogService.ShowEditDialog(material);
-
-        if (!saved)
+        // El nombre nuevo, no el de la fila: pudo cambiar al editar
+        if (_materialDialogService.ShowEditDialog(material) is not string name)
             return;
 
         _notifications.ShowSuccess(
-            $"Material \"{material.Name}\" actualizado correctamente.");
+            $"Material \"{name}\" actualizado correctamente.");
 
         await ReloadAfterActionAsync(
             CurrentPage,

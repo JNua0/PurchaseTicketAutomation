@@ -4,7 +4,8 @@ namespace PurchaseTicket.Desktop.Services;
 
 public interface ISupplierDialogService
 {
-    bool ShowCreateDialog();
+    // Devuelven el nombre guardado, o null si se cancelo
+    string? ShowCreateDialog();
 
-    bool ShowEditDialog(SupplierDto supplier);
+    string? ShowEditDialog(SupplierDto supplier);
 }

@@ -147,6 +147,9 @@ public class SupplierFormViewModel : ValidatableObject
 
     public AsyncRelayCommand SaveCommand { get; }
 
+    // Nombre con el que quedo guardado, ya normalizado; lo usa el aviso de la lista
+    public string SavedName { get; private set; } = string.Empty;
+
     // Propiedades privadas
 
     // El telefono es opcional: un campo vacio se envia como null
@@ -256,6 +259,7 @@ public class SupplierFormViewModel : ValidatableObject
             else
                 await CreateAsync(scope.ServiceProvider);
 
+            SavedName = Supplier.NormalizeName(Name);
             saved = true;
         }
         catch (NameAlreadyExistsException ex)
