@@ -1,0 +1,143 @@
+﻿<Window x:Class="PurchaseTicket.Desktop.Views.Startup.StartupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions"
+        Title="EcoPapel Recycling | Tickets de Compra"
+        Width="520"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource ContentBrush}"
+        FontFamily="Segoe UI"
+        Closing="Window_Closing">
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0"
+                    Margin="28,24,28,24">
+
+            <!-- Marca: el mismo isotipo del menu lateral -->
+            <StackPanel Orientation="Horizontal"
+                        Margin="0,0,0,22">
+
+                <Border Width="40"
+                        Height="40"
+                        Padding="4"
+                        CornerRadius="10"
+                        Background="{StaticResource SurfaceBrush}"
+                        BorderBrush="{StaticResource BorderBrushLight}"
+                        BorderThickness="1">
+                    <Image Source="pack://application:,,,/PurchaseTicket.Desktop;component/Assets/Images/ecopapel_isotipo.png"
+                           Stretch="Uniform"/>
+                </Border>
+
+                <StackPanel Margin="10,0,0,0"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="EcoPapel"
+                               FontSize="15"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource PrimaryTextBrush}"/>
+                    <TextBlock Text="Tickets de compra"
+                               FontSize="12"
+                               Foreground="{StaticResource SecondaryTextBrush}"/>
+                </StackPanel>
+
+            </StackPanel>
+
+            <TextBlock Text="{Binding Title}"
+                       FontSize="20"
+                       FontWeight="SemiBold"
+                       TextWrapping="Wrap"
+                       Foreground="{StaticResource PrimaryTextBrush}"/>
+
+            <TextBlock Text="{Binding Message}"
+                       FontSize="14"
+                       LineHeight="21"
+                       TextWrapping="Wrap"
+                       Margin="0,8,0,0"
+                       Foreground="{StaticResource PrimaryTextBrush}"/>
+
+            <!-- Mientras trabaja: barra en movimiento -->
+            <ProgressBar IsIndeterminate="True"
+                         Height="4"
+                         Margin="0,18,0,0"
+                         BorderThickness="0"
+                         Background="{StaticResource NeutralSoftBrush}"
+                         Foreground="{StaticResource EcoBlueBrush}"
+                         Visibility="{Binding IsBusy,
+                                              Converter={StaticResource BoolToVisibility}}"/>
+
+            <!-- Motivo del fallo, como una carpeta que no existe -->
+            <Border Background="{StaticResource ErrorSoftBrush}"
+                    CornerRadius="8"
+                    Padding="14,10"
+                    Margin="0,16,0,0"
+                    Visibility="{Binding HasDetail,
+                                         Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{Binding Detail}"
+                           FontSize="13"
+                           TextWrapping="Wrap"
+                           Foreground="{StaticResource ErrorBrush}"/>
+            </Border>
+
+            <!-- Sin conexion se reintenta solo -->
+            <TextBlock Text="{Binding RetryCountdownText}"
+                       FontSize="13"
+                       Margin="0,14,0,0"
+                       Foreground="{StaticResource SecondaryTextBrush}"
+                       Visibility="{Binding ShowsRetryCountdown,
+                                            Converter={StaticResource BoolToVisibility}}"/>
+
+        </StackPanel>
+
+        <!-- Acciones: solo cuando algo fallo -->
+        <Border Grid.Row="1"
+                BorderBrush="{StaticResource BorderBrushLight}"
+                BorderThickness="0,1,0,0"
+                Padding="28,18,28,24"
+                Visibility="{Binding IsFailed,
+                                     Converter={StaticResource BoolToVisibility}}">
+
+            <Grid>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <actions:ActionButton Grid.Column="0"
+                                      Text="Salir"
+                                      Variant="Simple"
+                                      Command="{Binding ExitCommand}"
+                                      HorizontalAlignment="Left"/>
+
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal">
+
+                    <actions:ActionButton Text="Actualizar sin respaldo"
+                                          Variant="Secondary"
+                                          Command="{Binding SkipBackupCommand}"
+                                          Margin="0,0,10,0"
+                                          Visibility="{Binding CanSkipBackup,
+                                                               Converter={StaticResource BoolToVisibility}}"/>
+
+                    <actions:ActionButton Text="Reintentar"
+                                          Icon="{StaticResource RefreshIcon}"
+                                          Variant="Primary"
+                                          IsDefault="True"
+                                          Command="{Binding RetryCommand}"/>
+
+                </StackPanel>
+
+            </Grid>
+
+        </Border>
+
+    </Grid>
+
+</Window>

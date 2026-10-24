@@ -43,12 +43,14 @@ using PurchaseTicket.Desktop.ViewModels.Home;
 using PurchaseTicket.Desktop.ViewModels.Materials;
 using PurchaseTicket.Desktop.ViewModels.Reports;
 using PurchaseTicket.Desktop.ViewModels.Settings;
+using PurchaseTicket.Desktop.ViewModels.Startup;
 using PurchaseTicket.Desktop.ViewModels.Suppliers;
 using PurchaseTicket.Desktop.ViewModels.Tickets;
 using PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 using PurchaseTicket.Desktop.Views.Amounts;
 using PurchaseTicket.Desktop.Views.Materials;
 using PurchaseTicket.Desktop.Views.Settings;
+using PurchaseTicket.Desktop.Views.Startup;
 using PurchaseTicket.Desktop.Views.Suppliers;
 using PurchaseTicket.Desktop.Views.Tickets;
 using PurchaseTicket.Desktop.Views.VehicleWeighing;
@@ -222,6 +224,11 @@ public partial class App : System.Windows.Application
                 // Correccion de tickets
                 services.AddScoped<CorrectPurchaseTicket>();
 
+                // Arranque: conexion y migraciones pendientes antes de la ventana principal
+                services.AddScoped<IDatabaseStatus, DatabaseStatus>();
+                services.AddTransient<StartupViewModel>();
+                services.AddTransient<StartupWindow>();
+
                 // Respaldo diario de la base de datos con pg_dump dentro de Docker
                 services.AddDatabaseBackup(DatabaseConfiguration.GetBackupOptions(configuration));
                 services.AddScoped<CreateDatabaseBackup>();
@@ -259,7 +266,24 @@ public partial class App : System.Windows.Application
 
         await _host.StartAsync();
 
+        // Mientras solo existe la ventana de arranque, cerrarla no debe cerrar la app
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+        // Primero la base: conexion y migraciones pendientes
+        var startupWindow = _host.Services.GetRequiredService<StartupWindow>();
+
+        startupWindow.ShowDialog();
+
+        if (!startupWindow.IsDatabaseReady)
+        {
+            Shutdown();
+            return;
+        }
+
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+
+        MainWindow = mainWindow;
+        ShutdownMode = ShutdownMode.OnMainWindowClose;
 
         mainWindow.Show();
 
