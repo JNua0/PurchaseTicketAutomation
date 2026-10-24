@@ -8,12 +8,13 @@
     <primitives:ToggleButton
     x:Name="NavigationButton"
         Command="{Binding Command, ElementName=Root}"
+        CommandParameter="{Binding CommandParameter, ElementName=Root}"
         IsChecked="{Binding IsSelected, ElementName=Root, Mode=OneWay}"
         IsEnabled="{Binding IsEnabled, ElementName=Root}"
         Style="{StaticResource SidebarToggleButtonStyle}"
         ToolTip="{Binding Text, ElementName=Root}"
-        Height="50"
-        Margin="0,0,0,6"
+        Height="42"
+        Margin="0,0,0,4"
         Click="NavigationButton_Click">
 
         <StackPanel Orientation="Horizontal">
@@ -26,8 +27,8 @@
                       RelativeSource={RelativeSource AncestorType=primitives:ToggleButton}}"
                   StrokeThickness="1.7"
                   StrokeLineJoin="Round"
-                  Width="22"
-                  Height="22"
+                  Width="20"
+                  Height="20"
                   Stretch="Uniform"/>
 
             <!-- Nombre del modulo -->

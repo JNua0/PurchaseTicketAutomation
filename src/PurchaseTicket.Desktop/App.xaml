@@ -26,6 +26,9 @@
             <!-- Telefono de 10 digitos como "911 234 5678"; sin telefono, "Sin registrar" -->
             <converters:PhoneNumberDisplayConverter x:Key="PhoneNumberDisplay"/>
 
+            <!-- Un recurso por su clave, como los iconos del menu lateral -->
+            <converters:ResourceKeyConverter x:Key="ResourceByKey"/>
+
         </ResourceDictionary>
     </Application.Resources>
 

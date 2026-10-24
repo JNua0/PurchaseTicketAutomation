@@ -47,13 +47,19 @@ public sealed class ApplicationSettingsService
     // Puerto de un dispositivo; section es "Printer" o "WeightIndicator"
     public void SavePort(string section, string port)
     {
+        SaveValue(section, "PortName", port);
+    }
+
+    // Un valor suelto dentro de una seccion, como "Sidebar:IsExpanded"
+    public void SaveValue(string section, string key, string value)
+    {
         Update(root =>
         {
-            var device = root[section] as JsonObject
+            var node = root[section] as JsonObject
                 ?? new JsonObject();
 
-            device["PortName"] = port;
-            root[section] = device;
+            node[key] = value;
+            root[section] = node;
         });
     }
 

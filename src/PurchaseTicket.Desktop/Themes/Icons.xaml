@@ -211,6 +211,20 @@
         M 7,14 H 17 V 21 H 7 Z
     </Geometry>
 
+    <!-- Panel lateral con flecha a la izquierda: contraer el menu -->
+    <Geometry x:Key="PanelCloseIcon">
+        M 5,4 H 19 A 2,2 0 0 1 21,6 V 18 A 2,2 0 0 1 19,20 H 5 A 2,2 0 0 1 3,18 V 6 A 2,2 0 0 1 5,4 Z
+        M 9,4 V 20
+        M 15,10 L 13,12 L 15,14
+    </Geometry>
+
+    <!-- Panel lateral con flecha a la derecha: expandir el menu -->
+    <Geometry x:Key="PanelOpenIcon">
+        M 5,4 H 19 A 2,2 0 0 1 21,6 V 18 A 2,2 0 0 1 19,20 H 5 A 2,2 0 0 1 3,18 V 6 A 2,2 0 0 1 5,4 Z
+        M 9,4 V 20
+        M 13,10 L 15,12 L 13,14
+    </Geometry>
+
     <!-- Lupa: campo de busqueda -->
     <Geometry x:Key="SearchIcon">
         M 11,4

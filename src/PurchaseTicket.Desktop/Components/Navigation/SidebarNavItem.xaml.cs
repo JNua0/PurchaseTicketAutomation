@@ -33,6 +33,14 @@ public partial class SidebarNavItem : UserControl
             typeof(SidebarNavItem),
             new PropertyMetadata(null));
 
+    // Parametro del comando; en el menu es la opcion misma
+    public static readonly DependencyProperty CommandParameterProperty =
+        DependencyProperty.Register(
+            nameof(CommandParameter),
+            typeof(object),
+            typeof(SidebarNavItem),
+            new PropertyMetadata(null));
+
     // Indica si la opcion esta seleccionada
     public static readonly DependencyProperty IsSelectedProperty =
         DependencyProperty.Register(
@@ -66,6 +74,12 @@ public partial class SidebarNavItem : UserControl
     {
         get => (ICommand?)GetValue(CommandProperty);
         set => SetValue(CommandProperty, value);
+    }
+
+    public object? CommandParameter
+    {
+        get => GetValue(CommandParameterProperty);
+        set => SetValue(CommandParameterProperty, value);
     }
 
     public bool IsSelected
