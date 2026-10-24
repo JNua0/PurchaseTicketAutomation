@@ -116,5 +116,14 @@ public class PurchaseTicketConfiguration
 
         builder.Property(ticket => ticket.UpdatedAt)
             .HasColumnName("updated_at");
+
+        // Historial: se borra con el ticket, aunque los tickets no se borran
+        builder.HasMany(ticket => ticket.Corrections)
+            .WithOne()
+            .HasForeignKey(correction => correction.PurchaseTicketId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(ticket => ticket.Corrections)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

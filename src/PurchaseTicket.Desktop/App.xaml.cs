@@ -19,6 +19,7 @@ using PurchaseTicket.Application.UseCases.PurchaseTickets.Correct;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateConventional;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.CreateSingle;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Get;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.GetCorrections;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.GetDetail;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.GetFilterOptions;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Print;
@@ -168,10 +169,12 @@ public partial class App : System.Windows.Application
                 // Purchase ticket repositories
                 services.AddScoped<IPurchaseTicketRepository, PurchaseTicketRepository>();
                 services.AddScoped<IPurchaseTicketQueryRepository, PurchaseTicketQueryRepository>();
+                services.AddScoped<ITicketCorrectionQueryRepository, TicketCorrectionQueryRepository>();
 
                 // Purchase ticket use cases
                 services.AddScoped<GetPurchaseTickets>();
                 services.AddScoped<GetPurchaseTicketDetail>();
+                services.AddScoped<GetTicketCorrections>();
                 services.AddScoped<GetTicketFilterOptions>();
                 services.AddScoped<CreateConventionalPurchaseTicket>();
                 services.AddScoped<CreateSinglePurchaseTicket>();

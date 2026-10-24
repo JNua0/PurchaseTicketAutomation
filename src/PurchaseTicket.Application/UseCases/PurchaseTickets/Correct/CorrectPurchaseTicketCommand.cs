@@ -1,5 +1,6 @@
 ﻿namespace PurchaseTicket.Application.UseCases.PurchaseTickets.Correct;
 
+// Solo los datos que cambian; Reason es el motivo opcional que queda en el historial
 public record CorrectPurchaseTicketCommand(
     int TicketId,
     int? SupplierId = null,
@@ -11,4 +12,5 @@ public record CorrectPurchaseTicketCommand(
     decimal? TareWeight = null,
     decimal? NetWeight = null,
     int? Discount = null,
-    decimal? PricePerKg = null);
+    decimal? PricePerKg = null,
+    string? Reason = null);
