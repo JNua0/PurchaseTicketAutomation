@@ -14,6 +14,8 @@
         xmlns:amountsViews="clr-namespace:PurchaseTicket.Desktop.Views.Amounts"
         xmlns:ticketsVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Tickets"
         xmlns:ticketsViews="clr-namespace:PurchaseTicket.Desktop.Views.Tickets"
+        xmlns:reportsVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Reports"
+        xmlns:reportsViews="clr-namespace:PurchaseTicket.Desktop.Views.Reports"
         xmlns:settingsVm="clr-namespace:PurchaseTicket.Desktop.ViewModels.Settings"
         xmlns:settingsView="clr-namespace:PurchaseTicket.Desktop.Views.Settings"
         xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
@@ -56,6 +58,11 @@
         <!-- Pantalla de tickets -->
         <DataTemplate DataType="{x:Type ticketsVm:TicketsViewModel}">
             <ticketsViews:TicketsView/>
+        </DataTemplate>
+
+        <!-- Reportes de compras -->
+        <DataTemplate DataType="{x:Type reportsVm:ReportsViewModel}">
+            <reportsViews:ReportsView/>
         </DataTemplate>
 
         <!-- Pantalla de configuracion -->

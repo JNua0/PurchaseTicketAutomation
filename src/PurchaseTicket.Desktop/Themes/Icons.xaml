@@ -237,6 +237,22 @@
         M 5,21 H 19
     </Geometry>
 
+    <!-- Barras: reportes -->
+    <Geometry x:Key="ReportsIcon">
+        M 4,20 V 10
+        M 10,20 V 4
+        M 16,20 V 13
+        M 21,20 H 3
+    </Geometry>
+
+    <!-- Hoja con esquina doblada: exportar a PDF -->
+    <Geometry x:Key="DocumentIcon">
+        M 6,3 H 15 L 19,7 V 21 H 6 Z
+        M 14,3 V 8 H 19
+        M 9,14 H 15
+        M 9,17 H 13
+    </Geometry>
+
     <!-- Lupa: campo de busqueda -->
     <Geometry x:Key="SearchIcon">
         M 11,4

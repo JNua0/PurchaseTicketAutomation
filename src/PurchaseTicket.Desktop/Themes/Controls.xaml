@@ -380,6 +380,101 @@
 
     </Style>
 
+    <!-- Barra de desplazamiento delgada, sin flechas: solo el riel con el
+         indicador. Se dibuja encima del contenido, en su margen derecho -->
+    <Style x:Key="ThinScrollBarThumbStyle"
+           TargetType="Thumb">
+
+        <Setter Property="Background"
+                Value="#C9D3D9"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Border CornerRadius="3"
+                            Background="{TemplateBinding Background}"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver"
+                     Value="True">
+                <Setter Property="Background"
+                        Value="#A9B6BE"/>
+            </Trigger>
+            <Trigger Property="IsDragging"
+                     Value="True">
+                <Setter Property="Background"
+                        Value="#8A979F"/>
+            </Trigger>
+        </Style.Triggers>
+
+    </Style>
+
+    <Style x:Key="ThinScrollBarStyle"
+           TargetType="ScrollBar">
+
+        <Setter Property="Width"
+                Value="6"/>
+
+        <Setter Property="MinWidth"
+                Value="6"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Track x:Name="PART_Track"
+                           IsDirectionReversed="True"
+                           Focusable="False">
+                        <Track.Thumb>
+                            <Thumb Style="{StaticResource ThinScrollBarThumbStyle}"/>
+                        </Track.Thumb>
+                    </Track>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+    <!-- Lista con desplazamiento vertical y barra delgada. El contenido debe
+         dejar unos 12 px libres a la derecha para que la barra no lo tape -->
+    <Style x:Key="ThinScrollViewerStyle"
+           TargetType="ScrollViewer">
+
+        <Setter Property="HorizontalScrollBarVisibility"
+                Value="Disabled"/>
+
+        <Setter Property="VerticalScrollBarVisibility"
+                Value="Auto"/>
+
+        <Setter Property="Focusable"
+                Value="False"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollViewer">
+                    <Grid>
+
+                        <ScrollContentPresenter CanContentScroll="{TemplateBinding CanContentScroll}"
+                                                Margin="{TemplateBinding Padding}"/>
+
+                        <ScrollBar x:Name="PART_VerticalScrollBar"
+                                   Style="{StaticResource ThinScrollBarStyle}"
+                                   Orientation="Vertical"
+                                   HorizontalAlignment="Right"
+                                   Value="{TemplateBinding VerticalOffset}"
+                                   Maximum="{TemplateBinding ScrollableHeight}"
+                                   ViewportSize="{TemplateBinding ViewportHeight}"
+                                   Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
     <!-- Selector segmentado: ListBox horizontal donde cada opcion es un segmento.
          El ListBox ya resuelve la seleccion unica y el teclado; el estilo solo
          cambia su apariencia. El contenido de cada opcion lo define ItemTemplate -->

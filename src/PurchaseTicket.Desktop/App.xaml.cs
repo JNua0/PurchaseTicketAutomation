@@ -27,6 +27,7 @@ using PurchaseTicket.Application.UseCases.PurchaseTickets.GetFilterOptions;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.Print;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterAmount;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.RegisterDepartureWeight;
+using PurchaseTicket.Application.UseCases.Reports.Purchases;
 using PurchaseTicket.Application.UseCases.Suppliers.Activate;
 using PurchaseTicket.Application.UseCases.Suppliers.Create;
 using PurchaseTicket.Application.UseCases.Suppliers.Deactivate;
@@ -40,6 +41,7 @@ using PurchaseTicket.Desktop.ViewModels;
 using PurchaseTicket.Desktop.ViewModels.Amounts;
 using PurchaseTicket.Desktop.ViewModels.Home;
 using PurchaseTicket.Desktop.ViewModels.Materials;
+using PurchaseTicket.Desktop.ViewModels.Reports;
 using PurchaseTicket.Desktop.ViewModels.Settings;
 using PurchaseTicket.Desktop.ViewModels.Suppliers;
 using PurchaseTicket.Desktop.ViewModels.Tickets;
@@ -55,6 +57,7 @@ using PurchaseTicket.Infrastructure.Communication.Serial;
 using PurchaseTicket.Infrastructure.Persistence;
 using PurchaseTicket.Infrastructure.Persistence.Repositories;
 using PurchaseTicket.Infrastructure.Printing;
+using PurchaseTicket.Infrastructure.Reports;
 using PurchaseTicket.Infrastructure.TicketNumbers;
 using PurchaseTicket.Infrastructure.Weighing;
 using Serilog;
@@ -225,6 +228,13 @@ public partial class App : System.Windows.Application
                 services.AddScoped<GetLatestBackup>();
                 services.AddSingleton<BackupScheduler>();
                 services.AddTransient<BackupSectionViewModel>();
+
+                // Reportes de compras con exportacion a Excel y PDF
+                services.AddScoped<IReportQueryRepository, ReportQueryRepository>();
+                services.AddScoped<GetPurchaseReport>();
+                services.AddReportExport();
+                services.AddTransient<IReportsDialogService, ReportsDialogService>();
+                services.AddTransient<ReportsViewModel>();
 
                 // ViewModel de configuracion
                 services.AddTransient<SettingsViewModel>();

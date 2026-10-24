@@ -1,0 +1,611 @@
+﻿<UserControl x:Class="PurchaseTicket.Desktop.Views.Reports.ReportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:layout="clr-namespace:PurchaseTicket.Desktop.Components.Layout"
+             xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
+             xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions">
+
+    <UserControl.Resources>
+
+        <!-- Marco blanco de los totales y de los desgloses -->
+        <Style x:Key="ReportCardStyle"
+               TargetType="Border">
+            <Setter Property="Background"
+                    Value="{StaticResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource BorderBrushLight}"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="CornerRadius"
+                    Value="12"/>
+            <Setter Property="Padding"
+                    Value="18,14"/>
+        </Style>
+
+        <Style x:Key="TileLabelStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="13"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource SecondaryTextBrush}"/>
+        </Style>
+
+        <Style x:Key="TileValueStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="24"/>
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+            <Setter Property="Margin"
+                    Value="0,2,0,2"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource PrimaryTextBrush}"/>
+        </Style>
+
+        <Style x:Key="TileNoteStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="12"/>
+            <Setter Property="TextTrimming"
+                    Value="CharacterEllipsis"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource SecondaryTextBrush}"/>
+        </Style>
+
+        <Style x:Key="ColumnHeaderStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="13"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource SecondaryTextBrush}"/>
+        </Style>
+
+        <Style x:Key="TotalStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="13"/>
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource PrimaryTextBrush}"/>
+        </Style>
+
+        <!-- Un renglon: nombre, tickets, kilos con su porcentaje e importe -->
+        <DataTemplate x:Key="GroupRowTemplate">
+
+            <Border BorderBrush="{StaticResource BorderBrushLight}"
+                    BorderThickness="0,0,0,1"
+                    Padding="0,7">
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="160"/>
+                        <ColumnDefinition Width="110"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Inactivo en gris: sus tickets si cuentan -->
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding Name}"
+                               ToolTip="{Binding Name}"
+                               FontSize="13"
+                               TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource PrimaryTextBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsInactive}"
+                                                 Value="True">
+                                        <Setter Property="Foreground"
+                                                Value="{StaticResource SecondaryTextBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding CountText}"
+                               FontSize="13"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                    <StackPanel Grid.Column="2"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+
+                        <TextBlock HorizontalAlignment="Right"
+                                   FontSize="13"
+                                   Foreground="{StaticResource PrimaryTextBrush}">
+                            <Run Text="{Binding NetWeightText, Mode=OneWay}"
+                                 FontWeight="SemiBold"/>
+                            <Run Text="·"
+                                 Foreground="{StaticResource SecondaryTextBrush}"/>
+                            <Run Text="{Binding ShareText, Mode=OneWay}"
+                                 Foreground="{StaticResource SecondaryTextBrush}"/>
+                        </TextBlock>
+
+                        <!-- Parte del total del periodo -->
+                        <Border Width="120"
+                                Height="4"
+                                CornerRadius="2"
+                                HorizontalAlignment="Right"
+                                Margin="0,3,0,0"
+                                Background="{StaticResource NeutralSoftBrush}">
+                            <Border Width="{Binding ShareBarWidth}"
+                                    CornerRadius="2"
+                                    HorizontalAlignment="Left"
+                                    Background="{StaticResource InfoBrush}"/>
+                        </Border>
+
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="3"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+
+                        <TextBlock Text="{Binding AmountText}"
+                                   FontSize="13"
+                                   HorizontalAlignment="Right"
+                                   Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                        <TextBlock Text="{Binding PendingText}"
+                                   FontSize="11"
+                                   HorizontalAlignment="Right"
+                                   Foreground="{StaticResource WarningTextBrush}"
+                                   Visibility="{Binding HasPending,
+                                                        Converter={StaticResource BoolToVisibility}}"/>
+
+                    </StackPanel>
+
+                </Grid>
+
+            </Border>
+
+        </DataTemplate>
+
+        <!-- Encabezado de columnas de un desglose; Tag es "Material" o "Proveedor" -->
+        <DataTemplate x:Key="GroupHeaderTemplate">
+
+            <Border BorderBrush="{StaticResource BorderBrushLight}"
+                    BorderThickness="0,0,0,1"
+                    Padding="0,0,0,6">
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="160"/>
+                        <ColumnDefinition Width="110"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding}"
+                               Style="{StaticResource ColumnHeaderStyle}"/>
+
+                    <TextBlock Grid.Column="1"
+                               Text="Tickets"
+                               HorizontalAlignment="Right"
+                               Style="{StaticResource ColumnHeaderStyle}"/>
+
+                    <TextBlock Grid.Column="2"
+                               Text="Peso neto"
+                               HorizontalAlignment="Right"
+                               Style="{StaticResource ColumnHeaderStyle}"/>
+
+                    <TextBlock Grid.Column="3"
+                               Text="Importe"
+                               HorizontalAlignment="Right"
+                               Style="{StaticResource ColumnHeaderStyle}"/>
+
+                </Grid>
+
+            </Border>
+
+        </DataTemplate>
+
+        <!-- Fila de total, igual en los dos desgloses -->
+        <DataTemplate x:Key="GroupTotalTemplate">
+
+            <Grid Margin="0,8,0,0">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="60"/>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="110"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Total"
+                           Style="{StaticResource TotalStyle}"/>
+
+                <TextBlock Grid.Column="1"
+                           Text="{Binding TicketCountText}"
+                           HorizontalAlignment="Right"
+                           Style="{StaticResource TotalStyle}"/>
+
+                <TextBlock Grid.Column="2"
+                           Text="{Binding NetWeightText}"
+                           HorizontalAlignment="Right"
+                           Style="{StaticResource TotalStyle}"/>
+
+                <StackPanel Grid.Column="3"
+                            HorizontalAlignment="Right">
+
+                    <TextBlock Text="{Binding AmountText}"
+                               HorizontalAlignment="Right"
+                               Style="{StaticResource TotalStyle}"/>
+
+                    <TextBlock Text="{Binding TotalPendingText}"
+                               FontSize="11"
+                               HorizontalAlignment="Right"
+                               Foreground="{StaticResource WarningTextBrush}"
+                               Visibility="{Binding HasTotalPending,
+                                                    Converter={StaticResource BoolToVisibility}}"/>
+
+                </StackPanel>
+
+            </Grid>
+
+        </DataTemplate>
+
+    </UserControl.Resources>
+
+    <layout:PageLayout>
+
+        <layout:PageLayout.PageContent>
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Bloque 1: Encabezado con las exportaciones -->
+                <layout:PageHeader Grid.Row="0"
+                                   Title="Reportes"
+                                   Description="Kilos comprados en un periodo, por material y por proveedor">
+
+                    <layout:PageHeader.Actions>
+
+                        <StackPanel Orientation="Horizontal">
+
+                            <actions:ActionButton Text="Exportar a PDF"
+                                                  Icon="{StaticResource DocumentIcon}"
+                                                  Variant="Secondary"
+                                                  Command="{Binding ExportPdfCommand}"/>
+
+                            <actions:ActionButton Text="Exportar a Excel"
+                                                  Icon="{StaticResource BackupIcon}"
+                                                  Variant="Primary"
+                                                  Command="{Binding ExportExcelCommand}"
+                                                  Margin="10,0,0,0"/>
+
+                        </StackPanel>
+
+                    </layout:PageHeader.Actions>
+
+                </layout:PageHeader>
+
+                <!-- Bloque 2: Periodo -->
+                <Border Grid.Row="1"
+                        Background="{StaticResource FilterSurfaceBrush}"
+                        CornerRadius="12"
+                        Padding="12,8"
+                        Margin="0,0,0,14">
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ListBox Grid.Column="0"
+                                 Style="{StaticResource SegmentedSelectorStyle}"
+                                 ItemsSource="{Binding PeriodOptions}"
+                                 DisplayMemberPath="Label"
+                                 SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}"
+                                 AutomationProperties.Name="Periodo"
+                                 VerticalAlignment="Center">
+
+                            <!-- Cada opcion con el ancho de su texto: con el mismo
+                                 ancho para todas, "Personalizado" se recortaba -->
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+
+                        </ListBox>
+
+                        <!-- Desde y Hasta, solo con un periodo personalizado -->
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    Margin="16,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding IsCustomPeriod,
+                                                         Converter={StaticResource BoolToVisibility}}">
+
+                            <TextBlock Text="Desde"
+                                       FontSize="13"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource SecondaryTextBrush}"
+                                       Margin="0,0,6,0"/>
+
+                            <DatePicker SelectedDate="{Binding FromDate, Mode=TwoWay}"
+                                        Width="140"
+                                        Height="34"
+                                        VerticalContentAlignment="Center"/>
+
+                            <TextBlock Text="Hasta"
+                                       FontSize="13"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource SecondaryTextBrush}"
+                                       Margin="12,0,6,0"/>
+
+                            <DatePicker SelectedDate="{Binding ToDate, Mode=TwoWay}"
+                                        Width="140"
+                                        Height="34"
+                                        VerticalContentAlignment="Center"/>
+
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Margin="16,0,0,0">
+
+                            <!-- Con Personalizado no se muestra: Desde y Hasta ya dicen las fechas -->
+                            <TextBlock HorizontalAlignment="Right"
+                                       FontSize="14"
+                                       TextTrimming="CharacterEllipsis"
+                                       Foreground="{StaticResource PrimaryTextBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsCustomPeriod}"
+                                                         Value="True">
+                                                <Setter Property="Visibility"
+                                                        Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                                <Run Text="{Binding RangeText, Mode=OneWay}"
+                                     FontWeight="SemiBold"/>
+                                <Run Text="· según la fecha del último pesaje"
+                                     Foreground="{StaticResource SecondaryTextBrush}"/>
+                            </TextBlock>
+
+                            <!-- Solo ocupa lugar si hay error: la barra queda baja -->
+                            <TextBlock Text="{Binding DateRangeError}"
+                                       FontSize="12"
+                                       HorizontalAlignment="Right"
+                                       Foreground="{StaticResource ErrorBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <Trigger Property="Text"
+                                                     Value="">
+                                                <Setter Property="Visibility"
+                                                        Value="Collapsed"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                        </StackPanel>
+
+                    </Grid>
+
+                </Border>
+
+                <!-- Carga y errores -->
+                <feedback:QueryStatus Grid.Row="2"
+                                      IsLoading="{Binding IsLoading}"
+                                      LoadingMessage="Calculando reporte..."
+                                      ErrorMessage="{Binding ErrorMessage}"/>
+
+                <!-- Bloque 3: Totales del periodo -->
+                <UniformGrid Grid.Row="3"
+                             Columns="4"
+                             Margin="0,0,-14,16"
+                             Visibility="{Binding HasReport,
+                                                  Converter={StaticResource BoolToVisibility}}">
+
+                    <Border Style="{StaticResource ReportCardStyle}"
+                            Margin="0,0,14,0">
+                        <StackPanel>
+                            <TextBlock Text="Tickets"
+                                       Style="{StaticResource TileLabelStyle}"/>
+                            <TextBlock Text="{Binding TicketCountText}"
+                                       Style="{StaticResource TileValueStyle}"/>
+                            <TextBlock Text="{Binding TicketBreakdownText}"
+                                       ToolTip="{Binding TicketBreakdownText}"
+                                       Style="{StaticResource TileNoteStyle}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource ReportCardStyle}"
+                            Margin="0,0,14,0">
+                        <StackPanel>
+                            <TextBlock Text="Peso neto"
+                                       Style="{StaticResource TileLabelStyle}"/>
+                            <TextBlock Text="{Binding NetWeightText}"
+                                       Style="{StaticResource TileValueStyle}"/>
+                            <TextBlock Text="Lo que marcó la báscula"
+                                       Style="{StaticResource TileNoteStyle}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource ReportCardStyle}"
+                            Margin="0,0,14,0">
+                        <StackPanel>
+                            <TextBlock Text="Peso neto total"
+                                       Style="{StaticResource TileLabelStyle}"/>
+                            <TextBlock Text="{Binding NetWeightAfterDiscountText}"
+                                       Style="{StaticResource TileValueStyle}"/>
+                            <TextBlock Text="Con descuento; solo completados"
+                                       Style="{StaticResource TileNoteStyle}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource ReportCardStyle}"
+                            Margin="0,0,14,0">
+                        <StackPanel>
+                            <TextBlock Text="Importe"
+                                       Style="{StaticResource TileLabelStyle}"/>
+                            <TextBlock Text="{Binding AmountText}"
+                                       Style="{StaticResource TileValueStyle}"
+                                       Foreground="{StaticResource InfoBrush}"/>
+                            <TextBlock Text="Solo completados"
+                                       Style="{StaticResource TileNoteStyle}"/>
+                        </StackPanel>
+                    </Border>
+
+                </UniformGrid>
+
+                <!-- Sin tickets en el periodo -->
+                <Border Grid.Row="4"
+                        Style="{StaticResource ReportCardStyle}"
+                        VerticalAlignment="Top"
+                        Visibility="{Binding IsEmpty,
+                                             Converter={StaticResource BoolToVisibility}}">
+                    <feedback:EmptyState Message="{Binding EmptyMessage}"/>
+                </Border>
+
+                <!-- Bloque 4: Desgloses, de mas a menos kilos -->
+                <Grid Grid.Row="4"
+                      Visibility="{Binding HasData,
+                                           Converter={StaticResource BoolToVisibility}}">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Por material -->
+                    <Border Grid.Column="0"
+                            Style="{StaticResource ReportCardStyle}">
+
+                        <Grid>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0"
+                                  Margin="0,0,0,10">
+                                <TextBlock Text="Por material"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource PrimaryTextBrush}"/>
+                                <TextBlock Text="{Binding MaterialsCountText}"
+                                           FontSize="12"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           Foreground="{StaticResource SecondaryTextBrush}"/>
+                            </Grid>
+
+                            <ContentPresenter Grid.Row="1"
+                                              Margin="0,0,14,0"
+                                              Content="Material"
+                                              ContentTemplate="{StaticResource GroupHeaderTemplate}"/>
+
+                            <!-- Barra delgada en el margen derecho de los renglones -->
+                            <ScrollViewer Grid.Row="2"
+                                          Style="{StaticResource ThinScrollViewerStyle}">
+                                <ItemsControl ItemsSource="{Binding Materials}"
+                                              ItemTemplate="{StaticResource GroupRowTemplate}"
+                                              Margin="0,0,14,0"
+                                              Focusable="False"/>
+                            </ScrollViewer>
+
+                            <ContentPresenter Grid.Row="3"
+                                              Margin="0,0,14,0"
+                                              Content="{Binding}"
+                                              ContentTemplate="{StaticResource GroupTotalTemplate}"/>
+
+                        </Grid>
+
+                    </Border>
+
+                    <!-- Por proveedor -->
+                    <Border Grid.Column="2"
+                            Style="{StaticResource ReportCardStyle}">
+
+                        <Grid>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0"
+                                  Margin="0,0,0,10">
+                                <TextBlock Text="Por proveedor"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource PrimaryTextBrush}"/>
+                                <TextBlock Text="{Binding SuppliersCountText}"
+                                           FontSize="12"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           Foreground="{StaticResource SecondaryTextBrush}"/>
+                            </Grid>
+
+                            <ContentPresenter Grid.Row="1"
+                                              Margin="0,0,14,0"
+                                              Content="Proveedor"
+                                              ContentTemplate="{StaticResource GroupHeaderTemplate}"/>
+
+                            <!-- Barra delgada en el margen derecho de los renglones -->
+                            <ScrollViewer Grid.Row="2"
+                                          Style="{StaticResource ThinScrollViewerStyle}">
+                                <ItemsControl ItemsSource="{Binding Suppliers}"
+                                              ItemTemplate="{StaticResource GroupRowTemplate}"
+                                              Margin="0,0,14,0"
+                                              Focusable="False"/>
+                            </ScrollViewer>
+
+                            <ContentPresenter Grid.Row="3"
+                                              Margin="0,0,14,0"
+                                              Content="{Binding}"
+                                              ContentTemplate="{StaticResource GroupTotalTemplate}"/>
+
+                        </Grid>
+
+                    </Border>
+
+                </Grid>
+
+            </Grid>
+
+        </layout:PageLayout.PageContent>
+
+    </layout:PageLayout>
+
+</UserControl>
