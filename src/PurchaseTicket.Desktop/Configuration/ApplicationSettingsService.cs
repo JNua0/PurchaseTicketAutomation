@@ -52,6 +52,13 @@ public sealed class ApplicationSettingsService
         if (!string.IsNullOrWhiteSpace(saved))
             return saved;
 
+        return GetDefaultBackupFolder();
+    }
+
+    // Documentos\EcoPapel\Respaldos, creada si falta. Tambien es el respaldo
+    // de reserva antes de actualizar la base si la carpeta elegida no esta
+    public string GetDefaultBackupFolder()
+    {
         // Solo la carpeta por defecto se crea: una elegida que falta es una USB desconectada
         string folder = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
