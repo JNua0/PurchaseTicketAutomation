@@ -212,6 +212,20 @@
 
                     </StackPanel>
 
+                    <!-- Motivo opcional: queda en el historial de correcciones -->
+                    <StackPanel Margin="0,18,0,0">
+
+                        <forms:FormTextField Label="Motivo (opcional)"
+                                             Text="{Binding Reason, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             MaxLength="200"/>
+
+                        <TextBlock Text="Queda en el historial de correcciones del ticket"
+                                   FontSize="12"
+                                   Margin="0,4,0,0"
+                                   Foreground="{StaticResource SecondaryTextBrush}"/>
+
+                    </StackPanel>
+
                 </StackPanel>
 
                 <!-- Errores generales, como no haber cambiado nada -->

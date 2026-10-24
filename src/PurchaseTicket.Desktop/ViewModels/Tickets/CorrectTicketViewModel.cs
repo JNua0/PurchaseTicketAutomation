@@ -38,6 +38,7 @@ public sealed class CorrectTicketViewModel : ValidatableObject
     private string _netWeightText = string.Empty;
     private string _discountText = string.Empty;
     private string _pricePerKgText = string.Empty;
+    private string _reason = string.Empty;
     private string _errorMessage = string.Empty;
     private bool _isSaving;
     private bool _isLoadingCatalogs;
@@ -166,6 +167,13 @@ public sealed class CorrectTicketViewModel : ValidatableObject
     {
         get => _pricePerKgText;
         set => SetField(ref _pricePerKgText, value, ValidatePricePerKg);
+    }
+
+    // Opcional; queda en el historial de correcciones del ticket
+    public string Reason
+    {
+        get => _reason;
+        set => SetProperty(ref _reason, value);
     }
 
     // "Sin cambio" o "Antes 5,000" debajo de cada campo de peso y precio
@@ -326,6 +334,7 @@ public sealed class CorrectTicketViewModel : ValidatableObject
         _netWeightText = FormatWeightInput(ticket.NetWeight);
         _discountText = ticket.Discount?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
         _pricePerKgText = AmountInput.FormatPriceInput(ticket.PricePerKg);
+        _reason = string.Empty;
 
         _validateOnChange = false;
         ErrorMessage = string.Empty;
@@ -569,7 +578,8 @@ public sealed class CorrectTicketViewModel : ValidatableObject
             TareWeight: tare,
             NetWeight: net,
             Discount: discount,
-            PricePerKg: price);
+            PricePerKg: price,
+            Reason: string.IsNullOrWhiteSpace(Reason) ? null : Reason);
     }
 
     private bool ValidateAll()

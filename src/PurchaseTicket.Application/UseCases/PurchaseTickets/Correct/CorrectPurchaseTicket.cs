@@ -1,5 +1,7 @@
 ﻿using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Common;
+using PurchaseTicket.Domain.Entities;
+using PurchaseTicket.Domain.Enums;
 using PurchaseTicket.Domain.Exceptions;
 using PurchaseTicket.Domain.ValueObjects;
 
@@ -43,7 +45,16 @@ public class CorrectPurchaseTicket
         if (!hasCorrections)
             throw new BusinessRuleException("No se indicó ningún cambio para corregir.");
 
+        // El motivo se valida antes de tocar el ticket
+        string? reason = TicketCorrection.NormalizeReason(command.Reason);
+
         // 1. Validate external references
+
+        // Nombres de proveedor y material para el historial: el anterior y el nuevo
+        string? previousSupplierName = null;
+        string? newSupplierName = null;
+        string? previousMaterialName = null;
+        string? newMaterialName = null;
 
         if (command.SupplierId.HasValue)
         {
@@ -54,6 +65,9 @@ public class CorrectPurchaseTicket
 
             if (!supplier.IsActive)
                 throw new BusinessRuleException("El proveedor seleccionado está inactivo.");
+
+            newSupplierName = supplier.Name;
+            previousSupplierName = (await _supplierRepository.GetByIdAsync(ticket.SupplierId))?.Name;
         }
 
         if (command.MaterialId.HasValue)
@@ -65,6 +79,9 @@ public class CorrectPurchaseTicket
 
             if (!material.IsActive)
                 throw new BusinessRuleException("El material seleccionado está inactivo.");
+
+            newMaterialName = material.Name;
+            previousMaterialName = (await _materialRepository.GetByIdAsync(ticket.MaterialId))?.Name;
         }
 
         // 2. Apply correction
@@ -82,9 +99,33 @@ public class CorrectPurchaseTicket
                 Discount: command.Discount,
                 PricePerKg: command.PricePerKg);
 
-        ticket.Correct(correction);
+        var changes = ticket.Correct(correction);
 
-        // 3. Persist once
+        // 3. Record history: proveedor y material por nombre, para que se lea
+        // igual aunque despues se renombren. Sin cambios reales no hay registro
+
+        if (changes.Count > 0)
+        {
+            var namedChanges = changes
+                .Select(change => change.Field switch
+                {
+                    TicketField.Supplier => change with
+                    {
+                        Before = previousSupplierName ?? change.Before,
+                        After = newSupplierName ?? change.After
+                    },
+                    TicketField.Material => change with
+                    {
+                        Before = previousMaterialName ?? change.Before,
+                        After = newMaterialName ?? change.After
+                    },
+                    _ => change
+                });
+
+            ticket.RecordCorrection(reason, namedChanges);
+        }
+
+        // 4. Persist once: el ticket y su correccion
 
         await _repository.UpdateAsync(ticket);
 

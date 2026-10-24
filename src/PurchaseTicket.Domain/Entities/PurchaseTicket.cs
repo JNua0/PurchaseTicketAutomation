@@ -16,6 +16,8 @@ public class PurchaseTicket
         @"^\p{L}+(?:['-]\p{L}+)*(?: \p{L}+(?:['-]\p{L}+)*)*$",
         RegexOptions.Compiled);
 
+    private readonly List<TicketCorrection> _corrections = [];
+
     // Constructor
 
     private PurchaseTicket()
@@ -69,6 +71,9 @@ public class PurchaseTicket
     public DateTime CreatedAt { get; private set; }
 
     public DateTime? UpdatedAt { get; private set; }
+
+    // Historial de correcciones; al leer un ticket no se carga, solo se agrega
+    public IReadOnlyCollection<TicketCorrection> Corrections => _corrections;
 
     // Metodos publicos
 
@@ -438,7 +443,9 @@ public class PurchaseTicket
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void Correct(PurchaseTicketCorrection correction)
+    // Devuelve lo que cambio de verdad, con proveedor y material por su id;
+    // vacio si los valores nuevos son iguales a los guardados
+    public IReadOnlyList<TicketFieldChange> Correct(PurchaseTicketCorrection correction)
     {
         bool hasGeneralDataChanges =
             correction.SupplierId.HasValue ||
@@ -464,7 +471,7 @@ public class PurchaseTicket
             !hasDiscountChange &&
             !hasPricePerKgChange)
         {
-            return;
+            return [];
         }
 
         // 1. Validate general data changes
@@ -566,6 +573,9 @@ public class PurchaseTicket
             ValidateTareWeight(tareWeight, grossWeight);
         }
 
+        // Lo guardado antes de aplicar, para saber despues que cambio
+        var before = TakeSnapshot();
+
         // 7. Apply conventional weight changes
 
         if (hasGrossWeightChange)
@@ -633,9 +643,34 @@ public class PurchaseTicket
             LicensePlate = normalizedLicensePlate;
 
         UpdatedAt = DateTime.UtcNow;
+
+        return CompareSnapshots(before, TakeSnapshot());
+    }
+
+    // Guarda en el historial una correccion ya aplicada con Correct. Los
+    // cambios pueden traer el nombre del proveedor en lugar de su id
+    public TicketCorrection RecordCorrection(
+        string? reason,
+        IEnumerable<TicketFieldChange> changes)
+    {
+        var entry = new TicketCorrection(reason, changes);
+
+        _corrections.Add(entry);
+
+        return entry;
     }
 
     // Metodos privados
+
+    private static string? FormatInvariant(decimal? value)
+    {
+        return value?.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static string? FormatInvariant(int? value)
+    {
+        return value?.ToString(CultureInfo.InvariantCulture);
+    }
 
     private static string NormalizeLicensePlateValue(string licensePlate)
     {
@@ -748,6 +783,54 @@ public class PurchaseTicket
         Amount = breakdown.Amount;
     }
 
+    private TicketSnapshot TakeSnapshot()
+    {
+        return new TicketSnapshot(
+            SupplierId,
+            MaterialId,
+            LicensePlate,
+            Transporter,
+            GrossWeight,
+            TareWeight,
+            NetWeight,
+            Discount,
+            PricePerKg,
+            Amount);
+    }
+
+    // En el orden en que se muestran: operacion, pesos y despues el importe.
+    // El peso neto del convencional y el importe se recalculan, no se capturan
+    private IReadOnlyList<TicketFieldChange> CompareSnapshots(TicketSnapshot before, TicketSnapshot after)
+    {
+        var changes = new List<TicketFieldChange>();
+
+        void Add(TicketField field, string? oldValue, string? newValue, bool isRecalculated = false)
+        {
+            if (oldValue != newValue)
+                changes.Add(new TicketFieldChange(field, oldValue, newValue, isRecalculated));
+        }
+
+        // Los decimales se comparan como numero: 5000.00 y 5000 son el mismo peso
+        void AddNumber(TicketField field, decimal? oldValue, decimal? newValue, bool isRecalculated = false)
+        {
+            if (oldValue != newValue)
+                changes.Add(new TicketFieldChange(field, FormatInvariant(oldValue), FormatInvariant(newValue), isRecalculated));
+        }
+
+        Add(TicketField.Supplier, FormatInvariant(before.SupplierId), FormatInvariant(after.SupplierId));
+        Add(TicketField.Material, FormatInvariant(before.MaterialId), FormatInvariant(after.MaterialId));
+        Add(TicketField.LicensePlate, before.LicensePlate, after.LicensePlate);
+        Add(TicketField.Transporter, before.Transporter, after.Transporter);
+        AddNumber(TicketField.GrossWeight, before.GrossWeight, after.GrossWeight);
+        AddNumber(TicketField.TareWeight, before.TareWeight, after.TareWeight);
+        AddNumber(TicketField.NetWeight, before.NetWeight, after.NetWeight, WeighingType == WeighingType.Conventional);
+        Add(TicketField.Discount, FormatInvariant(before.Discount), FormatInvariant(after.Discount));
+        AddNumber(TicketField.PricePerKg, before.PricePerKg, after.PricePerKg);
+        AddNumber(TicketField.Amount, before.Amount, after.Amount, isRecalculated: true);
+
+        return changes;
+    }
+
     private void ValidateConventionalWeighing()
     {
         if (WeighingType != WeighingType.Conventional)
@@ -815,4 +898,17 @@ public class PurchaseTicket
             throw new BusinessRuleException(
                 "El peso neto no puede modificarse en el estado actual del ticket.");
     }
+
+    // Los datos que una correccion puede cambiar, en un momento dado
+    private readonly record struct TicketSnapshot(
+        int SupplierId,
+        int MaterialId,
+        string? LicensePlate,
+        string Transporter,
+        decimal? GrossWeight,
+        decimal? TareWeight,
+        decimal? NetWeight,
+        int? Discount,
+        decimal? PricePerKg,
+        decimal? Amount);
 }

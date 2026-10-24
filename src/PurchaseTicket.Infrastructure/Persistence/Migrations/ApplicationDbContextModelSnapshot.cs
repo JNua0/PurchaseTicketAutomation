@@ -204,6 +204,35 @@ namespace PurchaseTicket.Infrastructure.Persistence.Migrations
                     b.ToTable("suppliers", (string)null);
                 });
 
+            modelBuilder.Entity("PurchaseTicket.Domain.Entities.TicketCorrection", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CorrectedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("corrected_at");
+
+                    b.Property<int>("PurchaseTicketId")
+                        .HasColumnType("integer")
+                        .HasColumnName("purchase_ticket_id");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("reason");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PurchaseTicketId");
+
+                    b.ToTable("purchase_ticket_corrections", (string)null);
+                });
+
             modelBuilder.Entity("PurchaseTicket.Domain.Entities.PurchaseTicket", b =>
                 {
                     b.HasOne("PurchaseTicket.Domain.Entities.Material", null)
@@ -217,6 +246,54 @@ namespace PurchaseTicket.Infrastructure.Persistence.Migrations
                         .HasForeignKey("SupplierId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("PurchaseTicket.Domain.Entities.TicketCorrection", b =>
+                {
+                    b.HasOne("PurchaseTicket.Domain.Entities.PurchaseTicket", null)
+                        .WithMany("Corrections")
+                        .HasForeignKey("PurchaseTicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsMany("PurchaseTicket.Domain.ValueObjects.TicketFieldChange", "Changes", b1 =>
+                        {
+                            b1.Property<int>("TicketCorrectionId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("After")
+                                .HasJsonPropertyName("after");
+
+                            b1.Property<string>("Before")
+                                .HasJsonPropertyName("before");
+
+                            b1.Property<string>("Field")
+                                .IsRequired()
+                                .HasJsonPropertyName("field");
+
+                            b1.Property<bool>("IsRecalculated")
+                                .HasJsonPropertyName("is_recalculated");
+
+                            b1.HasKey("TicketCorrectionId", "__synthesizedOrdinal");
+
+                            b1.ToTable("purchase_ticket_corrections");
+
+                            b1
+                                .ToJson("changes")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TicketCorrectionId");
+                        });
+
+                    b.Navigation("Changes");
+                });
+
+            modelBuilder.Entity("PurchaseTicket.Domain.Entities.PurchaseTicket", b =>
+                {
+                    b.Navigation("Corrections");
                 });
 #pragma warning restore 612, 618
         }

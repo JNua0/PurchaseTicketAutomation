@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PurchaseTicket.Application.Abstractions.Persistence.Models;
 using PurchaseTicket.Application.Common;
+using PurchaseTicket.Application.UseCases.PurchaseTickets.GetCorrections;
 using PurchaseTicket.Application.UseCases.PurchaseTickets.GetDetail;
 using PurchaseTicket.Desktop.Commands;
 using PurchaseTicket.Desktop.Components.Feedback;
@@ -27,6 +28,8 @@ public sealed class TicketDetailViewModel : ObservableObject
 
     private int _ticketId;
     private PurchaseTicketDetail? _detail;
+    private IReadOnlyList<TicketCorrectionView> _corrections = [];
+    private int _selectedTabIndex;
     private bool _isLoading;
     private bool _isBusy;
     private string _errorMessage = string.Empty;
@@ -69,6 +72,13 @@ public sealed class TicketDetailViewModel : ObservableObject
             string modality = _detail.WeighingType == WeighingType.Conventional
                 ? "Pesaje convencional"
                 : "Un solo pesaje";
+
+            if (_corrections.Count > 0)
+            {
+                string times = _corrections.Count == 1 ? "1 vez" : $"{_corrections.Count} veces";
+
+                return $"{modality} · corregido {times}";
+            }
 
             return _detail.UpdatedAt is DateTime updated
                 ? $"{modality} · última modificación {FormatDateTime(updated)}"
@@ -149,6 +159,46 @@ public sealed class TicketDetailViewModel : ObservableObject
         _detail is not null
         && _detail.Status is TicketStatus.WeighingPending or TicketStatus.AmountPending;
 
+    // Pestanas del detalle: 0 los datos, 1 las correcciones
+    public int SelectedTabIndex
+    {
+        get => _selectedTabIndex;
+        set
+        {
+            if (SetProperty(ref _selectedTabIndex, value))
+            {
+                OnPropertyChanged(nameof(IsDataTabSelected));
+                OnPropertyChanged(nameof(IsCorrectionsTabSelected));
+            }
+        }
+    }
+
+    public bool IsDataTabSelected => SelectedTabIndex == 0;
+
+    public bool IsCorrectionsTabSelected => SelectedTabIndex == 1;
+
+    public string CorrectionsTabText =>
+        _corrections.Count == 0 ? "Correcciones" : $"Correcciones ({_corrections.Count})";
+
+    // La mas reciente primero
+    public IReadOnlyList<TicketCorrectionView> Corrections => _corrections;
+
+    public bool HasCorrections => _corrections.Count > 0;
+
+    // Lo que se registro antes de cualquier correccion, al pie del historial
+    public string OriginalRecordText
+    {
+        get
+        {
+            if (_detail is null)
+                return string.Empty;
+
+            return HasCorrections
+                ? $"Registro original · entrada {FormatDateTime(_detail.CheckInAt)}"
+                : "Este ticket no tiene correcciones.";
+        }
+    }
+
     public bool IsLoading
     {
         get => _isLoading;
@@ -203,6 +253,14 @@ public sealed class TicketDetailViewModel : ObservableObject
             var detail = await scope.ServiceProvider
                 .GetRequiredService<GetPurchaseTicketDetail>()
                 .ExecuteAsync(_ticketId);
+
+            var corrections = await scope.ServiceProvider
+                .GetRequiredService<GetTicketCorrections>()
+                .ExecuteAsync(_ticketId);
+
+            _corrections = corrections
+                .Select(item => new TicketCorrectionView(item, FormatDateTime(item.CorrectedAt)))
+                .ToList();
 
             SetDetail(detail);
         }

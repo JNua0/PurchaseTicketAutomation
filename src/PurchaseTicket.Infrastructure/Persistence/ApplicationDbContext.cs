@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PurchaseTicket.Domain.Entities;
 using Ticket = PurchaseTicket.Domain.Entities.PurchaseTicket;
 
@@ -17,6 +17,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Supplier> Suppliers => Set<Supplier>();
 
     public DbSet<Material> Materials => Set<Material>();
+
+    public DbSet<TicketCorrection> TicketCorrections => Set<TicketCorrection>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
