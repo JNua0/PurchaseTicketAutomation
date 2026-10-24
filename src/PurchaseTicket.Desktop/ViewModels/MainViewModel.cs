@@ -7,6 +7,7 @@ using PurchaseTicket.Desktop.ViewModels.Base;
 using PurchaseTicket.Desktop.ViewModels.Home;
 using PurchaseTicket.Desktop.ViewModels.Materials;
 using PurchaseTicket.Desktop.ViewModels.Navigation;
+using PurchaseTicket.Desktop.ViewModels.Reports;
 using PurchaseTicket.Desktop.ViewModels.Settings;
 using PurchaseTicket.Desktop.ViewModels.Suppliers;
 using PurchaseTicket.Desktop.ViewModels.Tickets;
@@ -42,6 +43,7 @@ public class MainViewModel : ObservableObject
         VehicleWeighingViewModel vehicleWeighingViewModel,
         TicketAmountsViewModel ticketAmountsViewModel,
         TicketsViewModel ticketsViewModel,
+        ReportsViewModel reportsViewModel,
         SettingsViewModel settingsViewModel,
         ApplicationSettingsService settings)
     {
@@ -53,6 +55,7 @@ public class MainViewModel : ObservableObject
         _ticketAmounts = new NavigationItem("Importes de tickets", "TicketAmountIcon", ticketAmountsViewModel, ticketAmountsViewModel.LoadAsync);
 
         var tickets = new NavigationItem("Tickets", "TicketsIcon", ticketsViewModel, ticketsViewModel.InitializeAsync);
+        var reports = new NavigationItem("Reportes", "ReportsIcon", reportsViewModel, reportsViewModel.LoadAsync);
         var suppliers = new NavigationItem("Proveedores", "SuppliersIcon", suppliersViewModel, suppliersViewModel.LoadAsync);
         var materials = new NavigationItem("Materiales", "MaterialsIcon", materialsViewModel, materialsViewModel.LoadAsync);
 
@@ -60,7 +63,7 @@ public class MainViewModel : ObservableObject
 
         Sections =
         [
-            new NavigationSection("OPERACIÓN", [_home, _vehicleWeighing, _ticketAmounts, tickets]),
+            new NavigationSection("OPERACIÓN", [_home, _vehicleWeighing, _ticketAmounts, tickets, reports]),
             new NavigationSection("CATÁLOGOS", [suppliers, materials])
         ];
 

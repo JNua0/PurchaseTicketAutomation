@@ -300,11 +300,6 @@ public class TicketsViewModel : PagedListViewModel<TicketListItem>
     // Metodos privados
 
     // El DatePicker entrega la fecha sin zona; se marca asi para convertirla a UTC
-    private static DateTime LocalDay(DateTime value)
-    {
-        return DateTime.SpecifyKind(value.Date, DateTimeKind.Unspecified);
-    }
-
     private static string FormatDate(DateTime value)
     {
         return value.ToString("dd/MM/yyyy", CultureInfo.CurrentCulture);
@@ -405,30 +400,19 @@ public class TicketsViewModel : PagedListViewModel<TicketListItem>
     // El fin es el inicio del dia siguiente, que la consulta no incluye
     private (DateTime? FromUtc, DateTime? ToUtc) GetDateRangeUtc()
     {
+        // "Todos" no tiene fechas
+        if (SelectedPeriod.Value is not TicketPeriod period)
+            return (null, null);
+
         TimeZoneInfo zone = _timeProvider.LocalTimeZone;
 
         DateTime today = TimeZoneInfo
             .ConvertTime(_timeProvider.GetUtcNow(), zone)
-            .Date;
+            .DateTime;
 
-        DateTime firstOfMonth = new(today.Year, today.Month, 1);
+        var (start, end) = PeriodRange.ToLocal(period, FromDate, ToDate, today);
 
-        (DateTime? Start, DateTime? End) range = SelectedPeriod.Value switch
-        {
-            TicketPeriod.Today => (today, today.AddDays(1)),
-            TicketPeriod.Yesterday => (today.AddDays(-1), today),
-            TicketPeriod.Last7Days => (today.AddDays(-6), today.AddDays(1)),
-            TicketPeriod.ThisMonth => (firstOfMonth, today.AddDays(1)),
-            TicketPeriod.LastMonth => (firstOfMonth.AddMonths(-1), firstOfMonth),
-            TicketPeriod.Custom => (
-                FromDate is DateTime from ? LocalDay(from) : null,
-                ToDate is DateTime to ? LocalDay(to).AddDays(1) : null),
-            _ => (null, null)
-        };
-
-        return (
-            range.Start is DateTime start ? TimeZoneInfo.ConvertTimeToUtc(start, zone) : null,
-            range.End is DateTime end ? TimeZoneInfo.ConvertTimeToUtc(end, zone) : null);
+        return (PeriodRange.ToUtc(start, zone), PeriodRange.ToUtc(end, zone));
     }
 
     private async Task LoadFilterOptionsAsync()
