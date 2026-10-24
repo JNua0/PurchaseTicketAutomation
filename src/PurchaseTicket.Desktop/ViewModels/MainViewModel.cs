@@ -1,10 +1,12 @@
-﻿using System.ComponentModel;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using System.Windows.Threading;
 using PurchaseTicket.Desktop.Commands;
+using PurchaseTicket.Desktop.Configuration;
 using PurchaseTicket.Desktop.ViewModels.Amounts;
+using PurchaseTicket.Desktop.ViewModels.Base;
 using PurchaseTicket.Desktop.ViewModels.Home;
 using PurchaseTicket.Desktop.ViewModels.Materials;
+using PurchaseTicket.Desktop.ViewModels.Navigation;
 using PurchaseTicket.Desktop.ViewModels.Settings;
 using PurchaseTicket.Desktop.ViewModels.Suppliers;
 using PurchaseTicket.Desktop.ViewModels.Tickets;
@@ -12,19 +14,24 @@ using PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 
 namespace PurchaseTicket.Desktop.ViewModels;
 
-public class MainViewModel : INotifyPropertyChanged
+// Ventana principal: el menu lateral y la pantalla que se muestra. Cada
+// opcion del menu es un NavigationItem; navegar es lo mismo para todas
+public class MainViewModel : ObservableObject
 {
     // Campos
 
-    private readonly HomeViewModel _homeViewModel;
-    private readonly SuppliersViewModel _suppliersViewModel;
-    private readonly MaterialsViewModel _materialsViewModel;
-    private readonly VehicleWeighingViewModel _vehicleWeighingViewModel;
-    private readonly TicketAmountsViewModel _ticketAmountsViewModel;
-    private readonly TicketsViewModel _ticketsViewModel;
-    private readonly SettingsViewModel _settingsViewModel;
+    // Clave en appsettings.local.json; el menu se recuerda entre sesiones
+    private const string SidebarSection = "Sidebar";
+    private const string SidebarExpandedKey = "IsExpanded";
+
+    private readonly ApplicationSettingsService _settings;
+    private readonly NavigationItem _home;
+    private readonly NavigationItem _vehicleWeighing;
+    private readonly NavigationItem _ticketAmounts;
+    private readonly NavigationItem _settingsItem;
+    private readonly IReadOnlyList<NavigationItem> _allItems;
     private object? _currentViewModel;
-    private bool _isSidebarExpanded = true;
+    private bool _isSidebarExpanded;
 
     // Constructor
 
@@ -35,190 +42,117 @@ public class MainViewModel : INotifyPropertyChanged
         VehicleWeighingViewModel vehicleWeighingViewModel,
         TicketAmountsViewModel ticketAmountsViewModel,
         TicketsViewModel ticketsViewModel,
-        SettingsViewModel settingsViewModel)
+        SettingsViewModel settingsViewModel,
+        ApplicationSettingsService settings)
     {
-        _homeViewModel = homeViewModel;
-        _suppliersViewModel = suppliersViewModel;
-        _materialsViewModel = materialsViewModel;
-        _vehicleWeighingViewModel = vehicleWeighingViewModel;
-        _ticketAmountsViewModel = ticketAmountsViewModel;
-        _ticketsViewModel = ticketsViewModel;
-        _settingsViewModel = settingsViewModel;
+        _settings = settings;
 
-        ShowHomeCommand = new RelayCommand(ShowHome);
-        ShowSuppliersCommand = new AsyncRelayCommand(ShowSuppliersAsync);
-        ShowMaterialsCommand = new AsyncRelayCommand(ShowMaterialsAsync);
-        ShowVehicleWeighingCommand = new AsyncRelayCommand(ShowVehicleWeighingAsync);
-        ShowTicketAmountsCommand = new AsyncRelayCommand(ShowTicketAmountsAsync);
-        ShowTicketsCommand = new AsyncRelayCommand(ShowTicketsAsync);
-        ShowSettingsCommand = new AsyncRelayCommand(ShowSettingsAsync);
+        // Inicio se recarga sola al mostrarse; las demas cargan al entrar
+        _home = new NavigationItem("Inicio", "HomeIcon", homeViewModel);
+        _vehicleWeighing = new NavigationItem("Pesaje de vehículos", "TruckIcon", vehicleWeighingViewModel, vehicleWeighingViewModel.LoadAsync);
+        _ticketAmounts = new NavigationItem("Importes de tickets", "TicketAmountIcon", ticketAmountsViewModel, ticketAmountsViewModel.LoadAsync);
+
+        var tickets = new NavigationItem("Tickets", "TicketsIcon", ticketsViewModel, ticketsViewModel.InitializeAsync);
+        var suppliers = new NavigationItem("Proveedores", "SuppliersIcon", suppliersViewModel, suppliersViewModel.LoadAsync);
+        var materials = new NavigationItem("Materiales", "MaterialsIcon", materialsViewModel, materialsViewModel.LoadAsync);
+
+        _settingsItem = new NavigationItem("Configuración", "SettingsIcon", settingsViewModel, settingsViewModel.LoadAsync);
+
+        Sections =
+        [
+            new NavigationSection("OPERACIÓN", [_home, _vehicleWeighing, _ticketAmounts, tickets]),
+            new NavigationSection("CATÁLOGOS", [suppliers, materials])
+        ];
+
+        _allItems = [.. Sections.SelectMany(section => section.Items), _settingsItem];
+
+        NavigateCommand = new AsyncRelayCommand<NavigationItem>(NavigateAsync, item => item is not null);
         ToggleSidebarCommand = new RelayCommand(ToggleSidebar);
 
-        CurrentViewModel = _homeViewModel;
+        // Accesos directos que usa Inicio
+        ShowVehicleWeighingCommand = new AsyncRelayCommand(() => NavigateAsync(_vehicleWeighing));
+        ShowTicketAmountsCommand = new AsyncRelayCommand(() => NavigateAsync(_ticketAmounts));
+        ShowSettingsCommand = new AsyncRelayCommand(() => NavigateAsync(_settingsItem));
+
+        _isSidebarExpanded = !bool.TryParse(
+            _settings.GetValue($"{SidebarSection}:{SidebarExpandedKey}"),
+            out bool isExpanded) || isExpanded;
+
+        Select(_home);
     }
 
-    // Eventos
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     // Propiedades
+
+    public IReadOnlyList<NavigationSection> Sections { get; }
+
+    // Configuracion va aparte, anclada al fondo del menu
+    public NavigationItem SettingsItem => _settingsItem;
 
     public object? CurrentViewModel
     {
         get => _currentViewModel;
-        private set
-        {
-            if (ReferenceEquals(_currentViewModel, value))
-                return;
-
-            _currentViewModel = value;
-
-            OnPropertyChanged(nameof(CurrentViewModel));
-            OnPropertyChanged(nameof(IsHomeSelected));
-            OnPropertyChanged(nameof(IsSuppliersSelected));
-            OnPropertyChanged(nameof(IsMaterialsSelected));
-            OnPropertyChanged(nameof(IsVehicleWeighingSelected));
-            OnPropertyChanged(nameof(IsTicketAmountsSelected));
-            OnPropertyChanged(nameof(IsTicketsSelected));
-        }
+        private set => SetProperty(ref _currentViewModel, value);
     }
-
-    public bool IsHomeSelected => ReferenceEquals(CurrentViewModel, _homeViewModel);
-
-    public bool IsMaterialsSelected => ReferenceEquals(CurrentViewModel, _materialsViewModel);
-
-    public bool IsSuppliersSelected => ReferenceEquals(CurrentViewModel, _suppliersViewModel);
-
-    public bool IsVehicleWeighingSelected => ReferenceEquals(CurrentViewModel, _vehicleWeighingViewModel);
-
-    public bool IsTicketAmountsSelected => ReferenceEquals(CurrentViewModel, _ticketAmountsViewModel);
-
-    public bool IsTicketsSelected => ReferenceEquals(CurrentViewModel, _ticketsViewModel);
 
     public bool IsSidebarExpanded
     {
         get => _isSidebarExpanded;
-        private set
-        {
-            if (_isSidebarExpanded == value)
-                return;
-
-            _isSidebarExpanded = value;
-
-            OnPropertyChanged(nameof(IsSidebarExpanded));
-        }
+        private set => SetProperty(ref _isSidebarExpanded, value);
     }
-
-    public bool IsSettingsSelected => ReferenceEquals(CurrentViewModel, _settingsViewModel);
 
     // Comandos
 
-    public ICommand ShowHomeCommand { get; }
-
-    public ICommand ShowSuppliersCommand { get; }
+    public AsyncRelayCommand<NavigationItem> NavigateCommand { get; }
 
     public ICommand ToggleSidebarCommand { get; }
-
-    public ICommand ShowMaterialsCommand { get; }
 
     public ICommand ShowVehicleWeighingCommand { get; }
 
     public ICommand ShowTicketAmountsCommand { get; }
 
-    public ICommand ShowTicketsCommand { get; }
-
     public ICommand ShowSettingsCommand { get; }
 
     // Metodos privados
 
-    private void ShowHome()
+    private void Select(NavigationItem item)
     {
-        CurrentViewModel = _homeViewModel;
+        foreach (var other in _allItems)
+            other.IsSelected = ReferenceEquals(other, item);
 
-        OnPropertyChanged(nameof(IsHomeSelected));
-        OnPropertyChanged(nameof(IsSuppliersSelected));
+        CurrentViewModel = item.ViewModel;
     }
 
-    private async Task ShowSuppliersAsync()
+    // Se recarga aunque ya sea la pantalla actual: asi un clic en el menu
+    // siempre trae los datos al dia
+    private async Task NavigateAsync(NavigationItem item)
     {
-        CurrentViewModel = _suppliersViewModel;
+        Select(item);
 
-        OnPropertyChanged(nameof(IsHomeSelected));
-        OnPropertyChanged(nameof(IsSuppliersSelected));
+        if (item.OnEnter is null)
+            return;
 
+        // Primero se dibuja la pantalla, despues se cargan sus datos
         await System.Windows.Application.Current.Dispatcher.InvokeAsync(
             () => { },
             DispatcherPriority.ApplicationIdle);
 
-        await _suppliersViewModel.LoadAsync();
-    }
-
-    private void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        await item.OnEnter();
     }
 
     private void ToggleSidebar()
     {
         IsSidebarExpanded = !IsSidebarExpanded;
-    }
 
-    // Mostrar el modulo de materiales
-    private async Task ShowMaterialsAsync()
-    {
-        CurrentViewModel = _materialsViewModel;
-
-        await System.Windows.Application.Current.Dispatcher.InvokeAsync(
-            () => { },
-            DispatcherPriority.ApplicationIdle);
-
-        await _materialsViewModel.LoadAsync();
-    }
-
-    // Mostrar el modulo de pesaje
-    private async Task ShowVehicleWeighingAsync()
-    {
-        CurrentViewModel = _vehicleWeighingViewModel;
-
-        await System.Windows.Application.Current.Dispatcher.InvokeAsync(
-            () => { },
-            DispatcherPriority.ApplicationIdle);
-
-        await _vehicleWeighingViewModel.LoadAsync();
-    }
-
-    // Mostrar el modulo de importes; se recarga al entrar porque Pesaje
-    // pudo dejar tickets nuevos pendientes de importe
-    private async Task ShowTicketAmountsAsync()
-    {
-        CurrentViewModel = _ticketAmountsViewModel;
-
-        await System.Windows.Application.Current.Dispatcher.InvokeAsync(
-            () => { },
-            DispatcherPriority.ApplicationIdle);
-
-        await _ticketAmountsViewModel.LoadAsync();
-    }
-
-    // Mostrar el modulo de tickets; las opciones de los filtros se recargan al entrar
-    private async Task ShowTicketsAsync()
-    {
-        CurrentViewModel = _ticketsViewModel;
-
-        await System.Windows.Application.Current.Dispatcher.InvokeAsync(
-            () => { },
-            DispatcherPriority.ApplicationIdle);
-
-        await _ticketsViewModel.InitializeAsync();
-    }
-
-    // Mostrar el modulo de configuracion; los puertos se revisan al entrar
-    private async Task ShowSettingsAsync()
-    {
-        CurrentViewModel = _settingsViewModel;
-
-        await _settingsViewModel.LoadAsync();
+        try
+        {
+            _settings.SaveValue(
+                SidebarSection,
+                SidebarExpandedKey,
+                IsSidebarExpanded.ToString());
+        }
+        catch (Exception)
+        {
+            // No poder recordarlo no impide usar el menu
+        }
     }
 }

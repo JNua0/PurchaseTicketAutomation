@@ -3,70 +3,75 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework">
 
-    <!-- Texto de las opciones -->
+    <!-- Los estilos leen IsSidebarExpanded de la ventana: dentro de las listas
+         del menu el DataContext es cada opcion, no MainViewModel -->
+
+    <!-- Nombre de la opcion: oculto con el menu contraido -->
     <Style x:Key="SidebarTextStyle"
-       TargetType="{x:Type TextBlock}">
+           TargetType="{x:Type TextBlock}">
 
         <Setter Property="VerticalAlignment"
-            Value="Center"/>
+                Value="Center"/>
 
-        <Setter Property="Visibility"
-            Value="Visible"/>
+        <Setter Property="TextTrimming"
+                Value="CharacterEllipsis"/>
 
         <Style.Triggers>
-            <DataTrigger Binding="{Binding IsSidebarExpanded}"
-                     Value="False">
+            <DataTrigger Binding="{Binding DataContext.IsSidebarExpanded,
+                                           RelativeSource={RelativeSource AncestorType=Window}}"
+                         Value="False">
                 <Setter Property="Visibility"
-                    Value="Collapsed"/>
+                        Value="Collapsed"/>
             </DataTrigger>
         </Style.Triggers>
 
     </Style>
 
-    <!-- Iconos de las opciones -->
+    <!-- Icono de la opcion: sin margen con el menu contraido -->
     <Style x:Key="SidebarIconStyle"
-       TargetType="{x:Type Path}">
+           TargetType="{x:Type Path}">
 
         <Setter Property="Margin"
-            Value="0,0,12,0"/>
+                Value="0,0,12,0"/>
 
         <Style.Triggers>
-            <DataTrigger Binding="{Binding IsSidebarExpanded}"
-                     Value="False">
+            <DataTrigger Binding="{Binding DataContext.IsSidebarExpanded,
+                                           RelativeSource={RelativeSource AncestorType=Window}}"
+                         Value="False">
                 <Setter Property="Margin"
-                    Value="0"/>
+                        Value="0"/>
             </DataTrigger>
         </Style.Triggers>
 
     </Style>
 
-    <!-- Botones con navegacion -->
+    <!-- Opcion del menu: azul la seleccionada, como el resto de la app -->
     <Style x:Key="SidebarToggleButtonStyle"
-       TargetType="{x:Type primitives:ToggleButton}">
+           TargetType="{x:Type primitives:ToggleButton}">
 
         <Setter Property="Background"
-            Value="Transparent"/>
+                Value="Transparent"/>
 
         <Setter Property="Foreground"
-            Value="{StaticResource SidebarTextBrush}"/>
+                Value="{StaticResource SidebarTextBrush}"/>
 
         <Setter Property="BorderThickness"
-            Value="0"/>
+                Value="0"/>
 
         <Setter Property="HorizontalContentAlignment"
-            Value="Left"/>
+                Value="Left"/>
 
         <Setter Property="Padding"
-            Value="16,0"/>
+                Value="12,0"/>
 
         <Setter Property="FontSize"
-            Value="16"/>
+                Value="14"/>
 
         <Setter Property="FontWeight"
-            Value="Medium"/>
+                Value="Medium"/>
 
         <Setter Property="Cursor"
-            Value="Hand"/>
+                Value="Hand"/>
 
         <Setter Property="Template">
             <Setter.Value>
@@ -74,68 +79,40 @@
                 <ControlTemplate TargetType="{x:Type primitives:ToggleButton}">
 
                     <Border x:Name="ButtonBorder"
-                        Background="Transparent"
-                        CornerRadius="8">
+                            Background="Transparent"
+                            CornerRadius="10">
 
-                        <Grid>
-
-                            <ContentPresenter
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="Center"
-                            Margin="{TemplateBinding Padding}"
-                            RecognizesAccessKey="True"/>
-
-                            <!-- Indicador verde -->
-                            <Border x:Name="SelectionIndicator"
-                                Width="4"
-                                Height="25"
-                                CornerRadius="2"
-                                Background="{StaticResource EcoGreenBrush}"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Margin="0,0,12,0"
-                                Visibility="Collapsed"/>
-
-                        </Grid>
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"
+                                          RecognizesAccessKey="True"/>
 
                     </Border>
 
                     <ControlTemplate.Triggers>
 
                         <Trigger Property="IsMouseOver"
-                             Value="True">
+                                 Value="True">
                             <Setter TargetName="ButtonBorder"
-                                Property="Background"
-                                Value="{StaticResource SidebarHoverBrush}"/>
+                                    Property="Background"
+                                    Value="{StaticResource SidebarHoverBrush}"/>
                         </Trigger>
 
                         <Trigger Property="IsChecked"
-                             Value="True">
-
+                                 Value="True">
                             <Setter TargetName="ButtonBorder"
-                                Property="Background"
-                                Value="{StaticResource EcoBlueBrush}"/>
-
-                            <Setter TargetName="SelectionIndicator"
-                                Property="Visibility"
-                                Value="Visible"/>
-
+                                    Property="Background"
+                                    Value="{StaticResource EcoBlueBrush}"/>
                             <Setter Property="Foreground"
-                                Value="White"/>
-
+                                    Value="White"/>
+                            <Setter Property="FontWeight"
+                                    Value="SemiBold"/>
                         </Trigger>
 
-                        <DataTrigger Binding="{Binding IsSidebarExpanded}"
-                                 Value="False">
-                            <Setter TargetName="SelectionIndicator"
-                                Property="Margin"
-                                Value="0,0,3,0"/>
-                        </DataTrigger>
-
                         <Trigger Property="IsEnabled"
-                             Value="False">
+                                 Value="False">
                             <Setter Property="Opacity"
-                                Value="0.5"/>
+                                    Value="0.5"/>
                         </Trigger>
 
                     </ControlTemplate.Triggers>
@@ -146,81 +123,60 @@
         </Setter>
 
         <Style.Triggers>
-            <DataTrigger Binding="{Binding IsSidebarExpanded}"
-                     Value="False">
-
+            <DataTrigger Binding="{Binding DataContext.IsSidebarExpanded,
+                                           RelativeSource={RelativeSource AncestorType=Window}}"
+                         Value="False">
                 <Setter Property="HorizontalContentAlignment"
-                    Value="Center"/>
-
+                        Value="Center"/>
                 <Setter Property="Padding"
-                    Value="0"/>
-
+                        Value="0"/>
             </DataTrigger>
         </Style.Triggers>
 
     </Style>
 
-    <!-- Boton flotante del menu -->
-    <Style x:Key="SidebarCollapseButtonStyle"
-       TargetType="{x:Type Button}">
+    <!-- Boton de icono del encabezado: contraer o expandir el menu -->
+    <Style x:Key="SidebarIconButtonStyle"
+           TargetType="{x:Type Button}">
 
-        <Setter Property="Background"
-            Value="{StaticResource SidebarBrush}"/>
+        <Setter Property="Width"
+                Value="32"/>
 
-        <Setter Property="Foreground"
-            Value="White"/>
-
-        <Setter Property="BorderBrush"
-            Value="{StaticResource SidebarBrush}"/>
-
-        <Setter Property="BorderThickness"
-            Value="1"/>
+        <Setter Property="Height"
+                Value="32"/>
 
         <Setter Property="Cursor"
-            Value="Hand"/>
+                Value="Hand"/>
 
-        <Setter Property="ToolTip"
-            Value="Contraer menú"/>
+        <Setter Property="Background"
+                Value="Transparent"/>
+
+        <Setter Property="Foreground"
+                Value="{StaticResource SidebarSecondaryTextBrush}"/>
 
         <Setter Property="Template">
             <Setter.Value>
 
                 <ControlTemplate TargetType="{x:Type Button}">
 
-                    <Border x:Name="TabBorder"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="9,9,9,9">
+                    <Border x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8">
 
-                        <Border.Effect>
-                            <DropShadowEffect
-                            Color="#000000"
-                            BlurRadius="7"
-                            ShadowDepth="1"
-                            Opacity="0.12"/>
-                        </Border.Effect>
-
-                        <ContentPresenter
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"/>
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
 
                     </Border>
 
                     <ControlTemplate.Triggers>
 
                         <Trigger Property="IsMouseOver"
-                             Value="True">
-                            <Setter TargetName="TabBorder"
-                                Property="Background"
-                                Value="{StaticResource SidebarHoverBrush}"/>
-                        </Trigger>
-
-                        <Trigger Property="IsPressed"
-                             Value="True">
-                            <Setter TargetName="TabBorder"
-                                Property="Background"
-                                Value="{StaticResource EcoBlueDarkBrush}"/>
+                                 Value="True">
+                            <Setter TargetName="ButtonBorder"
+                                    Property="Background"
+                                    Value="{StaticResource SidebarHoverBrush}"/>
+                            <Setter Property="Foreground"
+                                    Value="White"/>
                         </Trigger>
 
                     </ControlTemplate.Triggers>
@@ -230,60 +186,65 @@
             </Setter.Value>
         </Setter>
 
-        <Style.Triggers>
+    </Style>
 
-            <DataTrigger Binding="{Binding IsSidebarExpanded}"
-                     Value="False">
-                <Setter Property="ToolTip"
-                    Value="Expandir menú"/>
-            </DataTrigger>
+    <!-- Icono dentro de SidebarIconButtonStyle; toma el color del boton -->
+    <Style x:Key="SidebarIconButtonPathStyle"
+           TargetType="{x:Type Path}">
 
-        </Style.Triggers>
+        <Setter Property="Width"
+                Value="18"/>
+
+        <Setter Property="Height"
+                Value="18"/>
+
+        <Setter Property="Stretch"
+                Value="Uniform"/>
+
+        <Setter Property="StrokeThickness"
+                Value="1.8"/>
+
+        <Setter Property="StrokeStartLineCap"
+                Value="Round"/>
+
+        <Setter Property="StrokeEndLineCap"
+                Value="Round"/>
+
+        <Setter Property="StrokeLineJoin"
+                Value="Round"/>
+
+        <Setter Property="Stroke"
+                Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
     </Style>
 
-    <!-- Flecha del boton flotante -->
-    <Style x:Key="SidebarCollapseArrowStyle"
-       TargetType="{x:Type Path}">
+    <!-- Titulo de seccion, como "OPERACIÓN" -->
+    <Style x:Key="SidebarSectionTitleStyle"
+           TargetType="{x:Type TextBlock}">
 
-        <!-- Flecha izquierda: contraer -->
-        <Setter Property="Data"
-            Value="M 11,4 L 6,9 L 11,14"/>
+        <Setter Property="FontSize"
+                Value="11"/>
 
-        <Setter Property="Stroke"
-            Value="White"/>
+        <Setter Property="FontWeight"
+                Value="Bold"/>
 
-        <Setter Property="StrokeThickness"
-            Value="2"/>
+        <Setter Property="Foreground"
+                Value="{StaticResource SidebarSecondaryTextBrush}"/>
 
-        <Setter Property="StrokeStartLineCap"
-            Value="Round"/>
+        <Setter Property="Margin"
+                Value="12,0,0,6"/>
 
-        <Setter Property="StrokeEndLineCap"
-            Value="Round"/>
+    </Style>
 
-        <Setter Property="StrokeLineJoin"
-            Value="Round"/>
-
-        <Setter Property="Width"
-            Value="18"/>
+    <!-- Linea separadora del menu -->
+    <Style x:Key="SidebarSeparatorStyle"
+           TargetType="{x:Type Border}">
 
         <Setter Property="Height"
-            Value="18"/>
+                Value="1"/>
 
-        <Setter Property="Stretch"
-            Value="Uniform"/>
-
-        <Style.Triggers>
-
-            <!-- Flecha derecha: expandir -->
-            <DataTrigger Binding="{Binding IsSidebarExpanded}"
-                     Value="False">
-                <Setter Property="Data"
-                    Value="M 6,4 L 11,9 L 6,14"/>
-            </DataTrigger>
-
-        </Style.Triggers>
+        <Setter Property="Background"
+                Value="{StaticResource SidebarHoverBrush}"/>
 
     </Style>
 

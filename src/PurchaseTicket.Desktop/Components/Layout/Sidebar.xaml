@@ -3,6 +3,56 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:navigation="clr-namespace:PurchaseTicket.Desktop.Components.Navigation">
 
+    <UserControl.Resources>
+
+        <!-- Visible solo con el menu expandido -->
+        <Style x:Key="ExpandedOnlyStyle"
+               TargetType="{x:Type FrameworkElement}">
+
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.IsSidebarExpanded,
+                                               RelativeSource={RelativeSource AncestorType=Window}}"
+                             Value="False">
+                    <Setter Property="Visibility"
+                            Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+
+        </Style>
+
+        <!-- Visible solo con el menu contraido -->
+        <Style x:Key="CollapsedOnlyStyle"
+               TargetType="{x:Type FrameworkElement}">
+
+            <Setter Property="Visibility"
+                    Value="Collapsed"/>
+
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.IsSidebarExpanded,
+                                               RelativeSource={RelativeSource AncestorType=Window}}"
+                             Value="False">
+                    <Setter Property="Visibility"
+                            Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+
+        </Style>
+
+        <!-- Opcion del menu: el icono sale de su clave de recurso -->
+        <DataTemplate x:Key="NavigationItemTemplate">
+
+            <navigation:SidebarNavItem
+                Text="{Binding Label}"
+                Icon="{Binding IconKey, Converter={StaticResource ResourceByKey}}"
+                Command="{Binding DataContext.NavigateCommand,
+                                  RelativeSource={RelativeSource AncestorType=Window}}"
+                CommandParameter="{Binding}"
+                IsSelected="{Binding IsSelected, Mode=OneWay}"/>
+
+        </DataTemplate>
+
+    </UserControl.Resources>
+
     <!-- Menu lateral con animacion de ancho -->
     <Border Background="{StaticResource SidebarBrush}"
             ClipToBounds="True">
@@ -10,7 +60,8 @@
         <Border.Style>
             <Style TargetType="{x:Type Border}">
 
-                <Setter Property="Width" Value="310"/>
+                <Setter Property="Width"
+                        Value="248"/>
 
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding IsSidebarExpanded}"
@@ -21,8 +72,8 @@
                                 <Storyboard>
                                     <DoubleAnimation
                                         Storyboard.TargetProperty="Width"
-                                        To="75"
-                                        Duration="0:0:0.25"
+                                        To="72"
+                                        Duration="0:0:0.2"
                                         AccelerationRatio="0.2"
                                         DecelerationRatio="0.8"/>
                                 </Storyboard>
@@ -34,8 +85,8 @@
                                 <Storyboard>
                                     <DoubleAnimation
                                         Storyboard.TargetProperty="Width"
-                                        To="310"
-                                        Duration="0:0:0.25"
+                                        To="248"
+                                        Duration="0:0:0.2"
                                         AccelerationRatio="0.2"
                                         DecelerationRatio="0.8"/>
                                 </Storyboard>
@@ -49,167 +100,166 @@
 
         <DockPanel LastChildFill="True">
 
-            <!-- Encabezado EcoPapel -->
+            <!-- Encabezado -->
             <Grid DockPanel.Dock="Top"
-                  Margin="10,25,10,20">
+                  Margin="12,18,12,18">
 
-                <!-- Encabezado expandido -->
-                <StackPanel>
-                    <StackPanel.Style>
-                        <Style TargetType="{x:Type StackPanel}">
+                <!-- Encabezado expandido: isotipo, nombre y boton contraer -->
+                <Grid Style="{StaticResource ExpandedOnlyStyle}">
 
-                            <Setter Property="Visibility"
-                                    Value="Visible"/>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsSidebarExpanded}"
-                                             Value="False">
-                                    <Setter Property="Visibility"
-                                            Value="Collapsed"/>
-                                </DataTrigger>
-                            </Style.Triggers>
+                    <Border Grid.Column="0"
+                            Width="38"
+                            Height="38"
+                            Padding="4"
+                            CornerRadius="9"
+                            Background="{StaticResource SurfaceBrush}">
 
-                        </Style>
-                    </StackPanel.Style>
-
-                    <!-- Imagotipo -->
-                    <Border Background="{StaticResource SurfaceBrush}"
-                            CornerRadius="14"
-                            Padding="12"
-                            Margin="10,0,10,16">
-
-                        <Image Source="pack://application:,,,/PurchaseTicket.Desktop;component/Assets/Images/ecopapel_imagotipo.png"
-                               Height="155"
+                        <Image Source="pack://application:,,,/PurchaseTicket.Desktop;component/Assets/Images/ecopapel_isotipo.png"
                                Stretch="Uniform"/>
 
                     </Border>
 
-                    <TextBlock Text="Tickets de Compra"
-                               Foreground="White"
-                               FontSize="20"
-                               FontWeight="SemiBold"
-                               TextAlignment="Center"/>
+                    <StackPanel Grid.Column="1"
+                                Margin="10,0,8,0"
+                                VerticalAlignment="Center">
 
-                    <TextBlock Text="Sistema de tickets de compra"
-                               Foreground="{StaticResource SidebarSecondaryTextBrush}"
-                               FontSize="12"
-                               TextAlignment="Center"
-                               Margin="0,6,0,0"/>
+                        <TextBlock Text="EcoPapel"
+                                   Foreground="White"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   TextTrimming="CharacterEllipsis"/>
+
+                        <TextBlock Text="Tickets de compra"
+                                   Foreground="{StaticResource SidebarSecondaryTextBrush}"
+                                   FontSize="12"
+                                   TextTrimming="CharacterEllipsis"/>
+
+                    </StackPanel>
+
+                    <Button Grid.Column="2"
+                            Style="{StaticResource SidebarIconButtonStyle}"
+                            Command="{Binding ToggleSidebarCommand}"
+                            ToolTip="Contraer menú"
+                            VerticalAlignment="Center">
+
+                        <Path Data="{StaticResource PanelCloseIcon}"
+                              Style="{StaticResource SidebarIconButtonPathStyle}"/>
+
+                    </Button>
+
+                </Grid>
+
+                <!-- Encabezado contraido: isotipo y boton expandir debajo -->
+                <StackPanel Style="{StaticResource CollapsedOnlyStyle}"
+                            HorizontalAlignment="Center">
+
+                    <Border Width="38"
+                            Height="38"
+                            Padding="4"
+                            CornerRadius="9"
+                            Background="{StaticResource SurfaceBrush}"
+                            ToolTip="EcoPapel">
+
+                        <Image Source="pack://application:,,,/PurchaseTicket.Desktop;component/Assets/Images/ecopapel_isotipo.png"
+                               Stretch="Uniform"/>
+
+                    </Border>
+
+                    <Button Style="{StaticResource SidebarIconButtonStyle}"
+                            Command="{Binding ToggleSidebarCommand}"
+                            ToolTip="Expandir menú"
+                            Margin="0,10,0,0">
+
+                        <Path Data="{StaticResource PanelOpenIcon}"
+                              Style="{StaticResource SidebarIconButtonPathStyle}"/>
+
+                    </Button>
 
                 </StackPanel>
-
-                <!-- Encabezado contraido -->
-                <Border Width="48"
-                        Height="48"
-                        Padding="4"
-                        CornerRadius="10"
-                        Background="{StaticResource SurfaceBrush}"
-                        HorizontalAlignment="Center">
-
-                    <Border.Style>
-                        <Style TargetType="{x:Type Border}">
-
-                            <Setter Property="Visibility"
-                                    Value="Collapsed"/>
-
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsSidebarExpanded}"
-                                             Value="False">
-                                    <Setter Property="Visibility"
-                                            Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-
-                        </Style>
-                    </Border.Style>
-
-                    <!-- Isotipo -->
-                    <Image Source="pack://application:,,,/PurchaseTicket.Desktop;component/Assets/Images/ecopapel_isotipo.png"
-                           Stretch="Uniform"
-                           ToolTip="EcoPapel Recycling"/>
-
-                </Border>
 
             </Grid>
 
             <!-- Configuracion anclada al fondo -->
             <StackPanel DockPanel.Dock="Bottom"
-                        Margin="12,0,12,20">
+                        Margin="12,0,12,16">
 
-                <Border Height="1"
-                        Background="#34606D"
-                        Margin="8,0,8,12"/>
+                <Border Style="{StaticResource SidebarSeparatorStyle}"
+                        Margin="4,0,4,12"/>
 
-                <!-- Configuracion -->
-                <navigation:SidebarNavItem
-                    Text="Configuración"
-                    Icon="{StaticResource SettingsIcon}"
-                    Command="{Binding ShowSettingsCommand}"
-                    IsSelected="{Binding IsSettingsSelected, Mode=OneWay}"/>
+                <ContentPresenter Content="{Binding SettingsItem}"
+                                  ContentTemplate="{StaticResource NavigationItemTemplate}"/>
 
             </StackPanel>
 
-            <!-- Area desplazable de navegacion -->
+            <!-- Secciones de navegacion; desplazables si la ventana es baja -->
             <ScrollViewer VerticalScrollBarVisibility="Auto"
-                HorizontalScrollBarVisibility="Disabled"
-                CanContentScroll="True"
-                PanningMode="VerticalOnly"
-                Focusable="False">
+                          HorizontalScrollBarVisibility="Disabled"
+                          PanningMode="VerticalOnly"
+                          Focusable="False">
 
-                <!-- Opciones de navegacion -->
-                    <StackPanel Margin="12,0,12,0">
+                <ItemsControl ItemsSource="{Binding Sections}"
+                              Margin="12,0,12,0"
+                              Focusable="False">
 
-                        <!-- Separador -->
-                        <Border Height="1"
-                                Background="#34606D"
-                                Margin="8,0,8,18"/>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
 
-                        <!-- Inicio -->
-                    <navigation:SidebarNavItem
-                            Text="Inicio"
-                            Icon="{StaticResource HomeIcon}"
-                            Command="{Binding ShowHomeCommand}"
-                            IsSelected="{Binding IsHomeSelected, Mode=OneWay}"/>
+                            <StackPanel Margin="0,0,0,14">
 
-                    <!-- Pesaje de vehiculos -->
-                    <navigation:SidebarNavItem
-                        Text="Pesaje de vehículos"
-                        Icon="{StaticResource TruckIcon}"
-                        Command="{Binding ShowVehicleWeighingCommand}"
-                        IsSelected="{Binding IsVehicleWeighingSelected, Mode=OneWay}"/>
+                                <!-- Titulo con el menu expandido -->
+                                <TextBlock Text="{Binding Title}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}"
+                                               BasedOn="{StaticResource SidebarSectionTitleStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DataContext.IsSidebarExpanded,
+                                                                               RelativeSource={RelativeSource AncestorType=Window}}"
+                                                             Value="False">
+                                                    <Setter Property="Visibility"
+                                                            Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
 
-                    <!-- Importes de tickets -->
-                    <navigation:SidebarNavItem
-                        Text="Importes de tickets"
-                        Icon="{StaticResource TicketAmountIcon}"
-                        Command="{Binding ShowTicketAmountsCommand}"
-                        IsSelected="{Binding IsTicketAmountsSelected, Mode=OneWay}"/>
+                                <!-- Linea con el menu contraido; separa las secciones -->
+                                <Border Margin="4,0,4,10">
+                                    <Border.Style>
+                                        <Style TargetType="{x:Type Border}"
+                                               BasedOn="{StaticResource SidebarSeparatorStyle}">
+                                            <Setter Property="Visibility"
+                                                    Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DataContext.IsSidebarExpanded,
+                                                                               RelativeSource={RelativeSource AncestorType=Window}}"
+                                                             Value="False">
+                                                    <Setter Property="Visibility"
+                                                            Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                </Border>
 
-                    <!-- Tickets: consulta y correccion de todos -->
-                    <navigation:SidebarNavItem
-                        Text="Tickets"
-                        Icon="{StaticResource TicketsIcon}"
-                        Command="{Binding ShowTicketsCommand}"
-                        IsSelected="{Binding IsTicketsSelected, Mode=OneWay}"/>
+                                <ItemsControl ItemsSource="{Binding Items}"
+                                              ItemTemplate="{StaticResource NavigationItemTemplate}"
+                                              Focusable="False"/>
 
-                    <!-- Proveedores -->
-                        <navigation:SidebarNavItem
-                            Text="Proveedores"
-                            Icon="{StaticResource SuppliersIcon}"
-                            Command="{Binding ShowSuppliersCommand}"
-                            IsSelected="{Binding IsSuppliersSelected, Mode=OneWay}"/>
+                            </StackPanel>
 
-                    <!-- Materiales -->
-                    <navigation:SidebarNavItem
-                        Text="Materiales"
-                        Icon="{StaticResource MaterialsIcon}"
-                        Command="{Binding ShowMaterialsCommand}"
-                        IsSelected="{Binding IsMaterialsSelected, Mode=OneWay}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
 
-                    </StackPanel>
+                </ItemsControl>
 
             </ScrollViewer>
-
 
         </DockPanel>
 
