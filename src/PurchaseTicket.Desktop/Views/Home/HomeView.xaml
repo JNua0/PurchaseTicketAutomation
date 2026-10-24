@@ -177,6 +177,16 @@
 
                         <StackPanel Orientation="Horizontal">
 
+                            <!-- Respaldo: solo si fallo o se atraso; lleva a Configuracion -->
+                            <Button Style="{StaticResource DeviceButtonStyle}"
+                                    Visibility="{Binding HasBackupAlert,
+                                                         Converter={StaticResource BoolToVisibility}}"
+                                    Command="{Binding DataContext.ShowSettingsCommand,
+                                                      RelativeSource={RelativeSource AncestorType=Window}}">
+                                <feedback:StatusBadge Text="{Binding BackupStatus.HomeText}"
+                                                      Kind="{Binding BackupStatus.Kind}"/>
+                            </Button>
+
                             <!-- Pesaje no funciona sin ellos: es lo primero que conviene ver -->
                             <Button Style="{StaticResource DeviceButtonStyle}"
                                     Command="{Binding DataContext.ShowSettingsCommand,

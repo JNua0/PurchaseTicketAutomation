@@ -1,4 +1,6 @@
-﻿using Npgsql;
+﻿using Microsoft.Extensions.Configuration;
+using Npgsql;
+using PurchaseTicket.Infrastructure.Backups;
 
 namespace PurchaseTicket.Desktop.Configuration;
 
@@ -17,6 +19,22 @@ public static class DatabaseConfiguration
         };
 
         return builder.ConnectionString;
+    }
+
+    // Mismas credenciales que la conexion; el contenedor y la ruta de docker
+    // se pueden cambiar en la seccion Backup de la configuracion
+    public static DatabaseBackupOptions GetBackupOptions(IConfiguration configuration)
+    {
+        var defaults = new DatabaseBackupOptions();
+
+        return new DatabaseBackupOptions
+        {
+            DockerPath = configuration["Backup:DockerPath"] ?? defaults.DockerPath,
+            ContainerName = configuration["Backup:ContainerName"] ?? defaults.ContainerName,
+            Database = GetRequiredVariable("POSTGRES_DB"),
+            Username = GetRequiredVariable("POSTGRES_USER"),
+            Password = GetRequiredVariable("POSTGRES_PASSWORD")
+        };
     }
 
     private static string GetRequiredVariable(string name)

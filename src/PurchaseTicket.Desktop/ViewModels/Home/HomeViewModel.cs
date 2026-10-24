@@ -32,6 +32,7 @@ public sealed class HomeViewModel : ObservableObject
     private readonly INotificationService _notifications;
     private readonly ApplicationSettingsService _settings;
     private readonly ISerialPortDiscovery _portDiscovery;
+    private readonly BackupScheduler _backups;
     private readonly TimeProvider _clock;
     private readonly ILogger<HomeViewModel> _logger;
     private readonly DispatcherTimer _timer;
@@ -63,6 +64,7 @@ public sealed class HomeViewModel : ObservableObject
         INotificationService notifications,
         ApplicationSettingsService settings,
         ISerialPortDiscovery portDiscovery,
+        BackupScheduler backups,
         TimeProvider clock,
         ILogger<HomeViewModel> logger)
     {
@@ -72,11 +74,14 @@ public sealed class HomeViewModel : ObservableObject
         _notifications = notifications;
         _settings = settings;
         _portDiscovery = portDiscovery;
+        _backups = backups;
         _clock = clock;
         _logger = logger;
 
         _timer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
         _timer.Tick += OnTimerTick;
+
+        _backups.Changed += (_, _) => NotifyBackupStatus();
 
         NewWeighingCommand = new AsyncRelayCommand(NewWeighingAsync, () => !_isDialogOpen);
 
@@ -109,6 +114,11 @@ public sealed class HomeViewModel : ObservableObject
         get => _printer;
         private set => SetProperty(ref _printer, value);
     }
+
+    // Solo se muestra si el respaldo fallo o se atraso
+    public BackupStatus BackupStatus => _backups.Status;
+
+    public bool HasBackupAlert => BackupStatus.NeedsAttention;
 
     public int InPlantCount
     {
@@ -277,6 +287,9 @@ public sealed class HomeViewModel : ObservableObject
         {
             await LoadSummaryAsync();
             await LoadDevicesAsync();
+
+            // El atraso depende de la hora: se revisa en cada recarga
+            NotifyBackupStatus();
         }
         finally
         {
@@ -366,6 +379,12 @@ public sealed class HomeViewModel : ObservableObject
             ? "Todavía no hay pesajes hoy"
             : $"{Plural(today.ConventionalCount, "convencional", "convencionales")} · " +
               $"{Plural(today.SingleCount, "único", "únicos")}";
+    }
+
+    private void NotifyBackupStatus()
+    {
+        OnPropertyChanged(nameof(BackupStatus));
+        OnPropertyChanged(nameof(HasBackupAlert));
     }
 
     // Mismo criterio que Configuracion: lo guardado contra lo que Windows detecta

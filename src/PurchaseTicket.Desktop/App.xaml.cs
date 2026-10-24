@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PurchaseTicket.Application.Abstractions.Persistence;
 using PurchaseTicket.Application.Abstractions.TicketNumbers;
+using PurchaseTicket.Application.UseCases.Backups.Create;
+using PurchaseTicket.Application.UseCases.Backups.GetLatest;
 using PurchaseTicket.Application.UseCases.Home.GetSummary;
 using PurchaseTicket.Application.UseCases.Materials.Activate;
 using PurchaseTicket.Application.UseCases.Materials.Create;
@@ -48,6 +50,7 @@ using PurchaseTicket.Desktop.Views.Settings;
 using PurchaseTicket.Desktop.Views.Suppliers;
 using PurchaseTicket.Desktop.Views.Tickets;
 using PurchaseTicket.Desktop.Views.VehicleWeighing;
+using PurchaseTicket.Infrastructure.Backups;
 using PurchaseTicket.Infrastructure.Communication.Serial;
 using PurchaseTicket.Infrastructure.Persistence;
 using PurchaseTicket.Infrastructure.Persistence.Repositories;
@@ -216,6 +219,13 @@ public partial class App : System.Windows.Application
                 // Correccion de tickets
                 services.AddScoped<CorrectPurchaseTicket>();
 
+                // Respaldo diario de la base de datos con pg_dump dentro de Docker
+                services.AddDatabaseBackup(DatabaseConfiguration.GetBackupOptions(configuration));
+                services.AddScoped<CreateDatabaseBackup>();
+                services.AddScoped<GetLatestBackup>();
+                services.AddSingleton<BackupScheduler>();
+                services.AddTransient<BackupSectionViewModel>();
+
                 // ViewModel de configuracion
                 services.AddTransient<SettingsViewModel>();
 
@@ -242,6 +252,9 @@ public partial class App : System.Windows.Application
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
 
         mainWindow.Show();
+
+        // Con la ventana visible: el primer respaldo del dia no retrasa el arranque
+        _host.Services.GetRequiredService<BackupScheduler>().Start();
     }
 
     protected override async void OnExit(ExitEventArgs e)

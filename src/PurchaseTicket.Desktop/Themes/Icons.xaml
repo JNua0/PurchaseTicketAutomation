@@ -225,6 +225,18 @@
         M 13,10 L 15,12 L 13,14
     </Geometry>
 
+    <!-- Carpeta: elegir o abrir la carpeta de respaldos -->
+    <Geometry x:Key="FolderIcon">
+        M 3,7 A 2,2 0 0 1 5,5 H 9 L 11,7 H 19 A 2,2 0 0 1 21,9 V 17 A 2,2 0 0 1 19,19 H 5 A 2,2 0 0 1 3,17 Z
+    </Geometry>
+
+    <!-- Flecha hacia una bandeja: respaldar ahora -->
+    <Geometry x:Key="BackupIcon">
+        M 12,3 V 15
+        M 7,10 L 12,15 L 17,10
+        M 5,21 H 19
+    </Geometry>
+
     <!-- Lupa: campo de busqueda -->
     <Geometry x:Key="SearchIcon">
         M 11,4
