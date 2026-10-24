@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics;
+using System.IO;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
 using PurchaseTicket.Desktop.Configuration;
 using PurchaseTicket.Desktop.ViewModels.Settings;
 using PurchaseTicket.Desktop.Views.Settings;
@@ -37,5 +40,30 @@ public class SettingsDialogService : ISettingsDialogService
         return window.ShowDialog() == true
             ? viewModel.SavedHeader
             : null;
+    }
+
+    public string? ShowBackupFolderDialog(string currentFolder)
+    {
+        var dialog = new OpenFolderDialog
+        {
+            Title = "Carpeta de respaldos",
+            Multiselect = false
+        };
+
+        if (Directory.Exists(currentFolder))
+            dialog.InitialDirectory = currentFolder;
+
+        return dialog.ShowDialog(System.Windows.Application.Current.MainWindow) == true
+            ? dialog.FolderName
+            : null;
+    }
+
+    public void OpenFolder(string folder)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = folder,
+            UseShellExecute = true
+        });
     }
 }

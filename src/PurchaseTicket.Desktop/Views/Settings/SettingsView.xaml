@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:actions="clr-namespace:PurchaseTicket.Desktop.Components.Actions"
+             xmlns:feedback="clr-namespace:PurchaseTicket.Desktop.Components.Feedback"
              xmlns:layout="clr-namespace:PurchaseTicket.Desktop.Components.Layout"
              xmlns:settings="clr-namespace:PurchaseTicket.Desktop.Views.Settings">
 
@@ -128,6 +129,165 @@
                             </StackPanel>
 
                         </Grid>
+
+                    </Border>
+
+                    <!-- Bloque 4: Respaldos -->
+                    <TextBlock Text="RESPALDOS"
+                               Style="{StaticResource FormSectionTitleStyle}"
+                               Margin="0,24,0,8"/>
+
+                    <Border DataContext="{Binding Backup}"
+                            Background="{StaticResource SurfaceBrush}"
+                            BorderBrush="{StaticResource BorderBrushLight}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="22,20">
+
+                        <StackPanel>
+
+                            <!-- Titulo, descripcion y estado -->
+                            <Grid>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+
+                                    <TextBlock Text="Respaldo de la base de datos"
+                                               FontSize="18"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                                    <TextBlock Text="{Binding Description}"
+                                               FontSize="13"
+                                               TextWrapping="Wrap"
+                                               Foreground="{StaticResource SecondaryTextBrush}"
+                                               Margin="0,4,0,0"/>
+
+                                </StackPanel>
+
+                                <feedback:StatusBadge Grid.Column="1"
+                                                      Text="{Binding StatusText}"
+                                                      Kind="{Binding StatusKind}"
+                                                      Margin="16,0,0,0"
+                                                      VerticalAlignment="Top"/>
+
+                            </Grid>
+
+                            <!-- Ultimo respaldo, tamano y carpeta -->
+                            <Grid Margin="0,16,0,0">
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0"
+                                            Margin="0,0,16,0">
+                                    <TextBlock Text="Último respaldo"
+                                               FontSize="12"
+                                               Foreground="{StaticResource SecondaryTextBrush}"/>
+                                    <TextBlock Text="{Binding LastBackupText}"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource PrimaryTextBrush}"
+                                               Margin="0,3,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1"
+                                            Margin="0,0,16,0">
+                                    <TextBlock Text="Tamaño"
+                                               FontSize="12"
+                                               Foreground="{StaticResource SecondaryTextBrush}"/>
+                                    <TextBlock Text="{Binding SizeText}"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource PrimaryTextBrush}"
+                                               Margin="0,3,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Carpeta"
+                                               FontSize="12"
+                                               Foreground="{StaticResource SecondaryTextBrush}"/>
+                                    <TextBlock Text="{Binding Folder}"
+                                               ToolTip="{Binding Folder}"
+                                               FontFamily="Consolas"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               TextTrimming="CharacterEllipsis"
+                                               Foreground="{StaticResource PrimaryTextBrush}"
+                                               Margin="0,3,0,0"/>
+                                </StackPanel>
+
+                            </Grid>
+
+                            <!-- Motivo del ultimo fallo, como una USB desconectada -->
+                            <Border Background="{StaticResource ErrorSoftBrush}"
+                                    CornerRadius="8"
+                                    Padding="14,10"
+                                    Margin="0,14,0,0"
+                                    Visibility="{Binding HasError,
+                                                         Converter={StaticResource BoolToVisibility}}">
+
+                                <TextBlock Text="{Binding ErrorMessage}"
+                                           FontSize="13"
+                                           TextWrapping="Wrap"
+                                           Foreground="{StaticResource ErrorBrush}"/>
+
+                            </Border>
+
+                            <!-- Recomendacion y acciones -->
+                            <Border BorderBrush="{StaticResource BorderBrushLight}"
+                                    BorderThickness="0,1,0,0"
+                                    Padding="0,14,0,0"
+                                    Margin="0,16,0,0">
+
+                                <Grid>
+
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                                               Text="Elige una carpeta en otro disco o en una USB: si falla la PC, el respaldo sigue a salvo."
+                                               FontSize="13"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"
+                                               Foreground="{StaticResource SecondaryTextBrush}"
+                                               Margin="0,0,16,0"/>
+
+                                    <StackPanel Grid.Column="1"
+                                                Orientation="Horizontal">
+
+                                        <actions:ActionButton Text="Cambiar carpeta"
+                                                              Icon="{StaticResource FolderIcon}"
+                                                              Variant="Secondary"
+                                                              Command="{Binding ChangeFolderCommand}"/>
+
+                                        <actions:ActionButton Text="Abrir carpeta"
+                                                              Variant="Simple"
+                                                              Command="{Binding OpenFolderCommand}"
+                                                              Margin="10,0,0,0"/>
+
+                                        <actions:ActionButton Text="Respaldar ahora"
+                                                              Icon="{StaticResource BackupIcon}"
+                                                              Variant="Primary"
+                                                              Command="{Binding BackupNowCommand}"
+                                                              Margin="10,0,0,0"/>
+
+                                    </StackPanel>
+
+                                </Grid>
+
+                            </Border>
+
+                        </StackPanel>
 
                     </Border>
 

@@ -11,7 +11,7 @@ using PurchaseTicket.Desktop.ViewModels.VehicleWeighing;
 namespace PurchaseTicket.Desktop.ViewModels.Settings;
 
 // Configuracion: puertos de la impresora y del indicador, que se guardan al
-// elegirlos, sus pruebas y el encabezado del ticket
+// elegirlos, sus pruebas, el encabezado del ticket y los respaldos
 public sealed class SettingsViewModel : ObservableObject
 {
     // Campos
@@ -37,6 +37,7 @@ public sealed class SettingsViewModel : ObservableObject
         INotificationService notifications,
         ISettingsDialogService dialogs,
         WeightCaptureViewModel indicatorReading,
+        BackupSectionViewModel backup,
         TimeProvider timeProvider,
         ILogger<SettingsViewModel> logger)
     {
@@ -49,6 +50,7 @@ public sealed class SettingsViewModel : ObservableObject
         _logger = logger;
 
         IndicatorReading = indicatorReading;
+        Backup = backup;
 
         Printer = new DevicePortViewModel(
             "Impresora",
@@ -80,7 +82,7 @@ public sealed class SettingsViewModel : ObservableObject
     public string Title => "Configuración";
 
     public string Description =>
-        "Dispositivos conectados a la báscula y datos que aparecen en los tickets";
+        "Dispositivos de la báscula, datos de los tickets y respaldos";
 
     // Puertos que Windows detecta en este momento
     public ObservableCollection<PortOption> AvailablePorts { get; } = new();
@@ -99,6 +101,9 @@ public sealed class SettingsViewModel : ObservableObject
 
     // Misma lectura del indicador que en Pesaje, con sus mensajes de error
     public WeightCaptureViewModel IndicatorReading { get; }
+
+    // Respaldo de la base de datos
+    public BackupSectionViewModel Backup { get; }
 
     public string DetectionSummary
     {
@@ -148,6 +153,8 @@ public sealed class SettingsViewModel : ObservableObject
             WeightIndicator.Initialize(_settingsService.GetValue("WeightIndicator:PortName"));
 
             TicketHeader = _settingsService.GetTicketHeader();
+
+            Backup.Refresh();
         }
         catch (Exception ex)
         {

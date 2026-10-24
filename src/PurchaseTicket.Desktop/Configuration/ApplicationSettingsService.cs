@@ -44,6 +44,30 @@ public sealed class ApplicationSettingsService
         return _configuration[key];
     }
 
+    // Carpeta de respaldos; sin elegir, Documentos\EcoPapel\Respaldos
+    public string GetBackupFolder()
+    {
+        string? saved = GetValue("Backup:Folder");
+
+        if (!string.IsNullOrWhiteSpace(saved))
+            return saved;
+
+        // Solo la carpeta por defecto se crea: una elegida que falta es una USB desconectada
+        string folder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            "EcoPapel",
+            "Respaldos");
+
+        Directory.CreateDirectory(folder);
+
+        return folder;
+    }
+
+    public void SaveBackupFolder(string folder)
+    {
+        SaveValue("Backup", "Folder", folder);
+    }
+
     // Puerto de un dispositivo; section es "Printer" o "WeightIndicator"
     public void SavePort(string section, string port)
     {
